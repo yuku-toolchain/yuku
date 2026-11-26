@@ -15,8 +15,10 @@ const Output = output.Output;
 const Tree = ast.Tree;
 const NodeIndex = ast.NodeIndex;
 const NodeData = ast.NodeData;
+const NodeTag = ast.NodeTag;
 const IndexRange = ast.IndexRange;
 const Precedence = ast.Precedence;
+const Diagnostic = ast.Diagnostic;
 
 pub const SourceMap = sourcemap.SourceMap;
 pub const SourceMapOptions = sourcemap.Options;
@@ -42,8 +44,6 @@ pub const Options = struct {
     max_depth: u32 = 2048,
 };
 
-const Diagnostic = ast.Diagnostic;
-
 pub const Result = struct {
     code: []const u8,
     diagnostics: []const Diagnostic,
@@ -56,11 +56,22 @@ pub const Result = struct {
     }
 };
 
-const Error = std.mem.Allocator.Error;
-
-pub fn generate(allocator: Allocator, tree: *const Tree, options: Options) Error!Result {
+pub fn generate(allocator: Allocator, tree: *const Tree, options: Options) Allocator.Error!Result {
     std.debug.assert(tree.root != .null);
-    var p = try Printer.init(allocator, tree, options);
+    var p: Printer = .{
+        .allocator = allocator,
+        .tree = tree,
+        .node_data = tree.nodes.items(.data),
+        .options = options,
+        .comments_on = options.comments != .none and tree.comment_index.owners.items.len > 0,
+        .out = try .init(
+            allocator,
+            options.format == .pretty,
+            tree.source,
+            options.source_map,
+            tree.nodes.len * 8 + 64,
+        ),
+    };
     defer p.deinit();
     p.emit(tree.root);
     if (p.out.failed) return error.OutOfMemory;
@@ -95,8 +106,52 @@ const Ctx = packed struct(u32) {
     no_decorators: bool = false,
     postfix_operand: bool = false,
     bare: bool = false,
-    _: u14 = 0,
+    definite: bool = false,
+    _: u13 = 0,
+
+    fn assignment(ctx: Ctx) Ctx {
+        return .{ .prec = Precedence.Assignment, .no_in = ctx.no_in };
+    }
+
+    fn unary(ctx: Ctx) Ctx {
+        return .{ .prec = Precedence.Unary, .no_instantiation = ctx.no_instantiation };
+    }
 };
+
+const TPrec = struct {
+    const trailing: u8 = 1;
+    const @"union": u8 = 2;
+    const intersection: u8 = 3;
+    const operator: u8 = 4;
+    const primary: u8 = 5;
+};
+
+const Mark = enum { sp, semi, flush };
+const sp: Mark = .sp;
+const semi: Mark = .semi;
+const flush: Mark = .flush;
+
+const Operand = struct { idx: NodeIndex, ctx: Ctx };
+
+const Restricted = struct { idx: NodeIndex, ctx: Ctx };
+
+const Inside = struct { idx: NodeIndex };
+
+inline fn at(idx: NodeIndex, ctx: Ctx) Operand {
+    return .{ .idx = idx, .ctx = ctx };
+}
+
+inline fn value(idx: NodeIndex) Operand {
+    return at(idx, .{ .prec = Precedence.Assignment });
+}
+
+inline fn restricted(idx: NodeIndex, ctx: Ctx) Restricted {
+    return .{ .idx = idx, .ctx = ctx };
+}
+
+inline fn inside(idx: NodeIndex) Inside {
+    return .{ .idx = idx };
+}
 
 const Printer = struct {
     allocator: Allocator,
@@ -113,8 +168,6 @@ const Printer = struct {
     defer_trailing_of: NodeIndex = .null,
     in_assign_target: bool = false,
     in_prologue: bool = false,
-    decl_no_in: bool = false,
-    definite_pending: bool = false,
     restricted: ?*bool = null,
     restricted_len: usize = 0,
     // the node whose trailing comments follow its parent's next token
@@ -126,6 +179,10 @@ const Printer = struct {
 
     const DecoratorLayout = enum { own_line, same_line };
 
+    const Body = enum { statements, prologue, members, enumerators };
+
+    const Item = enum { value, target, parameter };
+
     const Link = struct {
         idx: NodeIndex,
         inner: Ctx,
@@ -134,26 +191,7 @@ const Printer = struct {
         comments: ?ast.CommentIterator,
     };
 
-    const Head = struct { idx: NodeIndex, ctx: Ctx, type_floor: ?u8 = null };
     const Self = @This();
-
-    fn init(allocator: Allocator, tree: *const Tree, options: Options) Error!Self {
-        return .{
-            .allocator = allocator,
-            .tree = tree,
-            .node_data = tree.nodes.items(.data),
-            .options = options,
-            .comments_on = options.comments != .none and
-                tree.comment_index.owners.items.len > 0,
-            .out = try Output.init(
-                allocator,
-                options.format == .pretty,
-                .{ .code = tree.source.len, .map = tree.nodes.len * 8 + 64 },
-                options.source_map,
-                tree.source,
-            ),
-        };
-    }
 
     fn deinit(self: *Self) void {
         self.out.deinit();
@@ -162,39 +200,81 @@ const Printer = struct {
         self.decoded.deinit(self.allocator);
     }
 
-    inline fn pretty(self: *const Self) bool {
-        return self.out.pretty;
-    }
-
     inline fn nodeData(self: *const Self, idx: NodeIndex) NodeData {
         return self.node_data[@backingInt(idx)];
+    }
+
+    inline fn tagOf(self: *const Self, idx: NodeIndex) NodeTag {
+        return std.meta.activeTag(self.node_data[@backingInt(idx)]);
     }
 
     inline fn writeString(self: *Self, id: ast.String) void {
         self.out.writeToken(self.tree.string(id));
     }
 
-    inline fn printSpaced(self: *Self, byte: u8) void {
-        self.out.space();
-        self.out.writeByte(byte);
-        self.out.space();
+    inline fn print(self: *Self, parts: anytype) void {
+        inline for (parts) |part| {
+            const info = @typeInfo(@TypeOf(part));
+            if (info == .@"struct" and info.@"struct".is_tuple) {
+                if (isSet(part)) inline for (part) |inner| self.printPart(inner);
+            } else if (@TypeOf(part) == bool) {
+                @compileError("a flag prints nothing, it opens optional syntax");
+            } else self.printPart(part);
+        }
     }
 
-    inline fn printColon(self: *Self) void {
-        self.out.writeByte(':');
-        self.out.space();
+    inline fn printPart(self: *Self, part: anytype) void {
+        switch (@TypeOf(part)) {
+            Mark => switch (part) {
+                .sp => self.out.space(),
+                .semi => self.softSemi(),
+                .flush => self.flushSemi(),
+            },
+            NodeIndex => self.emit(part),
+            Operand => self.emitExpr(part.idx, part.ctx),
+            Restricted => self.emitRestrictedArg(part.idx, part.ctx),
+            IndexRange => self.emitItems(self.tree.extra(part), .null, .{}, .value),
+            Inside => if (self.hasComments(part.idx)) self.emitInsideComments(part.idx, false),
+            ast.String => self.writeString(part),
+            []const u8, [:0]const u8 => self.out.writeStr(part),
+            bool => {},
+            else => |Text| if (@typeInfo(@typeInfo(Text).pointer.child).array.len == 1)
+                self.out.writeByte(part[0])
+            else
+                self.out.writeStr(part),
+        }
     }
 
-    fn emitList(self: *Self, items: IndexRange) void {
-        self.emitItems(self.tree.extra(items), .null, .{});
+    inline fn isSet(group: anytype) bool {
+        inline for (group) |part| switch (@TypeOf(part)) {
+            bool => return part,
+            NodeIndex => return part != .null,
+            Operand => return part.idx != .null,
+            IndexRange => return part.len > 0,
+            else => {},
+        };
+        @compileError("optional syntax names no node, range, or flag");
     }
 
-    fn emitItems(self: *Self, items: []const NodeIndex, rest: NodeIndex, ctx: Ctx) void {
+    fn emitItems(
+        self: *Self,
+        items: []const NodeIndex,
+        rest: NodeIndex,
+        ctx: Ctx,
+        comptime item: Item,
+    ) void {
         var item_ctx = ctx;
         item_ctx.defer_trailing = true;
         const depth = self.indent_depth;
         for (items, 0..) |x, i| {
-            self.emitExpr(x, item_ctx);
+            switch (item) {
+                .value => self.emitExpr(x, item_ctx),
+                .target => self.emitAssignTarget(x, item_ctx),
+                .parameter => switch (self.nodeData(x)) {
+                    .formal_parameter => |p| self.emitExpr(p.pattern, item_ctx),
+                    else => self.emitExpr(x, item_ctx),
+                },
+            }
             self.closeItem(i + 1 < items.len or rest != .null, depth);
         }
         if (rest != .null) {
@@ -229,37 +309,24 @@ const Printer = struct {
         if (self.out.atLineStart()) self.breakLine();
     }
 
-    inline fn printBindingSuffix(
-        self: *Self,
-        optional: bool,
-        definite: bool,
-        annotation: NodeIndex,
-    ) void {
-        if (optional) self.out.writeByte('?');
-        if (definite) self.out.writeByte('!');
-        self.emit(annotation);
-    }
-
-    inline fn takeDefinite(self: *Self) bool {
-        const d = self.definite_pending;
-        self.definite_pending = false;
-        return d;
+    fn printBraced(self: *Self, items: []const NodeIndex, rest: NodeIndex) void {
+        if (items.len > 0 or rest != .null) {
+            self.out.space();
+            self.emitItems(items, rest, .{}, .value);
+            if (!self.out.atLineStart()) self.out.space();
+        }
+        self.out.writeByte('}');
     }
 
     fn newline(self: *Self) void {
-        if (self.pretty()) self.breakLine();
+        if (self.out.pretty) self.breakLine();
     }
 
     fn hasPrintedComments(self: *const Self, idx: NodeIndex) bool {
         if (!self.comments_on) return false;
         var comments = self.tree.commentsOf(idx);
         while (comments.next()) |c| {
-            const printed = switch (c.position) {
-                .before => idx != self.skip_leading_of,
-                .after => true,
-                .inside => false,
-            };
-            if (printed and self.allowComment(c)) return true;
+            if (c.position != .inside and self.allowComment(c)) return true;
         }
         return false;
     }
@@ -299,16 +366,7 @@ const Printer = struct {
 
                 if (comptime isChainLink(tag)) return self.emitLink(tag, node, inner);
                 if (comptime fixedString(tag)) |text| return self.out.writeStr(text);
-                if (comptime emittedByParent(tag)) {
-                    std.debug.panic("codegen: {s} is emitted by its parent", .{@tagName(tag)});
-                }
-                const emitter = @field(Self, "emit_" ++ @tagName(tag));
-                const params = @typeInfo(@TypeOf(emitter)).@"fn".param_types;
-                const with_idx = params[1].? == NodeIndex;
-                const with_ctx = params[params.len - 1].? == Ctx;
-                const args = .{self} ++ (if (with_idx) .{idx} else .{}) ++ .{node} ++
-                    (if (with_ctx) .{inner} else .{});
-                return @call(.always_inline, emitter, args);
+                return self.emitNode(tag, idx, node, inner);
             }
         };
     }
@@ -358,18 +416,18 @@ const Printer = struct {
         self.closeComments(idx, scope, false);
     }
 
-    fn writeNodeQuoted(
-        self: *Self,
-        idx: NodeIndex,
-        quote: u8,
-        value: []const u8,
-        comptime references: []const u8,
-    ) void {
-        std.debug.assert(quote == '"' or quote == '\'');
+    fn writeVerbatimString(self: *Self, idx: NodeIndex, text: []const u8, comptime jsx: bool) void {
+        const raw = self.tree.string(self.nodeData(idx).string_literal.raw);
+        const spells = raw.len >= 2 and if (jsx)
+            self.jsxDecodesTo(raw[1 .. raw.len - 1], text)
+        else
+            std.mem.eql(u8, raw[1 .. raw.len - 1], text);
+        if (spells) return self.writeNodeText(idx, raw);
+        const quote: u8 = if (jsx or std.mem.findScalar(u8, text, '"') == null) '"' else '\'';
         const scope = self.openComments(idx);
         self.recordMapping(idx);
         self.out.writeByte(quote);
-        self.writeCharReferences(value, references);
+        self.writeCharReferences(text, if (jsx) "\"&" else "");
         self.out.writeRawByte(quote);
         self.closeComments(idx, scope, false);
     }
@@ -389,19 +447,18 @@ const Printer = struct {
             self.out.writeRawStr(reference);
             start = i + 1;
         }
-        std.debug.assert(start <= text.len);
         self.out.writeRawStr(text[start..]);
     }
 
-    fn jsxDecodesTo(self: *Self, raw: []const u8, value: []const u8) bool {
-        if (std.mem.findScalar(u8, raw, '&') == null) return std.mem.eql(u8, raw, value);
+    fn jsxDecodesTo(self: *Self, raw: []const u8, text: []const u8) bool {
+        if (std.mem.findScalar(u8, raw, '&') == null) return std.mem.eql(u8, raw, text);
         self.decoded.clearRetainingCapacity();
         lexical.decodeJSXEntities(self.allocator, raw, &self.decoded) catch {
             self.out.failed = true;
             return false;
         };
         std.debug.assert(self.decoded.items.len <= raw.len);
-        return std.mem.eql(u8, self.decoded.items, value);
+        return std.mem.eql(u8, self.decoded.items, text);
     }
 
     inline fn emitOwedComments(self: *Self) void {
@@ -423,216 +480,129 @@ const Printer = struct {
     inline fn emitLink(self: *Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) void {
         const head = self.linkHead(tag, node, ctx);
         if (self.depth < self.options.max_depth / 4) {
-            self.emitHead(head);
+            self.emitExpr(head.idx, head.ctx);
         } else {
             self.emitChainIteratively(head);
         }
         self.emitLinkSuffix(tag, node, ctx);
     }
 
-    noinline fn emitChainIteratively(self: *Self, head: Head) void {
-        if (head.idx == .null or !isChainLink(self.tagOf(head.idx))) {
-            return self.emitHead(head);
-        }
-
+    noinline fn emitChainIteratively(self: *Self, head: Operand) void {
         const base = self.links.items.len;
-        var link = self.openLink(head.idx, head.ctx);
-        while (true) {
-            const next_head = self.linkHeadOf(link.idx, link.inner);
-            if (next_head.idx == .null or !isChainLink(self.tagOf(next_head.idx))) {
-                self.emitHead(next_head);
-                break;
-            }
+        var next = head;
+        while (next.idx != .null and isChainLink(self.tagOf(next.idx))) {
             std.debug.assert(self.links.items.len - base < self.tree.nodes.len);
-            self.links.append(self.allocator, link) catch {
+            const wrap = self.onLink(next.idx, next.ctx, needsParens);
+            if (wrap) self.out.writeByte('(');
+            const comments = self.openComments(next.idx);
+            self.recordMapping(next.idx);
+            var inner: Ctx = if (wrap) .{} else next.ctx;
+            inner.defer_trailing = false;
+            self.links.append(self.allocator, .{
+                .idx = next.idx,
+                .inner = inner,
+                .wrap = wrap,
+                .defer_trailing = next.ctx.defer_trailing,
+                .comments = comments,
+            }) catch {
                 self.out.failed = true;
                 return;
             };
-            link = self.openLink(next_head.idx, next_head.ctx);
+            next = self.onLink(next.idx, inner, linkHead);
         }
-        while (true) {
-            self.emitLinkSuffixOf(link);
-            self.closeLink(link);
-            if (self.links.items.len == base) break;
-            link = self.links.pop().?;
-        }
-    }
-
-    inline fn emitHead(self: *Self, head: Head) void {
-        if (head.type_floor) |floor| {
-            self.emitType(head.idx, floor, head.ctx);
-        } else {
-            self.emitExpr(head.idx, head.ctx);
+        self.emitExpr(next.idx, next.ctx);
+        while (self.links.items.len > base) {
+            const link = self.links.pop().?;
+            self.onLink(link.idx, link.inner, emitLinkSuffix);
+            self.closeComments(link.idx, link.comments, link.defer_trailing);
+            if (link.wrap) self.out.writeByte(')');
         }
     }
 
-    fn openLink(self: *Self, idx: NodeIndex, ctx: Ctx) Link {
-        const wrap = switch (self.node_data[@backingInt(idx)]) {
-            inline else => |*node, tag| if (comptime isChainLink(tag))
-                self.needsParens(tag, node, ctx)
+    fn onLink(
+        self: *Self,
+        idx: NodeIndex,
+        ctx: Ctx,
+        comptime f: anytype,
+    ) @typeInfo(@TypeOf(f)).@"fn".return_type.? {
+        switch (self.node_data[@backingInt(idx)]) {
+            inline else => |*node, tag| return if (comptime isChainLink(tag))
+                f(self, tag, node, ctx)
             else
                 unreachable,
-        };
-        if (wrap) self.out.writeByte('(');
-        const comments = self.openComments(idx);
-        self.recordMapping(idx);
-        var inner: Ctx = if (wrap) .{} else ctx;
-        inner.defer_trailing = false;
-        return .{
-            .idx = idx,
-            .inner = inner,
-            .wrap = wrap,
-            .defer_trailing = ctx.defer_trailing,
-            .comments = comments,
-        };
-    }
-
-    fn closeLink(self: *Self, link: Link) void {
-        self.closeComments(link.idx, link.comments, link.defer_trailing);
-        if (link.wrap) self.out.writeByte(')');
-    }
-
-    inline fn tagOf(self: *const Self, idx: NodeIndex) NodeTag {
-        return std.meta.activeTag(self.node_data[@backingInt(idx)]);
-    }
-
-    fn linkHeadOf(self: *const Self, idx: NodeIndex, ctx: Ctx) Head {
-        return switch (self.node_data[@backingInt(idx)]) {
-            inline else => |*node, tag| if (comptime isChainLink(tag))
-                self.linkHead(tag, node, ctx)
-            else
-                unreachable,
-        };
-    }
-
-    fn emitLinkSuffixOf(self: *Self, link: Link) void {
-        switch (self.node_data[@backingInt(link.idx)]) {
-            inline else => |*node, tag| if (comptime isChainLink(tag)) {
-                self.emitLinkSuffix(tag, node, link.inner);
-            } else unreachable,
         }
     }
 
-    inline fn linkHead(self: *const Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) Head {
+    inline fn linkHead(self: *const Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) Operand {
         return switch (tag) {
-            .binary_expression => .{
-                .idx = node.left,
-                .ctx = .{
-                    .prec = binaryLeftPrecedence(self.tree, node.*),
-                    .no_in = ctx.no_in,
-                    .no_instantiation = !canFollowTypeArguments(node.operator),
-                },
-            },
-            .logical_expression => .{
-                .idx = node.left,
-                .ctx = .{
-                    .prec = self.logicalOperandPrecedence(
-                        node.left,
-                        node.operator.toToken().precedence(),
-                        node.operator,
-                    ),
-                    .no_in = ctx.no_in,
-                },
-            },
+            .binary_expression => at(node.left, .{
+                .prec = binaryLeftPrecedence(self.tree, node.*),
+                .no_in = ctx.no_in,
+                .no_instantiation = !canFollowTypeArguments(node.operator),
+            }),
+            .logical_expression => at(node.left, .{
+                .prec = self.operandPrecedence(node, false),
+                .no_in = ctx.no_in,
+            }),
             // TypeScript rejects `f<T>?.x`, and minify prints `?.["x"]` as `?.x`
-            .member_expression => .{
-                .idx = node.object,
-                .ctx = .{
-                    .prec = Precedence.Call,
-                    .no_call = ctx.no_call,
-                    .no_instantiation = true,
-                },
-            },
+            .member_expression, .tagged_template_expression => at(
+                if (tag == .member_expression) node.object else node.tag,
+                .{ .prec = Precedence.Call, .no_call = ctx.no_call, .no_instantiation = true },
+            ),
             // `f<T>?.()` keeps its type arguments where `f<T>()` takes them as the call's own
-            .call_expression => .{
-                .idx = node.callee,
-                .ctx = .{ .prec = Precedence.Call, .no_instantiation = !node.optional },
-            },
-            .tagged_template_expression => .{
-                .idx = node.tag,
-                .ctx = .{
-                    .prec = Precedence.Call,
-                    .no_call = ctx.no_call,
-                    .no_instantiation = true,
-                },
-            },
-            .chain_expression => .{ .idx = node.expression, .ctx = ctx },
-            .ts_non_null_expression => .{
-                .idx = node.expression,
-                .ctx = .{
-                    .prec = Precedence.Postfix,
-                    .no_instantiation = true,
-                    .no_chain = true,
-                },
-            },
-            .ts_instantiation_expression => .{
-                .idx = node.expression,
-                .ctx = .{ .prec = Precedence.Postfix, .no_instantiation = true },
-            },
-            .ts_as_expression, .ts_satisfies_expression => .{
-                .idx = node.expression,
-                .ctx = .{
-                    .prec = Precedence.Relational,
-                    .no_in = ctx.no_in,
-                    .defer_trailing = true,
-                },
-            },
-            .ts_array_type => .{
-                .idx = node.element_type,
-                .ctx = .{ .defer_trailing = true },
-                .type_floor = TPrec.primary,
-            },
-            .ts_indexed_access_type => .{
-                .idx = node.object_type,
-                .ctx = .{ .defer_trailing = true },
-                .type_floor = TPrec.primary,
-            },
-            .ts_jsdoc_nullable_type, .ts_jsdoc_non_nullable_type => .{
-                .idx = if (node.postfix) node.type_annotation else .null,
-                .ctx = .{},
-            },
-            .ts_qualified_name => .{ .idx = node.left, .ctx = .{} },
-            .jsx_member_expression => .{ .idx = node.object, .ctx = .{} },
+            .call_expression => at(node.callee, .{
+                .prec = Precedence.Call,
+                .no_instantiation = !node.optional,
+            }),
+            .chain_expression => at(node.expression, ctx),
+            .ts_non_null_expression, .ts_instantiation_expression => at(node.expression, .{
+                .prec = Precedence.Postfix,
+                .no_instantiation = true,
+                .no_chain = tag == .ts_non_null_expression,
+            }),
+            .ts_as_expression, .ts_satisfies_expression => at(node.expression, .{
+                .prec = Precedence.Relational,
+                .no_in = ctx.no_in,
+                .defer_trailing = true,
+            }),
+            .ts_array_type, .ts_indexed_access_type => at(
+                if (tag == .ts_array_type) node.element_type else node.object_type,
+                .{ .prec = TPrec.primary, .defer_trailing = true },
+            ),
+            .ts_jsdoc_nullable_type, .ts_jsdoc_non_nullable_type => at(
+                if (node.postfix) node.type_annotation else .null,
+                .{},
+            ),
+            .ts_qualified_name => at(node.left, .{}),
+            .jsx_member_expression => at(node.object, .{}),
             else => @compileError("not a chain link: " ++ @tagName(tag)),
         };
     }
 
-    inline fn emitLinkSuffix(
-        self: *Self,
-        comptime tag: NodeTag,
-        node: anytype,
-        ctx: Ctx,
-    ) void {
+    inline fn emitLinkSuffix(self: *Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) void {
         switch (tag) {
             .binary_expression => {
                 const op = node.operator.toString();
                 const p: u8 = node.operator.toToken().precedence();
-                const right_min = if (node.operator == .exponent) p else p + 1;
                 if (utils.isWordOp(op)) {
-                    self.out.writeByte(' ');
-                    self.out.writeStr(op);
-                    self.out.writeByte(' ');
+                    self.print(.{ " ", op, " " });
                 } else {
                     self.out.space();
                     // `f<T>==x` would re-lex the type argument closer into `>=`
                     if (self.out.lastByte() == '>' and (op[0] == '>' or op[0] == '=')) {
                         self.out.writeByte(' ');
                     }
-                    self.out.writeStr(op);
-                    self.out.space();
+                    self.print(.{ op, sp });
                 }
                 self.emitExpr(node.right, .{
-                    .prec = right_min,
+                    .prec = if (node.operator == .exponent) p else p + 1,
                     .no_in = ctx.no_in,
                     .no_instantiation = ctx.no_instantiation,
                 });
             },
             .logical_expression => {
-                const p: u8 = node.operator.toToken().precedence();
-                self.out.space();
-                self.out.writeStr(node.operator.toString());
-                self.out.space();
-                const prec = self.logicalOperandPrecedence(node.right, p + 1, node.operator);
+                const prec = self.operandPrecedence(node, true);
+                self.print(.{ sp, node.operator.toString(), sp });
                 self.emitExpr(node.right, .{ .prec = prec, .no_in = ctx.no_in });
             },
             .member_expression => {
@@ -642,10 +612,7 @@ const Printer = struct {
                     null;
 
                 if (node.computed and static_key == null) {
-                    if (node.optional) self.out.writeStr("?.");
-                    self.out.writeByte('[');
-                    self.emit(node.property);
-                    self.out.writeByte(']');
+                    self.print(.{ .{ node.optional, "?." }, "[", node.property, "]" });
                 } else {
                     self.out.writeStr(if (node.optional) "?." else ".");
                     if (static_key) |k| {
@@ -656,50 +623,44 @@ const Printer = struct {
                 }
             },
             .call_expression => {
-                if (node.optional) self.out.writeStr("?.");
-                self.emit(node.type_arguments);
+                self.print(.{ .{ node.optional, "?." }, node.type_arguments });
                 self.printArgList(node.arguments);
             },
             .tagged_template_expression => {
-                self.emit(node.type_arguments);
-                self.emitExpr(node.quasi, .{ .tagged = true });
+                self.print(.{ node.type_arguments, at(node.quasi, .{ .tagged = true }) });
             },
             .chain_expression => {},
             .ts_non_null_expression => self.out.writeByte('!'),
             .ts_instantiation_expression => self.emit(node.type_arguments),
-            .ts_as_expression => {
-                self.writeKeywordThenOwed(" as");
+            .ts_as_expression, .ts_satisfies_expression => {
+                self.writeKeywordThenOwed(if (tag == .ts_as_expression) " as" else " satisfies");
                 self.emit(node.type_annotation);
             },
-            .ts_satisfies_expression => {
-                self.writeKeywordThenOwed(" satisfies");
-                self.emit(node.type_annotation);
-            },
-            .ts_array_type => {
+            .ts_array_type, .ts_indexed_access_type => {
                 self.out.writeByte('[');
                 self.emitOwedComments();
-                self.out.writeByte(']');
-            },
-            .ts_indexed_access_type => {
-                self.out.writeByte('[');
-                self.emitOwedComments();
-                self.emit(node.index_type);
+                if (tag == .ts_indexed_access_type) self.emit(node.index_type);
                 self.out.writeByte(']');
             },
             .ts_jsdoc_nullable_type, .ts_jsdoc_non_nullable_type => {
                 self.out.writeByte(if (tag == .ts_jsdoc_nullable_type) '?' else '!');
                 if (!node.postfix) self.emit(node.type_annotation);
             },
-            .ts_qualified_name => {
-                self.out.writeByte('.');
-                self.emit(node.right);
-            },
-            .jsx_member_expression => {
-                self.out.writeByte('.');
-                self.emit(node.property);
-            },
+            .ts_qualified_name => self.print(.{ ".", node.right }),
+            .jsx_member_expression => self.print(.{ ".", node.property }),
             else => @compileError("not a chain link: " ++ @tagName(tag)),
         }
+    }
+
+    // `??` mixed with `&&` or `||` must be parenthesized
+    fn operandPrecedence(self: *const Self, e: *const ast.LogicalExpression, right: bool) u8 {
+        const mixed = switch (self.nodeData(if (right) e.right else e.left)) {
+            .logical_expression => |operand| (operand.operator == .nullish_coalescing) !=
+                (e.operator == .nullish_coalescing),
+            else => false,
+        };
+        if (mixed) return Precedence.Grouping;
+        return @as(u8, e.operator.toToken().precedence()) + @intFromBool(right);
     }
 
     inline fn needsParens(self: *const Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) bool {
@@ -722,7 +683,7 @@ const Printer = struct {
             .binary_expression => ctx.no_in and node.operator == .in,
             else => false,
         };
-        const fixed = comptime node_precedence[@backingInt(tag)];
+        const fixed = comptime precedenceOf(tag);
         if (fixed == Precedence.Grouping) return required;
         const precedence = switch (tag) {
             .logical_expression, .binary_expression => node.operator.toToken().precedence(),
@@ -754,8 +715,7 @@ const Printer = struct {
 
     // a comment between `get`/`async` and its key would split them
     fn hoistKeyComments(self: *Self, key: NodeIndex) void {
-        if (!self.comments_on) return;
-        if (key == .null) return;
+        if (!self.comments_on or key == .null) return;
         self.emitLeadingComments(key, self.tree.commentsOf(key));
         self.skip_leading_of = key;
     }
@@ -789,11 +749,11 @@ const Printer = struct {
                 self.openRestrictedParen();
             }
             const last = self.out.lastByte();
-            if (self.pretty() and last != 0 and last != ' ' and last != '\n') {
+            if (self.out.pretty and last != 0 and last != ' ' and last != '\n') {
                 self.out.writeByte(' ');
             }
             self.writeCommentBody(c);
-            if (self.pretty()) self.out.writeByte(' ');
+            self.out.space();
         } else {
             self.breakLine();
             self.writeCommentBody(c);
@@ -804,34 +764,25 @@ const Printer = struct {
     }
 
     fn writeTrailing(self: *Self, c: ast.Comment) void {
-        if (c.same_line) {
-            if (self.pretty()) self.out.writeByte(' ');
-            self.writeCommentBody(c);
-            if (c.type == .line) self.breakLine();
-            return;
-        }
-        self.breakLine();
+        if (c.same_line) self.out.space() else self.breakLine();
         self.writeCommentBody(c);
-        self.breakLine();
+        if (c.type == .line or !c.same_line) self.breakLine();
     }
 
     inline fn writeCommentBody(self: *Self, c: ast.Comment) void {
-        const value = self.tree.string(c.value);
+        const text = self.tree.string(c.value);
         self.out.writeStr(if (c.type == .line) "//" else "/*");
         if (c.type == .block) {
-            self.writeBlockBody(value);
+            self.writeBlockBody(text);
             self.out.writeComment("*/");
         } else {
-            self.out.writeComment(value);
+            self.out.writeComment(text);
         }
     }
 
-    fn writeBlockBody(self: *Self, value: []const u8) void {
-        if (!self.pretty() or !utils.isJsdocBody(value)) {
-            self.out.writeComment(value);
-            return;
-        }
-        var it = std.mem.splitScalar(u8, value, '\n');
+    fn writeBlockBody(self: *Self, body: []const u8) void {
+        if (!self.out.pretty or !utils.isJsdocBody(body)) return self.out.writeComment(body);
+        var it = std.mem.splitScalar(u8, body, '\n');
         self.out.writeStr(std.mem.trimEnd(u8, it.first(), "\r"));
         while (it.next()) |line| {
             self.breakLine();
@@ -867,96 +818,292 @@ const Printer = struct {
         };
     }
 
+    inline fn emitNode(
+        self: *Self,
+        comptime tag: NodeTag,
+        idx: NodeIndex,
+        n: anytype,
+        ctx: Ctx,
+    ) void {
+        switch (tag) {
+            .formal_parameters, .formal_parameter => {
+                std.debug.panic("codegen: {s} is emitted by its parent", .{@tagName(tag)});
+            },
+
+            .block_statement, .ts_module_block => self.printBlock(idx, n.body, .statements),
+            .function_body => self.printBlock(idx, n.body, .prologue),
+            .class_body, .ts_interface_body => self.printBlock(idx, n.body, .members),
+            .ts_type_literal => self.printBlock(idx, n.members, .members),
+            .ts_enum_body => self.printBlock(idx, n.members, .enumerators),
+            // never deferred, `if(x);` needs the `;` to materialize the body
+            .empty_statement => self.out.writeByte(';'),
+            .debugger_statement => self.print(.{ "debugger", inside(idx), semi }),
+            .break_statement => self.print(.{ "break", inside(idx), .{ " ", n.label }, semi }),
+            .continue_statement => self.print(.{
+                "continue", inside(idx), .{ " ", n.label }, semi,
+            }),
+            .return_statement => self.print(.{
+                "return", inside(idx), restricted(n.argument, .{}), semi,
+            }),
+            .throw_statement => self.print(.{ "throw", restricted(n.argument, .{}), semi }),
+            .labeled_statement => self.print(.{ n.label, ":", sp, n.body }),
+            .if_statement => {
+                self.print(.{ "if", sp, "(", n.@"test", ")", sp, n.consequent });
+                self.print(.{.{ flush, sp, "else ", n.alternate }});
+            },
+            .do_while_statement => self.print(.{
+                "do ", n.body, flush, sp, "while", sp, "(", n.@"test", ");",
+            }),
+            .with_statement => self.print(.{ "with", sp, "(", n.object, ")", sp, n.body }),
+            .while_statement => self.print(.{ "while", sp, "(", n.@"test", ")", sp, n.body }),
+            .try_statement => self.print(.{
+                "try ", n.block, .{ sp, n.handler }, .{ sp, "finally ", n.finalizer },
+            }),
+            .catch_clause => self.print(.{ "catch", .{ sp, "(", n.param, ")" }, sp, n.body }),
+            .for_in_statement, .for_of_statement => {
+                const of = tag == .for_of_statement;
+                // `for (async of …)` is forbidden, it could start the arrow `async of => …`
+                const parens = of and !n.await and isNamed(self.tree, n.left, "async");
+                self.print(.{ "for", .{ of and n.await, " await" }, sp, "(", .{ parens, "(" } });
+                switch (self.nodeData(n.left)) {
+                    .variable_declaration => self.printForDeclaration(n.left, false),
+                    else => self.emitAssignTarget(n.left, .{}),
+                }
+                self.print(.{ .{ parens, ")" }, if (of) " of " else " in " });
+                self.print(.{ if (of) value(n.right) else at(n.right, .{}), ")", sp, n.body });
+            },
+
+            .variable_declarator => {
+                self.emitExpr(n.id, .{ .definite = n.definite });
+                self.print(.{.{ sp, "=", sp, at(n.init, ctx.assignment()) }});
+            },
+            .sequence_expression => {
+                self.emitItems(self.tree.extra(n.expressions), .null, ctx.assignment(), .value);
+            },
+            .conditional_expression => {
+                self.emitExpr(n.@"test", .{ .prec = Precedence.LogicalOr, .no_in = ctx.no_in });
+                self.print(.{ sp, "?", sp, value(n.consequent), sp, ":", sp });
+                self.emitExpr(n.alternate, ctx.assignment());
+            },
+            .assignment_expression => {
+                self.emitAssignTarget(n.left, .{});
+                self.print(.{ sp, n.operator.toString(), sp, at(n.right, ctx.assignment()) });
+            },
+            .parenthesized_expression => self.print(.{ "(", n.expression, ")" }),
+            .await_expression => self.print(.{ "await ", at(n.argument, ctx.unary()) }),
+            .yield_expression => self.print(.{
+                "yield", .{ n.delegate, "*" }, restricted(n.argument, ctx.assignment()),
+            }),
+            .spread_element => self.print(.{ "...", value(n.argument) }),
+            .array_expression => self.printArray(idx, n.elements, .null, self.in_assign_target),
+            .meta_property => self.print(.{ n.meta, ".", n.property }),
+            .template_literal => self.printTemplate(n.quasis, n.expressions, ctx.tagged),
+            .template_element => self.printTemplateElement(n.*, false),
+            .bigint_literal => self.print(.{ n.raw, "n" }),
+            .identifier_reference,
+            .identifier_name,
+            .label_identifier,
+            .jsx_identifier,
+            => self.writeString(n.name),
+            .private_identifier => self.print(.{ "#", n.name }),
+
+            .assignment_pattern => {
+                self.printDecorators(n.decorators, .same_line);
+                self.print(.{ n.left, .{ n.optional, "?" }, n.type_annotation });
+                self.print(.{ sp, "=", sp, value(n.right) });
+            },
+            .binding_rest_element => {
+                self.printDecorators(n.decorators, .same_line);
+                self.print(.{ "...", n.argument, .{ n.optional, "?" }, n.type_annotation });
+            },
+            .array_pattern => {
+                self.printDecorators(n.decorators, .same_line);
+                self.printArray(idx, n.elements, n.rest, true);
+                self.print(.{ .{ n.optional, "?" }, .{ ctx.definite, "!" }, n.type_annotation });
+            },
+            .object_pattern => {
+                self.printDecorators(n.decorators, .same_line);
+                self.print(.{ "{", inside(idx) });
+                self.printBraced(self.tree.extra(n.properties), n.rest);
+                self.print(.{ .{ n.optional, "?" }, .{ ctx.definite, "!" }, n.type_annotation });
+            },
+
+            .import_default_specifier => self.emit(n.local),
+            .import_namespace_specifier => self.print(.{ "* as ", n.local }),
+            .import_specifier => self.printSpecifier(n.import_kind == .type, n.imported, n.local),
+            .export_specifier => self.printSpecifier(n.export_kind == .type, n.local, n.exported),
+            .import_attribute => self.print(.{ n.key, ":", sp, n.value }),
+            .export_all_declaration => {
+                self.print(.{ "export", .{ n.export_kind == .type, " type" }, " *" });
+                self.print(.{ .{ " as ", n.exported }, " from ", n.source });
+                self.print(.{ .{ " with ", "{", sp, n.attributes, sp, "}" }, semi });
+            },
+
+            .ts_type_annotation => self.print(.{ ":", sp, n.type_annotation }),
+            .ts_type_reference => self.print(.{ n.type_name, n.type_arguments }),
+            .ts_interface_heritage, .ts_class_implements => {
+                self.print(.{ n.expression, n.type_arguments });
+            },
+            .ts_type_query => self.print(.{ "typeof ", n.expr_name, n.type_arguments }),
+            .ts_import_type => {
+                self.print(.{ "import(", n.source, .{ ",", sp, n.options }, ")" });
+                self.print(.{ .{ ".", n.qualifier }, n.type_arguments });
+            },
+            .ts_type_parameter => {
+                self.print(.{ .{ n.@"const", "const " }, .{ n.in, "in " }, .{ n.out, "out " } });
+                self.print(.{ n.name, .{ " extends ", n.constraint } });
+                self.print(.{.{ sp, "=", sp, n.default }});
+            },
+            .ts_type_parameter_instantiation => self.print(.{ "<", n.params, ">" }),
+            .ts_template_literal_type => self.printTemplate(n.quasis, n.types, false),
+            .ts_tuple_type => self.print(.{ "[", inside(idx), n.element_types, "]" }),
+            .ts_named_tuple_member => self.print(.{
+                n.label, .{ n.optional, "?" }, ":", sp, n.element_type,
+            }),
+            .ts_optional_type => self.print(.{
+                at(n.type_annotation, .{ .prec = TPrec.primary }), "?",
+            }),
+            .ts_rest_type => self.print(.{ "...", n.type_annotation }),
+            .ts_union_type => self.emitTypeList(n.types, "|", TPrec.intersection),
+            .ts_intersection_type => self.emitTypeList(n.types, "&", TPrec.operator),
+            .ts_infer_type => self.print(.{ "infer ", n.type_parameter }),
+            .ts_type_operator => self.print(.{
+                n.operator.toString(), " ", at(n.type_annotation, .{ .prec = TPrec.operator }),
+            }),
+            .ts_parenthesized_type => self.print(.{ "(", n.type_annotation, ")" }),
+            .ts_function_type, .ts_constructor_type => {
+                const new = tag == .ts_constructor_type;
+                self.print(.{ .{ new and n.abstract, "abstract " }, .{ new, "new " } });
+                self.emit(n.type_parameters);
+                self.printParams(idx, n.params);
+                self.print(.{ sp, "=>", sp });
+                self.emitUnwrappedType(n.return_type);
+            },
+            .ts_call_signature_declaration => self.printSignature(idx, n, .null),
+            .ts_construct_signature_declaration => {
+                self.out.writeStr("new ");
+                self.printSignature(idx, n, .null);
+            },
+            .ts_index_signature => {
+                self.print(.{ .{ n.static, "static " }, .{ n.readonly, "readonly " } });
+                self.print(.{ "[", n.parameters, "]", n.type_annotation, semi });
+            },
+            .ts_interface_declaration => {
+                self.print(.{ .{ n.declare, "declare " }, "interface ", n.id, n.type_parameters });
+                self.print(.{ .{ " extends ", n.extends }, sp, n.body });
+            },
+            .ts_enum_declaration => self.print(.{
+                .{ n.declare, "declare " }, .{ n.is_const, "const " }, "enum ", n.id, sp, n.body,
+            }),
+            .ts_enum_member => self.print(.{
+                .{ n.computed, "[" }, n.id, .{ n.computed, "]" }, .{ sp, "=", sp, n.initializer },
+            }),
+            .ts_global_declaration => self.print(.{ .{ n.declare, "declare " }, n.id, sp, n.body }),
+            .ts_export_assignment => self.print(.{ "export", sp, "=", sp, n.expression, semi }),
+            .ts_namespace_export_declaration => self.print(.{ "export as namespace ", n.id, semi }),
+            .ts_import_equals_declaration => {
+                self.print(.{ "import ", .{ n.import_kind == .type, "type " }, n.id });
+                self.print(.{ sp, "=", sp, n.module_reference, semi });
+            },
+            .ts_external_module_reference => self.print(.{ "require(", n.expression, ")" }),
+            .ts_this_parameter => self.print(.{ "this", n.type_annotation }),
+
+            .jsx_element => self.printChildren(n.opening_element, n.children, n.closing_element),
+            .jsx_fragment => self.printChildren(n.opening_fragment, n.children, n.closing_fragment),
+            .jsx_closing_element => self.print(.{ "</", n.name, ">" }),
+            .jsx_namespaced_name => self.print(.{ n.namespace, ":", n.name }),
+            .jsx_spread_attribute => self.print(.{ "{...", value(n.argument), "}" }),
+            .jsx_spread_child => self.print(.{ "{...", value(n.expression), "}" }),
+            .jsx_expression_container => self.print(.{ "{", value(n.expression), "}" }),
+            .jsx_empty_expression => self.print(.{inside(idx)}),
+            .jsx_opening_fragment => self.print(.{ "<", inside(idx), ">" }),
+            .jsx_closing_fragment => self.print(.{ "</", inside(idx), ">" }),
+
+            else => {
+                const emitter = @field(Self, "emit_" ++ @tagName(tag));
+                const params = @typeInfo(@TypeOf(emitter)).@"fn".param_types;
+                const with_idx = params[1].? == NodeIndex;
+                const with_ctx = params[params.len - 1].? == Ctx;
+                const args = .{self} ++ (if (with_idx) .{idx} else .{}) ++ .{n} ++
+                    (if (with_ctx) .{ctx} else .{});
+                @call(.always_inline, emitter, args);
+            },
+        }
+    }
+
     fn emit_program(self: *Self, idx: NodeIndex, p: *const ast.Program) void {
         if (p.hashbang) |h| {
             self.out.writeStr("#!");
             self.out.writeRawStr(self.tree.string(h.value));
             self.out.writeByte('\n');
         }
-        self.printStmtList(self.tree.extra(p.body), true);
+        self.printStmtList(self.tree.extra(p.body), .prologue);
         self.pending_semi = false;
-        if (self.comments_on) self.emitInsideComments(idx);
+        if (self.comments_on) self.emitInsideComments(idx, true);
     }
 
-    fn printStmtList(self: *Self, items: []const NodeIndex, prologue: bool) void {
-        var first = true;
-        var prol = prologue;
-        for (items) |s| {
-            if (!first) self.newline();
+    fn printStmtList(self: *Self, items: []const NodeIndex, body: Body) void {
+        const statements = body == .statements or body == .prologue;
+        var prologue = body == .prologue;
+        for (items, 0..) |s, i| {
+            if (i > 0) self.newline();
             self.flushSemi();
-            self.in_prologue = prol;
-            self.emit(s);
-            first = false;
-            if (prol and self.nodeData(s) != .directive) prol = false;
+            if (statements) self.in_prologue = prologue;
+            if (body == .enumerators) {
+                self.emitExpr(s, .{ .defer_trailing = true });
+                self.closeItem(i + 1 < items.len, null);
+            } else self.emit(s);
+            if (prologue and self.nodeData(s) != .directive) prologue = false;
         }
-        self.in_prologue = false;
+        if (statements) self.in_prologue = false;
     }
 
-    fn printIndentedStmtList(self: *Self, items: []const NodeIndex, prologue: bool) void {
+    fn printIndentedStmtList(self: *Self, items: []const NodeIndex, body: Body) void {
         std.debug.assert(items.len > 0);
         self.indent_depth += 1;
         defer self.indent_depth -= 1;
         self.newline();
-        self.printStmtList(items, prologue);
+        self.printStmtList(items, body);
     }
 
-    fn printBlock(self: *Self, idx: NodeIndex, items: []const NodeIndex, prologue: bool) void {
+    fn printBlock(self: *Self, idx: NodeIndex, items: IndexRange, body: Body) void {
         self.out.writeByte('{');
         if (items.len > 0) {
-            self.printIndentedStmtList(items, prologue);
+            self.printIndentedStmtList(self.tree.extra(items), body);
             self.pending_semi = false;
             self.newline();
         } else if (self.comments_on) {
-            self.emitInsideComments(idx);
+            self.emitInsideComments(idx, true);
         }
         self.out.writeByte('}');
     }
 
-    fn emitInsideComments(self: *Self, idx: NodeIndex) void {
-        var any = false;
+    fn emitInsideComments(self: *Self, idx: NodeIndex, block: bool) void {
         var comments = self.tree.commentsOf(idx);
+        var scan = comments;
+        const broken = block or while (scan.next()) |c| {
+            if (c.position == .inside and c.type == .line and self.allowComment(c)) break true;
+        } else false;
+        var any = false;
+        self.indent_depth += @intFromBool(broken);
         while (comments.next()) |c| {
             if (c.position != .inside or !self.allowComment(c)) continue;
-            if (!any) {
-                any = true;
-                self.indent_depth += 1;
-            }
-            self.breakLine();
-            self.writeCommentBody(c);
-        }
-        if (any) {
-            self.indent_depth -= 1;
-            self.breakLine();
-        }
-    }
-
-    inline fn emitInsideCommentsInline(self: *Self, idx: NodeIndex) void {
-        if (self.hasComments(idx)) self.emitInsideCommentsFlat(idx);
-    }
-
-    // a line comment breaks the node open like a block
-    fn emitInsideCommentsFlat(self: *Self, idx: NodeIndex) void {
-        var scan = self.tree.commentsOf(idx);
-        var any = false;
-        while (scan.next()) |c| {
-            if (c.position != .inside or !self.allowComment(c)) continue;
-            if (c.type == .line) return self.emitInsideComments(idx);
             any = true;
-        }
-        if (!any) return;
-        var comments = self.tree.commentsOf(idx);
-        while (comments.next()) |c| {
-            if (c.position != .inside or !self.allowComment(c)) continue;
-            if (self.pretty() and needsSpaceBeforeInlineComment(self.out.lastByte())) {
-                self.out.writeByte(' ');
-            }
+            if (broken) {
+                self.breakLine();
+            } else if (self.out.pretty) switch (self.out.lastByte()) {
+                0, ' ', '\n', '(', '[', '{', '<' => {},
+                else => self.out.writeByte(' '),
+            };
             self.writeCommentBody(c);
         }
+        self.indent_depth -= @intFromBool(broken);
+        if (broken and any) self.breakLine();
     }
 
     // compact mode defers `;` so a closing `}` can drop it
     inline fn softSemi(self: *Self) void {
-        if (self.pretty()) self.out.writeByte(';') else self.pending_semi = true;
+        if (self.out.pretty) self.out.writeByte(';') else self.pending_semi = true;
     }
 
     inline fn flushSemi(self: *Self) void {
@@ -966,46 +1113,18 @@ const Printer = struct {
         }
     }
 
-    fn emit_block_statement(self: *Self, idx: NodeIndex, s: *const ast.BlockStatement) void {
-        self.printBlock(idx, self.tree.extra(s.body), false);
-    }
-
-    fn emit_function_body(self: *Self, idx: NodeIndex, b: *const ast.FunctionBody) void {
-        self.printBlock(idx, self.tree.extra(b.body), true);
-    }
-
     fn emit_static_block(self: *Self, idx: NodeIndex, b: *const ast.StaticBlock) void {
-        self.out.writeStr("static");
-        self.out.space();
-        self.printBlock(idx, self.tree.extra(b.body), false);
+        self.print(.{ "static", sp });
+        self.printBlock(idx, b.body, .statements);
     }
 
     fn emit_directive(self: *Self, d: *const ast.Directive) void {
         // an escaped `"use strict"` does not enable strict mode, so the raw lexeme must survive
-        switch (self.nodeData(d.expression)) {
-            .string_literal => |lit| {
-                const raw = self.tree.string(lit.raw);
-                const text = self.tree.string(d.value);
-                if (raw.len >= 2 and std.mem.eql(u8, raw[1 .. raw.len - 1], text)) {
-                    self.writeNodeText(d.expression, raw);
-                } else {
-                    const quote: u8 = if (std.mem.findScalar(u8, text, '"') == null) '"' else '\'';
-                    self.writeNodeQuoted(d.expression, quote, text, "");
-                }
-            },
-            else => self.emit(d.expression),
+        if (self.nodeData(d.expression) == .string_literal) {
+            self.writeVerbatimString(d.expression, self.tree.string(d.value), false);
+        } else {
+            self.emit(d.expression);
         }
-        self.softSemi();
-    }
-
-    fn emit_empty_statement(self: *Self, _: *const ast.EmptyStatement) void {
-        // not deferred, `if(x);` needs the `;` to materialize the body
-        self.out.writeByte(';');
-    }
-
-    fn emit_debugger_statement(self: *Self, idx: NodeIndex, _: *const ast.DebuggerStatement) void {
-        self.out.writeStr("debugger");
-        self.emitInsideCommentsInline(idx);
         self.softSemi();
     }
 
@@ -1013,41 +1132,7 @@ const Printer = struct {
         const as_directive = self.in_prologue and self.nodeData(s.expression) == .string_literal;
         self.in_prologue = false;
         self.out.lead = .stmt;
-        self.wrapIf(as_directive, s.expression, .{});
-        self.softSemi();
-    }
-
-    fn printParenHead(self: *Self, keyword: []const u8, head: NodeIndex) void {
-        self.out.writeStr(keyword);
-        self.out.space();
-        self.out.writeByte('(');
-        self.emit(head);
-        self.out.writeByte(')');
-        self.out.space();
-    }
-
-    fn emit_if_statement(self: *Self, s: *const ast.IfStatement) void {
-        self.printParenHead("if", s.@"test");
-        self.emit(s.consequent);
-        if (s.alternate != .null) {
-            self.flushSemi();
-            self.out.space();
-            self.out.writeStr("else ");
-            self.emit(s.alternate);
-        }
-    }
-
-    fn emit_return_statement(self: *Self, idx: NodeIndex, s: *const ast.ReturnStatement) void {
-        self.out.writeStr("return");
-        self.emitInsideCommentsInline(idx);
-        self.emitRestrictedArg(s.argument, .{});
-        self.softSemi();
-    }
-
-    fn emit_throw_statement(self: *Self, s: *const ast.ThrowStatement) void {
-        self.out.writeStr("throw");
-        self.emitRestrictedArg(s.argument, .{});
-        self.softSemi();
+        self.print(.{ .{ as_directive, "(" }, s.expression, .{ as_directive, ")" }, semi });
     }
 
     // ASI splits an operand whose first token follows a line break, so that break opens a paren
@@ -1079,131 +1164,26 @@ const Printer = struct {
         self.out.writeStr(" (");
     }
 
-    fn emit_break_statement(self: *Self, idx: NodeIndex, s: *const ast.BreakStatement) void {
-        self.printJump(idx, "break", s.label);
-    }
-
-    fn emit_continue_statement(self: *Self, idx: NodeIndex, s: *const ast.ContinueStatement) void {
-        self.printJump(idx, "continue", s.label);
-    }
-
-    fn printJump(self: *Self, idx: NodeIndex, keyword: []const u8, label: NodeIndex) void {
-        self.out.writeStr(keyword);
-        self.emitInsideCommentsInline(idx);
-        if (label != .null) {
-            self.out.writeByte(' ');
-            self.emit(label);
-        }
-        self.softSemi();
-    }
-
-    fn emit_labeled_statement(self: *Self, s: *const ast.LabeledStatement) void {
-        self.emit(s.label);
-        self.printColon();
-        self.emit(s.body);
-    }
-
-    fn emit_with_statement(self: *Self, s: *const ast.WithStatement) void {
-        self.printParenHead("with", s.object);
-        self.emit(s.body);
-    }
-
-    fn emit_while_statement(self: *Self, s: *const ast.WhileStatement) void {
-        self.printParenHead("while", s.@"test");
-        self.emit(s.body);
-    }
-
-    fn emit_do_while_statement(self: *Self, s: *const ast.DoWhileStatement) void {
-        self.out.writeStr("do ");
-        self.emit(s.body);
-        self.flushSemi();
-        self.out.space();
-        self.out.writeStr("while");
-        self.out.space();
-        self.out.writeByte('(');
-        self.emit(s.@"test");
-        self.out.writeStr(");");
-    }
-
     fn emit_for_statement(self: *Self, s: *const ast.ForStatement) void {
-        self.out.writeStr("for");
-        self.out.space();
-        self.out.writeByte('(');
+        self.print(.{ "for", sp, "(" });
         if (s.init != .null) switch (self.nodeData(s.init)) {
-            .variable_declaration => |d| self.printForDeclaration(s.init, d, true),
+            .variable_declaration => self.printForDeclaration(s.init, true),
             else => self.emitExpr(s.init, .{ .no_in = true }),
         };
-        self.out.writeByte(';');
-        if (s.@"test" != .null) {
-            self.out.space();
-            self.emit(s.@"test");
-        }
-        self.out.writeByte(';');
-        if (s.update != .null) {
-            self.out.space();
-            self.emit(s.update);
-        }
-        self.out.writeByte(')');
-        self.out.space();
-        self.emit(s.body);
+        self.print(.{ ";", .{ sp, s.@"test" }, ";", .{ sp, s.update }, ")", sp, s.body });
     }
 
-    fn emit_for_in_statement(self: *Self, s: *const ast.ForInStatement) void {
-        self.out.writeStr("for");
-        self.out.space();
-        self.out.writeByte('(');
-        self.printForLeft(s.left);
-        self.out.writeStr(" in ");
-        self.emit(s.right);
-        self.out.writeByte(')');
-        self.out.space();
-        self.emit(s.body);
-    }
-
-    fn emit_for_of_statement(self: *Self, s: *const ast.ForOfStatement) void {
-        self.out.writeStr("for");
-        if (s.await) self.out.writeStr(" await");
-        self.out.space();
-        self.out.writeByte('(');
-        // `for (async of …)` is forbidden, it could start the arrow `async of => …`
-        const wrap_async = !s.await and isNamed(self.tree, s.left, "async");
-        if (wrap_async) self.out.writeByte('(');
-        self.printForLeft(s.left);
-        if (wrap_async) self.out.writeByte(')');
-        self.out.writeStr(" of ");
-        self.emitValue(s.right);
-        self.out.writeByte(')');
-        self.out.space();
-        self.emit(s.body);
-    }
-
-    fn printForLeft(self: *Self, idx: NodeIndex) void {
-        switch (self.nodeData(idx)) {
-            .variable_declaration => |d| self.printForDeclaration(idx, d, false),
-            else => self.emitAssignTarget(idx, .{}),
-        }
-    }
-
-    fn printForDeclaration(
-        self: *Self,
-        idx: NodeIndex,
-        d: ast.VariableDeclaration,
-        no_in: bool,
-    ) void {
+    fn printForDeclaration(self: *Self, idx: NodeIndex, no_in: bool) void {
         const scope = self.openComments(idx);
-        self.printVariableDecl(d, false, no_in);
+        self.printVariableDecl(self.nodeData(idx).variable_declaration, .{ .no_in = no_in });
         self.closeComments(idx, scope, false);
     }
 
     fn emit_switch_statement(self: *Self, s: *const ast.SwitchStatement) void {
-        self.printParenHead("switch", s.discriminant);
-        self.out.writeByte('{');
+        self.print(.{ "switch", sp, "(", s.discriminant, ")", sp, "{" });
         if (s.cases.len > 0) {
-            for (self.tree.extra(s.cases)) |c| {
-                self.flushSemi();
-                self.newline();
-                self.emit(c);
-            }
+            self.newline();
+            self.printStmtList(self.tree.extra(s.cases), .members);
             self.pending_semi = false;
             self.newline();
         }
@@ -1212,305 +1192,125 @@ const Printer = struct {
 
     fn emit_switch_case(self: *Self, idx: NodeIndex, c: *const ast.SwitchCase) void {
         if (c.@"test" != .null) {
-            self.out.writeStr("case ");
-            self.emit(c.@"test");
+            self.print(.{ "case ", c.@"test", ":" });
         } else {
-            self.out.writeStr("default");
-            self.emitInsideCommentsInline(idx);
+            self.print(.{ "default", inside(idx), ":" });
         }
-        self.out.writeByte(':');
         if (c.consequent.len == 0) return;
-        self.printIndentedStmtList(self.tree.extra(c.consequent), false);
-    }
-
-    fn emit_try_statement(self: *Self, s: *const ast.TryStatement) void {
-        self.out.writeStr("try ");
-        self.emit(s.block);
-        if (s.handler != .null) {
-            self.out.space();
-            self.emit(s.handler);
-        }
-        if (s.finalizer != .null) {
-            self.out.space();
-            self.out.writeStr("finally ");
-            self.emit(s.finalizer);
-        }
-    }
-
-    fn emit_catch_clause(self: *Self, c: *const ast.CatchClause) void {
-        self.out.writeStr("catch");
-        if (c.param != .null) {
-            self.out.space();
-            self.out.writeByte('(');
-            self.emit(c.param);
-            self.out.writeByte(')');
-        }
-        self.out.space();
-        self.emit(c.body);
+        self.printIndentedStmtList(self.tree.extra(c.consequent), .statements);
     }
 
     fn emit_variable_declaration(self: *Self, d: *const ast.VariableDeclaration) void {
-        self.printVariableDecl(d.*, true, false);
+        self.printVariableDecl(d.*, .{});
+        self.softSemi();
     }
 
-    fn printVariableDecl(
-        self: *Self,
-        d: ast.VariableDeclaration,
-        with_semicolon: bool,
-        no_in: bool,
-    ) void {
-        if (d.declare) self.out.writeStr("declare ");
-        self.out.writeStr(d.kind.toString());
-        self.out.writeByte(' ');
-        const prev = self.decl_no_in;
-        self.decl_no_in = no_in;
-        defer self.decl_no_in = prev;
-        self.emitList(d.declarators);
-        if (with_semicolon) self.softSemi();
-    }
-
-    fn emit_variable_declarator(self: *Self, d: *const ast.VariableDeclarator) void {
-        self.definite_pending = d.definite;
-        self.emit(d.id);
-        self.definite_pending = false;
-        if (d.init != .null) {
-            self.printSpaced('=');
-            self.emitExpr(d.init, .{ .prec = Precedence.Assignment, .no_in = self.decl_no_in });
-        }
-    }
-
-    fn emit_sequence_expression(
-        self: *Self,
-        e: *const ast.SequenceExpression,
-        ctx: Ctx,
-    ) void {
-        const expression_ctx: Ctx = .{ .prec = Precedence.Assignment, .no_in = ctx.no_in };
-        self.emitItems(self.tree.extra(e.expressions), .null, expression_ctx);
-    }
-
-    fn emit_parenthesized_expression(
-        self: *Self,
-        e: *const ast.ParenthesizedExpression,
-    ) void {
-        self.out.writeByte('(');
-        self.emit(e.expression);
-        self.out.writeByte(')');
-    }
-
-    // `??` mixed with `&&` or `||` must be parenthesized
-    fn logicalOperandPrecedence(
-        self: *const Self,
-        child: NodeIndex,
-        min: u8,
-        parent: ast.LogicalOperator,
-    ) u8 {
-        const nullish = parent == .nullish_coalescing;
-        return switch (self.nodeData(child)) {
-            .logical_expression => |l| if (nullish != (l.operator == .nullish_coalescing))
-                Precedence.Grouping
-            else
-                min,
-            else => min,
-        };
-    }
-
-    fn emit_conditional_expression(
-        self: *Self,
-        e: *const ast.ConditionalExpression,
-        ctx: Ctx,
-    ) void {
-        self.emitExpr(e.@"test", .{ .prec = Precedence.LogicalOr, .no_in = ctx.no_in });
-        self.printSpaced('?');
-        self.emitExpr(e.consequent, .{ .prec = Precedence.Assignment });
-        self.printSpaced(':');
-        self.emitExpr(e.alternate, .{ .prec = Precedence.Assignment, .no_in = ctx.no_in });
+    fn printVariableDecl(self: *Self, d: ast.VariableDeclaration, ctx: Ctx) void {
+        self.print(.{ .{ d.declare, "declare " }, d.kind.toString(), " " });
+        self.emitItems(self.tree.extra(d.declarators), .null, ctx, .value);
     }
 
     fn emit_unary_expression(self: *Self, e: *const ast.UnaryExpression, ctx: Ctx) void {
         const op = e.operator.toString();
-        self.out.writeStr(op);
-        if (utils.isWordOp(op)) self.out.writeByte(' ');
-        self.emitExpr(e.argument, .{
-            .prec = Precedence.Unary,
-            .no_instantiation = ctx.no_instantiation,
-        });
+        self.print(.{ op, .{ utils.isWordOp(op), " " }, at(e.argument, ctx.unary()) });
     }
 
     fn emit_update_expression(self: *Self, e: *const ast.UpdateExpression) void {
         const op = e.operator.toString();
-        if (e.prefix) {
-            self.out.writeStr(op);
-            self.emitAssignTarget(e.argument, .{});
-        } else {
-            self.emitAssignTarget(e.argument, .{ .postfix_operand = true });
-            self.out.writeStr(op);
-        }
+        if (e.prefix) self.out.writeStr(op);
+        self.emitAssignTarget(e.argument, .{ .postfix_operand = !e.prefix });
+        if (!e.prefix) self.out.writeStr(op);
     }
 
-    fn emit_assignment_expression(
-        self: *Self,
-        e: *const ast.AssignmentExpression,
-        ctx: Ctx,
-    ) void {
-        self.emitAssignTarget(e.left, .{});
-        self.out.space();
-        self.out.writeStr(e.operator.toString());
-        self.out.space();
-        self.emitExpr(e.right, .{ .prec = Precedence.Assignment, .no_in = ctx.no_in });
-    }
-
+    // the parser drops the parens a ts cast needs inside a destructuring target
     fn emitAssignTarget(self: *Self, idx: NodeIndex, ctx: Ctx) void {
         if (idx == .null) return;
         const prev = self.in_assign_target;
         defer self.in_assign_target = prev;
 
-        const wrap = needsParensAsAssignTarget(self.tree, idx) or
-            (ctx.postfix_operand and self.breaksLineAfter(idx));
+        const cast = switch (self.nodeData(idx)) {
+            .ts_as_expression, .ts_satisfies_expression, .ts_type_assertion => true,
+            else => false,
+        };
+        const wrap = cast or (ctx.postfix_operand and self.breaksLineAfter(idx));
         self.in_assign_target = !wrap;
-        self.wrapIf(wrap, idx, ctx);
-    }
-
-    inline fn emitChildOfAssignTarget(self: *Self, idx: NodeIndex) void {
-        if (self.in_assign_target) self.emitAssignTarget(idx, .{}) else self.emitValue(idx);
-    }
-
-    inline fn emitValue(self: *Self, idx: NodeIndex) void {
-        self.emitExpr(idx, .{ .prec = Precedence.Assignment });
-    }
-
-    fn emit_array_expression(self: *Self, idx: NodeIndex, e: *const ast.ArrayExpression) void {
-        const in_target = self.in_assign_target;
-        self.in_assign_target = false;
-        defer self.in_assign_target = in_target;
-
-        self.out.writeByte('[');
-        self.emitInsideCommentsInline(idx);
-        const list = self.tree.extra(e.elements);
-        const depth = self.indent_depth;
-        for (list, 0..) |x, i| {
-            if (in_target) {
-                self.emitAssignTarget(x, .{ .defer_trailing = true });
-            } else {
-                self.emitExpr(x, .{ .prec = Precedence.Assignment, .defer_trailing = true });
-            }
-            self.closeItem(i + 1 < list.len, depth);
-        }
-        self.closeList(depth);
-        self.closeArray(list, .null);
+        self.print(.{ .{ wrap, "(" }, at(idx, ctx), .{ wrap, ")" } });
     }
 
     // a trailing hole needs its own comma, else `[a,]` is one element
-    fn closeArray(self: *Self, elements: []const NodeIndex, rest: NodeIndex) void {
-        const hole = rest == .null and elements.len > 0 and elements[elements.len - 1] == .null;
-        if (hole) self.out.writeByte(',');
-        self.out.writeByte(']');
+    fn printArray(
+        self: *Self,
+        idx: NodeIndex,
+        elements: IndexRange,
+        rest: NodeIndex,
+        targets: bool,
+    ) void {
+        const list = self.tree.extra(elements);
+        self.print(.{ "[", inside(idx) });
+        if (targets) {
+            self.emitItems(list, rest, .{}, .target);
+        } else {
+            self.emitItems(list, rest, .{ .prec = Precedence.Assignment }, .value);
+        }
+        const hole = rest == .null and list.len > 0 and list[list.len - 1] == .null;
+        self.print(.{ .{ hole, "," }, "]" });
     }
 
     fn emit_object_expression(self: *Self, idx: NodeIndex, e: *const ast.ObjectExpression) void {
-        const in_target = self.in_assign_target;
-        defer self.in_assign_target = in_target;
-
-        self.out.writeByte('{');
-        self.emitInsideCommentsInline(idx);
-        const list = self.tree.extra(e.properties);
-        if (list.len > 0) {
-            self.out.space();
-            const depth = self.indent_depth;
-            for (list, 0..) |x, i| {
-                self.in_assign_target = in_target;
-                self.emitExpr(x, .{ .defer_trailing = true });
-                self.closeItem(i + 1 < list.len, depth);
-            }
-            self.closeList(depth);
-            if (!self.out.atLineStart()) self.out.space();
-        }
-        self.out.writeByte('}');
+        self.print(.{ "{", inside(idx) });
+        self.printBraced(self.tree.extra(e.properties), .null);
     }
 
     fn emit_object_property(self: *Self, p: *const ast.ObjectProperty) void {
         const is_method = p.method or p.kind == .get or p.kind == .set;
         if (is_method and self.nodeData(p.value) == .function) {
-            const fn_data = self.nodeData(p.value).function;
-            switch (p.kind) {
-                .get => self.out.writeStr("get "),
-                .set => self.out.writeStr("set "),
-                .init => {
-                    if (fn_data.async) self.out.writeStr("async ");
-                    if (fn_data.generator) self.out.writeByte('*');
-                },
-            }
-            self.printObjectKey(p.key, p.computed);
-            self.emitMethodValue(p.value);
-            return;
+            self.printMethodKind(p.kind, self.nodeData(p.value).function);
+            self.printKey(p.key, p.computed, &.{"__proto__"});
+            return self.emitMethodValue(p.value);
         }
-
-        if (p.shorthand and shorthandStillValid(self.tree, p.key, p.value)) {
-            self.emitChildOfAssignTarget(p.value);
-            return;
-        }
-
-        self.printObjectKey(p.key, p.computed);
-        self.printColon();
-        self.emitChildOfAssignTarget(p.value);
+        self.printKeyUnlessShorthand(p);
+        if (!self.in_assign_target) return self.print(.{value(p.value)});
+        self.emitAssignTarget(p.value, .{});
     }
 
-    fn emit_spread_element(self: *Self, s: *const ast.SpreadElement) void {
-        self.out.writeStr("...");
-        self.emitValue(s.argument);
+    fn printMethodKind(self: *Self, kind: anytype, function: ast.Function) void {
+        switch (kind) {
+            .get => self.out.writeStr("get "),
+            .set => self.out.writeStr("set "),
+            else => self.print(.{ .{ function.async, "async " }, .{ function.generator, "*" } }),
+        }
+    }
+
+    fn printKeyUnlessShorthand(self: *Self, p: anytype) void {
+        if (p.shorthand and shorthandStillValid(self.tree, p.key, p.value)) return;
+        self.printKey(p.key, p.computed, &.{"__proto__"});
+        self.print(.{ ":", sp });
     }
 
     fn emit_new_expression(self: *Self, e: *const ast.NewExpression) void {
-        self.out.writeStr("new ");
-        self.emitExpr(e.callee, .{
-            .prec = Precedence.New,
-            .no_call = true,
-            .no_instantiation = true,
-        });
-        self.emit(e.type_arguments);
+        const callee: Ctx = .{ .prec = Precedence.New, .no_call = true, .no_instantiation = true };
+        self.print(.{ "new ", at(e.callee, callee), e.type_arguments });
         self.printArgList(e.arguments);
-    }
-
-    fn emit_await_expression(self: *Self, e: *const ast.AwaitExpression, ctx: Ctx) void {
-        self.out.writeStr("await ");
-        self.emitExpr(e.argument, .{
-            .prec = Precedence.Unary,
-            .no_instantiation = ctx.no_instantiation,
-        });
-    }
-
-    fn emit_yield_expression(self: *Self, e: *const ast.YieldExpression, ctx: Ctx) void {
-        self.out.writeStr("yield");
-        if (e.delegate) self.out.writeByte('*');
-        self.emitRestrictedArg(e.argument, .{
-            .prec = Precedence.Assignment,
-            .no_in = ctx.no_in,
-        });
-    }
-
-    fn emit_meta_property(self: *Self, p: *const ast.MetaProperty) void {
-        self.emit(p.meta);
-        self.out.writeByte('.');
-        self.emit(p.property);
     }
 
     fn printArgList(self: *Self, args: IndexRange) void {
         self.out.writeByte('(');
-        self.emitItems(self.tree.extra(args), .null, .{ .prec = Precedence.Assignment });
+        self.emitItems(self.tree.extra(args), .null, .{ .prec = Precedence.Assignment }, .value);
         self.out.writeByte(')');
     }
 
     fn emit_string_literal(self: *Self, lit: *const ast.StringLiteral) void {
-        const value = self.tree.string(lit.value);
-        const q = self.pickQuote(value, lit.raw);
-        if (plainRunLength(value, 0, q, self.options.minify) == value.len) {
-            return self.out.writeQuoted(q, value);
+        const text = self.tree.string(lit.value);
+        const q = self.pickQuote(text, lit.raw);
+        if (plainRunLength(text, 0, q, self.options.minify) == text.len) {
+            return self.out.writeQuoted(q, text);
         }
-        self.emitEscapedString(value, q);
+        self.emitEscapedString(text, q);
     }
 
-    noinline fn emitEscapedString(self: *Self, value: []const u8, q: u8) void {
+    noinline fn emitEscapedString(self: *Self, text: []const u8, q: u8) void {
         self.out.writeByte(q);
-        self.writeEscapedString(value, q);
+        self.writeEscaped(text, q, self.options.minify);
         self.out.writeRawByte(q);
     }
 
@@ -1527,59 +1327,52 @@ const Printer = struct {
     }
 
     fn fewerEscapes(s: []const u8) u8 {
-        var singles: usize = 0;
-        var doubles: usize = 0;
-        for (s) |c| {
-            singles += @intFromBool(c == '\'');
-            doubles += @intFromBool(c == '"');
-        }
-        return if (singles < doubles) '\'' else '"';
+        const doubles = std.mem.countScalar(u8, s, '"');
+        return if (std.mem.countScalar(u8, s, '\'') < doubles) '\'' else '"';
     }
 
-    fn writeEscapedString(self: *Self, s: []const u8, quote: u8) void {
+    fn writeEscaped(self: *Self, s: []const u8, quote: u8, script_safe: bool) void {
+        const template = quote == '`';
         var start: usize = 0;
         var i: usize = 0;
         while (i < s.len) : (i += 1) {
-            i += plainRunLength(s, i, quote, self.options.minify);
+            if (!template) i += plainRunLength(s, i, quote, script_safe);
             if (i == s.len) break;
             const c = s[i];
-            if (c >= 0x80) {
-                if (c == 0xED) {
-                    if (util.Utf.loneSurrogateAt(s, i)) |cp| {
-                        if (i > start) self.out.writeRawStr(s[start..i]);
-                        self.writeUnicodeEscape(cp);
-                        i += 2;
-                        start = i + 1;
-                    }
-                }
-                continue;
-            }
-            const script_escape = if (self.options.minify) utils.scriptEscape(s, i) else null;
-            const esc: ?[]const u8 = script_escape orelse switch (c) {
+            var unicode: [6]u8 = undefined;
+            const esc: []const u8 = if (c >= 0x80) lone: {
+                const unit = util.Utf.loneSurrogateAt(s, i) orelse continue;
+                break :lone std.fmt.bufPrint(&unicode, "\\u{x:0>4}", .{unit}) catch unreachable;
+            } else (if (script_safe) utils.scriptEscape(s, i) else null) orelse switch (c) {
                 '\\' => "\\\\",
-                '\n' => "\\n",
                 '\r' => "\\r",
-                '\t' => "\\t",
-                0x08 => "\\b",
-                0x0C => "\\f",
-                0x0B => "\\v",
                 0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
+                '$' => if (template and i + 1 < s.len and s[i + 1] == '{') "\\$" else continue,
+                '"' => if (quote == '"') "\\\"" else continue,
+                '\'' => if (quote == '\'') "\\'" else continue,
+                '`' => if (template) "\\`" else continue,
+                else => if (template) continue else switch (c) {
+                    '\n' => "\\n",
+                    '\t' => "\\t",
+                    0x08 => "\\b",
+                    0x0C => "\\f",
+                    0x0B => "\\v",
+                    else => continue,
+                },
             };
-            if (esc) |e| {
-                if (i > start) self.out.writeRawStr(s[start..i]);
-                self.out.writeRawStr(e);
-                start = i + 1;
-            }
+            self.out.writeRawStr(s[start..i]);
+            self.out.writeRawStr(esc);
+            if (c >= 0x80) i += 2;
+            start = i + 1;
         }
-        if (start < s.len) self.out.writeRawStr(s[start..]);
+        self.out.writeRawStr(s[start..]);
     }
 
     inline fn plainRunLength(s: []const u8, from: usize, quote: u8, minify: bool) usize {
         std.debug.assert(from <= s.len);
         var i = from;
         while (i < s.len) {
-            const chunk = if (s.len - i >= 16) Simd.loadChunk(s, i) else Simd.loadTail(s[i..]);
+            const chunk = Simd.loadAt(s, i);
             var special = (chunk < Simd.splat(0x0E)) | (chunk >= Simd.splat(0x80)) |
                 (chunk == Simd.splat('\\')) | (chunk == Simd.splat(quote));
             if (minify) special = special | (chunk == Simd.splat('<')) | (chunk == Simd.splat('>'));
@@ -1589,16 +1382,6 @@ const Printer = struct {
         }
         std.debug.assert(i <= s.len);
         return i - from;
-    }
-
-    fn writeUnicodeEscape(self: *Self, cp: u32) void {
-        const hex = "0123456789abcdef";
-        const buf = [_]u8{
-            '\\',                  'u',
-            hex[(cp >> 12) & 0xF], hex[(cp >> 8) & 0xF],
-            hex[(cp >> 4) & 0xF],  hex[cp & 0xF],
-        };
-        self.out.writeRawStr(&buf);
     }
 
     fn emit_numeric_literal(self: *Self, lit: *const ast.NumericLiteral) void {
@@ -1622,17 +1405,9 @@ const Printer = struct {
         self.out.writeNumber(utils.shortestDecimal(cleaned, &shortest_buf));
     }
 
-    fn emit_bigint_literal(self: *Self, lit: *const ast.BigIntLiteral) void {
-        self.writeString(lit.raw);
-        self.out.writeByte('n');
-    }
-
     fn emit_boolean_literal(self: *Self, lit: *const ast.BooleanLiteral) void {
-        if (self.options.minify) {
-            self.out.writeStr(if (lit.value) "!0" else "!1");
-        } else {
-            self.out.writeStr(if (lit.value) "true" else "false");
-        }
+        if (self.options.minify) return self.out.writeStr(if (lit.value) "!0" else "!1");
+        self.out.writeStr(if (lit.value) "true" else "false");
     }
 
     fn emit_regexp_literal(self: *Self, lit: *const ast.RegExpLiteral) void {
@@ -1643,23 +1418,14 @@ const Printer = struct {
         self.out.writeRawStr(self.tree.string(lit.flags));
     }
 
-    fn emit_template_element(self: *Self, el: *const ast.TemplateElement) void {
-        self.printTemplateElement(el.*, false);
-    }
-
-    fn emit_template_literal(self: *Self, lit: *const ast.TemplateLiteral, ctx: Ctx) void {
-        self.printTemplate(lit.quasis, lit.expressions, ctx.tagged);
-    }
-
     fn printTemplate(self: *Self, quasis: IndexRange, subs: IndexRange, tagged: bool) void {
         self.out.writeByte('`');
         const xs = self.tree.extra(subs);
         for (self.tree.extra(quasis), 0..) |q, i| {
-            self.printTemplateElement(self.tree.data(q).template_element, tagged);
+            self.printTemplateElement(self.nodeData(q).template_element, tagged);
             if (i < xs.len) {
                 self.out.writeRawStr("${");
-                self.emit(xs[i]);
-                self.out.writeByte('}');
+                self.print(.{ xs[i], "}" });
             }
         }
         self.out.writeRawByte('`');
@@ -1669,34 +1435,7 @@ const Printer = struct {
         const script_safe = self.options.minify and !tagged;
         const raw = self.tree.string(el.raw);
         if (raw.len != 0) return self.writeTemplateRaw(raw, script_safe);
-        const s = self.tree.string(el.cooked);
-        var i: usize = 0;
-        var start: usize = 0;
-        while (i < s.len) : (i += 1) {
-            const c = s[i];
-            if (util.Utf.loneSurrogateAt(s, i)) |cp| {
-                if (i > start) self.out.writeRawStr(s[start..i]);
-                self.writeUnicodeEscape(cp);
-                i += 2;
-                start = i + 1;
-                continue;
-            }
-            const script_escape = if (script_safe) utils.scriptEscape(s, i) else null;
-            const esc: ?[]const u8 = script_escape orelse switch (c) {
-                '\\' => "\\\\",
-                '`' => "\\`",
-                '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
-                '\r' => "\\r",
-                0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                else => null,
-            };
-            if (esc) |e| {
-                if (i > start) self.out.writeRawStr(s[start..i]);
-                self.out.writeRawStr(e);
-                start = i + 1;
-            }
-        }
-        if (start < s.len) self.out.writeRawStr(s[start..]);
+        self.writeEscaped(self.tree.string(el.cooked), '`', script_safe);
     }
 
     // template text reads a raw `\r\n` or `\r` as `\n`
@@ -1719,169 +1458,66 @@ const Printer = struct {
         if (start < raw.len) self.out.writeRawStr(raw[start..]);
     }
 
-    fn emit_identifier_reference(self: *Self, id: *const ast.IdentifierReference) void {
-        self.writeString(id.name);
-    }
-
-    fn emit_identifier_name(self: *Self, id: *const ast.IdentifierName) void {
-        self.writeString(id.name);
-    }
-
-    fn emit_binding_identifier(self: *Self, idx: NodeIndex, id: *const ast.BindingIdentifier) void {
+    fn emit_binding_identifier(
+        self: *Self,
+        idx: NodeIndex,
+        id: *const ast.BindingIdentifier,
+        ctx: Ctx,
+    ) void {
         const plain = id.decorators.len == 0 and !id.optional and
-            id.type_annotation == .null and !self.definite_pending;
+            id.type_annotation == .null and !ctx.definite;
         if (plain) return self.writeString(id.name);
-        self.emitAdornedBinding(idx, id);
+        self.emitAdornedBinding(idx, id, ctx.definite);
     }
 
     noinline fn emitAdornedBinding(
         self: *Self,
         idx: NodeIndex,
         id: *const ast.BindingIdentifier,
+        definite: bool,
     ) void {
-        const definite = self.takeDefinite();
         self.printDecorators(id.decorators, .same_line);
-        self.writeString(id.name);
-        if (id.optional) self.emitInsideCommentsInline(idx);
-        self.printBindingSuffix(id.optional, definite, id.type_annotation);
-    }
-
-    fn emit_label_identifier(self: *Self, id: *const ast.LabelIdentifier) void {
-        self.writeString(id.name);
-    }
-
-    fn emit_private_identifier(self: *Self, id: *const ast.PrivateIdentifier) void {
-        self.out.writeByte('#');
-        self.writeString(id.name);
-    }
-
-    fn emit_assignment_pattern(self: *Self, p: *const ast.AssignmentPattern) void {
-        self.printDecorators(p.decorators, .same_line);
-        self.emit(p.left);
-        self.printBindingSuffix(p.optional, false, p.type_annotation);
-        self.printSpaced('=');
-        self.emitValue(p.right);
-    }
-
-    fn emit_binding_rest_element(self: *Self, r: *const ast.BindingRestElement) void {
-        self.printDecorators(r.decorators, .same_line);
-        self.out.writeStr("...");
-        self.emit(r.argument);
-        self.printBindingSuffix(r.optional, false, r.type_annotation);
-    }
-
-    fn emit_array_pattern(self: *Self, idx: NodeIndex, p: *const ast.ArrayPattern) void {
-        const definite = self.takeDefinite();
-        self.printDecorators(p.decorators, .same_line);
-        self.out.writeByte('[');
-        self.emitInsideCommentsInline(idx);
-        const list = self.tree.extra(p.elements);
-        const depth = self.indent_depth;
-        for (list, 0..) |x, i| {
-            self.emitAssignTarget(x, .{ .defer_trailing = true });
-            self.closeItem(i + 1 < list.len or p.rest != .null, depth);
-        }
-        if (p.rest != .null) {
-            self.emitExpr(p.rest, .{ .defer_trailing = true });
-            self.closeItem(false, depth);
-        }
-        self.closeList(depth);
-        self.closeArray(list, p.rest);
-        self.printBindingSuffix(p.optional, definite, p.type_annotation);
-    }
-
-    fn emit_object_pattern(self: *Self, idx: NodeIndex, p: *const ast.ObjectPattern) void {
-        const definite = self.takeDefinite();
-        self.printDecorators(p.decorators, .same_line);
-        self.out.writeByte('{');
-        self.emitInsideCommentsInline(idx);
-        const list = self.tree.extra(p.properties);
-        const has_any = list.len > 0 or p.rest != .null;
-        if (has_any) self.out.space();
-        self.emitItems(list, p.rest, .{});
-        if (has_any and !self.out.atLineStart()) self.out.space();
-        self.out.writeByte('}');
-        self.printBindingSuffix(p.optional, definite, p.type_annotation);
+        self.print(.{ id.name, .{ id.optional, inside(idx), "?" } });
+        self.print(.{ .{ definite, "!" }, id.type_annotation });
     }
 
     fn emit_binding_property(self: *Self, p: *const ast.BindingProperty) void {
-        if (p.shorthand and shorthandStillValid(self.tree, p.key, p.value)) {
-            self.emitAssignTarget(p.value, .{});
-            return;
-        }
-        self.printObjectKey(p.key, p.computed);
-        self.printColon();
+        self.printKeyUnlessShorthand(p);
         self.emitAssignTarget(p.value, .{});
     }
 
     fn printPropertyKey(self: *Self, key: NodeIndex, computed: bool) void {
-        if (computed) {
-            self.out.writeByte('[');
-            self.emitValue(key);
-            self.out.writeByte(']');
-        } else {
-            self.emit(key);
-        }
+        if (computed) self.print(.{ "[", value(key), "]" }) else self.emit(key);
     }
 
-    // computed `["__proto__"]` defines an own property, bare `__proto__` sets the prototype
-    fn printObjectKey(self: *Self, key: NodeIndex, computed: bool) void {
-        if (self.options.minify) {
-            if (simpleStringKey(self.tree, key)) |s| {
-                const proto_clash = computed and std.mem.eql(u8, s, "__proto__");
-                if (!proto_clash) return self.writeNodeText(key, s);
-            }
-        }
-        self.printPropertyKey(key, computed);
-    }
-
-    // `["constructor"]` would become the constructor or a SyntaxError, `static ["prototype"]` too
-    fn printClassKey(
-        self: *Self,
-        key: NodeIndex,
-        computed: bool,
-        static: bool,
-        is_field: bool,
-    ) void {
-        if (self.options.minify) {
-            if (simpleStringKey(self.tree, key)) |s| {
-                if (!computed) return self.writeNodeText(key, s);
-                const ctor_clash = std.mem.eql(u8, s, "constructor") and (is_field or !static);
-                const proto_clash = static and std.mem.eql(u8, s, "prototype");
-                if (!ctor_clash and !proto_clash) return self.writeNodeText(key, s);
-            }
-        }
+    fn printKey(self: *Self, key: NodeIndex, computed: bool, special: []const []const u8) void {
+        if (self.options.minify) if (simpleStringKey(self.tree, key)) |s| {
+            const clash = computed and for (special) |name| {
+                if (std.mem.eql(u8, s, name)) break true;
+            } else false;
+            if (!clash) return self.writeNodeText(key, s);
+        };
         self.printPropertyKey(key, computed);
     }
 
     fn emit_function(self: *Self, idx: NodeIndex, f: *const ast.Function) void {
-        if (f.declare) self.out.writeStr("declare ");
-        if (f.async) self.out.writeStr("async ");
-        self.out.writeStr("function");
-        if (f.generator) self.out.writeByte('*');
-        if (f.id != .null) {
-            self.out.writeByte(' ');
-            self.emit(f.id);
-        }
-        self.printFunctionAsMethod(idx, f.*);
+        self.print(.{ .{ f.declare, "declare " }, .{ f.async, "async " }, "function" });
+        self.print(.{ .{ f.generator, "*" }, .{ " ", f.id } });
+        self.printSignature(idx, f, f.body);
     }
 
     fn emitMethodValue(self: *Self, idx: NodeIndex) void {
+        const f = &self.node_data[@backingInt(idx)].function;
         const scope = self.openComments(idx);
-        self.printFunctionAsMethod(idx, self.nodeData(idx).function);
+        self.printSignature(idx, f, f.body);
         self.closeComments(idx, scope, false);
     }
 
-    fn printFunctionAsMethod(self: *Self, idx: NodeIndex, f: ast.Function) void {
-        self.emit(f.type_parameters);
-        self.printParams(idx, f.params);
-        self.emit(f.return_type);
-        if (f.body != .null) {
-            self.out.space();
-            self.emit(f.body);
-        } else {
-            self.softSemi();
-        }
+    fn printSignature(self: *Self, idx: NodeIndex, n: anytype, body: NodeIndex) void {
+        self.emit(n.type_parameters);
+        self.printParams(idx, n.params);
+        self.emit(n.return_type);
+        if (body != .null) self.print(.{ sp, body }) else self.softSemi();
     }
 
     fn emit_arrow_function_expression(
@@ -1890,17 +1526,14 @@ const Printer = struct {
         a: *const ast.ArrowFunctionExpression,
         ctx: Ctx,
     ) void {
-        if (a.async) self.out.writeStr("async ");
-        self.emitExpr(a.type_parameters, .{ .no_jsx_tag = true });
+        self.print(.{ .{ a.async, "async " }, at(a.type_parameters, .{ .no_jsx_tag = true }) });
         self.printParams(idx, a.params);
-        self.emitExpr(a.return_type, .{ .defer_trailing = true });
-        self.out.space();
-        self.out.writeStr("=>");
+        self.print(.{ at(a.return_type, .{ .defer_trailing = true }), sp, "=>" });
         self.emitOwedComments();
         if (!self.out.atLineStart()) self.out.space();
         if (a.expression) {
             self.out.lead = .arrow;
-            self.emitExpr(a.body, .{ .prec = Precedence.Assignment, .no_in = ctx.no_in });
+            self.emitExpr(a.body, ctx.assignment());
         } else {
             self.emit(a.body);
         }
@@ -1908,132 +1541,57 @@ const Printer = struct {
 
     fn printParams(self: *Self, owner: NodeIndex, idx: NodeIndex) void {
         std.debug.assert(!self.tree.hasComments(idx));
-        const params = self.tree.data(idx).formal_parameters;
-        const items = self.tree.extra(params.items);
+        const params = self.nodeData(idx).formal_parameters;
         self.out.writeByte('(');
-        const depth = self.indent_depth;
-        for (items, 0..) |item, i| {
-            self.emitExpr(parameterOf(self.tree, item), .{ .defer_trailing = true });
-            self.closeItem(i + 1 < items.len or params.rest != .null, depth);
-        }
-        if (params.rest != .null) {
-            self.emitExpr(params.rest, .{ .defer_trailing = true });
-            self.closeItem(false, depth);
-        }
-        self.closeList(depth);
-        self.emitInsideCommentsInline(owner);
-        self.out.writeByte(')');
+        self.emitItems(self.tree.extra(params.items), params.rest, .{}, .parameter);
+        self.print(.{ inside(owner), ")" });
     }
 
     fn emit_class(self: *Self, c: *const ast.Class, ctx: Ctx) void {
+        const heritage: Ctx = .{ .prec = Precedence.Call, .no_instantiation = true };
         if (!ctx.no_decorators) self.printDecorators(c.decorators, .own_line);
-        if (c.declare) self.out.writeStr("declare ");
-        if (c.abstract) self.out.writeStr("abstract ");
-        self.out.writeStr("class");
-        if (c.id != .null) {
-            self.out.writeByte(' ');
-            self.emit(c.id);
-        }
-        self.emit(c.type_parameters);
-        if (c.super_class != .null) {
-            self.out.writeStr(" extends ");
-            self.emitExpr(c.super_class, .{
-                .prec = Precedence.Call,
-                .no_instantiation = true,
-            });
-            self.emit(c.super_type_arguments);
-        }
-        if (c.implements.len > 0) {
-            self.out.writeStr(" implements ");
-            self.emitList(c.implements);
-        }
-        self.out.space();
-        self.emit(c.body);
-    }
-
-    fn emit_class_body(self: *Self, idx: NodeIndex, b: *const ast.ClassBody) void {
-        self.printMemberBody(idx, b.body);
-    }
-
-    fn printMemberBody(self: *Self, idx: NodeIndex, members: IndexRange) void {
-        self.out.writeByte('{');
-        self.indent_depth += 1;
-        var any = false;
-        for (self.tree.extra(members)) |m| {
-            self.flushSemi();
-            self.newline();
-            self.emit(m);
-            any = true;
-        }
-        self.indent_depth -= 1;
-        if (any) {
-            self.pending_semi = false;
-            self.newline();
-        } else if (self.comments_on) {
-            self.emitInsideComments(idx);
-        }
-        self.out.writeByte('}');
+        self.print(.{ .{ c.declare, "declare " }, .{ c.abstract, "abstract " }, "class" });
+        self.print(.{ .{ " ", c.id }, c.type_parameters });
+        self.print(.{.{ " extends ", at(c.super_class, heritage), c.super_type_arguments }});
+        self.print(.{ .{ " implements ", c.implements }, sp, c.body });
     }
 
     fn emit_method_definition(self: *Self, m: *const ast.MethodDefinition) void {
-        const fn_data = self.nodeData(m.value).function;
+        const access = m.accessibility;
+        const function = self.nodeData(m.value).function;
         self.printDecorators(m.decorators, .own_line);
         self.hoistKeyComments(m.key);
         defer self.skip_leading_of = .null;
-        self.printAccessibility(m.accessibility);
-        if (m.static) self.out.writeStr("static ");
-        if (m.abstract) self.out.writeStr("abstract ");
-        if (m.override) self.out.writeStr("override ");
-        switch (m.kind) {
-            .get => self.out.writeStr("get "),
-            .set => self.out.writeStr("set "),
-            .constructor, .method => {
-                if (fn_data.async) self.out.writeStr("async ");
-                if (fn_data.generator) self.out.writeByte('*');
-            },
-        }
-        self.printClassKey(m.key, m.computed, m.static, false);
-        if (m.optional) self.out.writeByte('?');
+        self.print(.{ .{ access != .none, access.toString(), " " }, .{ m.static, "static " } });
+        self.print(.{ .{ m.abstract, "abstract " }, .{ m.override, "override " } });
+        self.printMethodKind(m.kind, function);
+        self.printKey(m.key, m.computed, if (m.static) &.{"prototype"} else &.{"constructor"});
+        self.print(.{.{ m.optional, "?" }});
         self.emitMethodValue(m.value);
     }
 
     fn emit_property_definition(self: *Self, p: *const ast.PropertyDefinition) void {
+        const access = p.accessibility;
         self.printDecorators(p.decorators, .own_line);
         self.hoistKeyComments(p.key);
         defer self.skip_leading_of = .null;
-        if (p.declare) self.out.writeStr("declare ");
-        self.printAccessibility(p.accessibility);
-        if (p.static) self.out.writeStr("static ");
-        if (p.abstract) self.out.writeStr("abstract ");
-        if (p.override) self.out.writeStr("override ");
-        if (p.readonly) self.out.writeStr("readonly ");
-        if (p.accessor) self.out.writeStr("accessor ");
+        self.print(.{ .{ p.declare, "declare " }, .{ access != .none, access.toString(), " " } });
+        self.print(.{ .{ p.static, "static " }, .{ p.abstract, "abstract " } });
+        self.print(.{ .{ p.override, "override " }, .{ p.readonly, "readonly " } });
+        self.print(.{.{ p.accessor, "accessor " }});
         if (p.definite) self.defer_trailing_of = p.key;
-        self.printClassKey(p.key, p.computed, p.static, true);
+        const special: []const []const u8 = &.{ "constructor", "prototype" };
+        self.printKey(p.key, p.computed, if (p.static) special else special[0..1]);
         self.defer_trailing_of = .null;
-        if (p.optional) self.out.writeByte('?');
-        if (p.definite) self.out.writeByte('!');
+        self.print(.{ .{ p.optional, "?" }, .{ p.definite, "!" } });
         self.emitOwedComments();
-        self.emit(p.type_annotation);
-        if (p.value != .null) {
-            self.printSpaced('=');
-            self.emitValue(p.value);
-        }
-        self.softSemi();
-    }
-
-    fn printAccessibility(self: *Self, accessibility: ast.Accessibility) void {
-        if (accessibility == .none) return;
-        self.out.writeStr(accessibility.toString());
-        self.out.writeByte(' ');
+        self.print(.{ p.type_annotation, .{ sp, "=", sp, value(p.value) }, semi });
     }
 
     fn emit_decorator(self: *Self, d: *const ast.Decorator) void {
-        self.out.writeByte('@');
         const simple = self.decoratorIsSimple(d.expression);
-        self.emitExpr(d.expression, .{
-            .prec = if (simple) Precedence.Lowest else Precedence.Grouping,
-        });
+        const prec = if (simple) Precedence.Lowest else Precedence.Grouping;
+        self.print(.{ "@", at(d.expression, .{ .prec = prec }) });
     }
 
     fn decoratorIsSimple(self: *const Self, idx: NodeIndex) bool {
@@ -2066,9 +1624,9 @@ const Printer = struct {
         for (list, 0..) |d, i| {
             self.emit(d);
             // `@a.b class` would fuse to `@a.bclass` without a separator
-            if (self.pretty() and layout == .own_line) {
+            if (self.out.pretty and layout == .own_line) {
                 self.newline();
-            } else if (self.pretty() or i + 1 == list.len) {
+            } else if (self.out.pretty or i + 1 == list.len) {
                 self.out.writeByte(' ');
             }
         }
@@ -2077,16 +1635,13 @@ const Printer = struct {
 
     fn emit_import_declaration(self: *Self, d: *const ast.ImportDeclaration) void {
         const list = self.tree.extra(d.specifiers);
+        const type_only = d.import_kind == .type;
 
-        self.out.writeStr("import");
-        if (d.import_kind == .type) self.out.writeStr(" type");
-        if (d.phase) |ph| {
-            self.out.writeByte(' ');
-            self.out.writeStr(@tagName(ph));
-        }
+        self.print(.{ "import", .{ type_only, " type" } });
+        if (d.phase) |ph| self.print(.{ " ", @tagName(ph) });
+        self.out.writeByte(' ');
 
         if (list.len > 0) {
-            self.out.writeByte(' ');
             const depth = self.indent_depth;
             var i: usize = 0;
             if (self.nodeData(list[0]) == .import_default_specifier) {
@@ -2099,202 +1654,63 @@ const Printer = struct {
                     self.emit(list[i]);
                 } else {
                     self.out.writeByte('{');
-                    self.out.space();
-                    self.emitItems(list[i..], .null, .{});
-                    if (!self.out.atLineStart()) self.out.space();
-                    self.out.writeByte('}');
+                    self.printBraced(list[i..], .null);
                 }
             }
             self.closeList(depth);
             self.out.writeStr(" from ");
-        } else if (d.import_kind == .type) {
-            self.out.writeByte(' ');
+        } else if (type_only) {
             self.out.writeStr("{} from ");
-        } else {
-            self.out.writeByte(' ');
         }
 
-        self.emit(d.source);
-        self.printAttributes(d.attributes);
-        self.softSemi();
-    }
-
-    fn emit_import_specifier(self: *Self, s: *const ast.ImportSpecifier) void {
-        if (s.import_kind == .type) self.out.writeStr("type ");
-        self.printSpecifier(s.imported, s.local);
-    }
-
-    fn emit_import_default_specifier(self: *Self, s: *const ast.ImportDefaultSpecifier) void {
-        self.emit(s.local);
-    }
-
-    fn emit_import_namespace_specifier(
-        self: *Self,
-        s: *const ast.ImportNamespaceSpecifier,
-    ) void {
-        self.out.writeStr("* as ");
-        self.emit(s.local);
-    }
-
-    fn emit_import_attribute(self: *Self, a: *const ast.ImportAttribute) void {
-        self.emit(a.key);
-        self.printColon();
-        self.emit(a.value);
+        self.print(.{ d.source, .{ " with ", "{", sp, d.attributes, sp, "}" }, semi });
     }
 
     fn emit_import_expression(self: *Self, e: *const ast.ImportExpression) void {
         self.out.writeStr("import");
-        if (e.phase) |ph| {
-            self.out.writeByte('.');
-            self.out.writeStr(@tagName(ph));
-        }
-        self.out.writeByte('(');
-        self.emitValue(e.source);
-        if (e.options != .null) {
-            self.out.writeByte(',');
-            self.out.space();
-            self.emitValue(e.options);
-        }
-        self.out.writeByte(')');
+        if (e.phase) |ph| self.print(.{ ".", @tagName(ph) });
+        self.print(.{ "(", value(e.source), .{ ",", sp, value(e.options) }, ")" });
     }
 
-    fn emit_export_named_declaration(self: *Self, idx: NodeIndex, d: *const ast.ExportNamedDeclaration) void {
-        const list = self.tree.extra(d.specifiers);
-        const hoisted = self.decoratorsBeforeExport(d.declaration);
-        if (hoisted) |decorators| self.printDecorators(decorators, .own_line);
+    fn emit_export_named_declaration(
+        self: *Self,
+        idx: NodeIndex,
+        d: *const ast.ExportNamedDeclaration,
+    ) void {
+        const hoisted = self.hoistedDecorators(d.declaration);
+        self.printDecorators(hoisted, .own_line);
         self.out.writeStr("export");
-        if (d.export_kind == .type and d.declaration == .null) self.out.writeStr(" type");
         if (d.declaration != .null) {
             self.out.writeByte(' ');
-            return self.emitExpr(d.declaration, .{ .no_decorators = hoisted != null });
+            return self.emitExpr(d.declaration, .{ .no_decorators = hoisted.len > 0 });
         }
-        self.out.space();
-        self.out.writeByte('{');
-        self.emitInsideCommentsInline(idx);
-        if (list.len > 0) {
-            self.out.space();
-            self.emitItems(list, .null, .{});
-            if (!self.out.atLineStart()) self.out.space();
-        }
-        self.out.writeByte('}');
-        if (d.source != .null) {
-            self.out.writeStr(" from ");
-            self.emit(d.source);
-        }
-        self.printAttributes(d.attributes);
-        self.softSemi();
+        self.print(.{ .{ d.export_kind == .type, " type" }, sp, "{", inside(idx) });
+        self.printBraced(self.tree.extra(d.specifiers), .null);
+        self.print(.{.{ " from ", d.source }});
+        self.print(.{ .{ " with ", "{", sp, d.attributes, sp, "}" }, semi });
     }
 
-    fn emit_export_default_declaration(
-        self: *Self,
-        d: *const ast.ExportDefaultDeclaration,
-    ) void {
-        if (self.nodeData(d.declaration).isDeclaration()) {
-            const hoisted = self.decoratorsBeforeExport(d.declaration);
-            if (hoisted) |decorators| self.printDecorators(decorators, .own_line);
-            self.out.writeStr("export default ");
-            return self.emitExpr(d.declaration, .{ .no_decorators = hoisted != null });
-        }
+    fn emit_export_default_declaration(self: *Self, d: *const ast.ExportDefaultDeclaration) void {
+        const declares = self.nodeData(d.declaration).isDeclaration();
+        const hoisted: IndexRange = if (declares) self.hoistedDecorators(d.declaration) else .empty;
+        self.printDecorators(hoisted, .own_line);
         self.out.writeStr("export default ");
+        if (declares) return self.emitExpr(d.declaration, .{ .no_decorators = hoisted.len > 0 });
         self.out.lead = .export_default;
-        self.emitExpr(d.declaration, .{ .prec = Precedence.Assignment });
-        self.softSemi();
+        self.print(.{ value(d.declaration), semi });
     }
 
-    fn decoratorsBeforeExport(self: *const Self, declaration: NodeIndex) ?IndexRange {
-        if (declaration == .null) return null;
-        const decorators = switch (self.nodeData(declaration)) {
-            .class => |c| c.decorators,
-            else => return null,
-        };
-        if (decorators.len == 0) return null;
-        const first = self.tree.extra(decorators)[0];
-        if (self.tree.span(first).start < self.tree.span(declaration).start) return decorators;
-        return null;
+    fn hoistedDecorators(self: *const Self, declaration: NodeIndex) IndexRange {
+        if (declaration == .null or self.nodeData(declaration) != .class) return .empty;
+        const decorators = self.nodeData(declaration).class.decorators;
+        if (decorators.len == 0) return .empty;
+        const first = self.tree.span(self.tree.extra(decorators)[0]);
+        return if (first.start < self.tree.span(declaration).start) decorators else .empty;
     }
 
-    fn emit_export_all_declaration(self: *Self, d: *const ast.ExportAllDeclaration) void {
-        self.out.writeStr("export");
-        if (d.export_kind == .type) self.out.writeStr(" type");
-        self.out.writeStr(" *");
-        if (d.exported != .null) {
-            self.out.writeStr(" as ");
-            self.emit(d.exported);
-        }
-        self.out.writeStr(" from ");
-        self.emit(d.source);
-        self.printAttributes(d.attributes);
-        self.softSemi();
-    }
-
-    fn emit_export_specifier(self: *Self, s: *const ast.ExportSpecifier) void {
-        if (s.export_kind == .type) self.out.writeStr("type ");
-        self.printSpecifier(s.local, s.exported);
-    }
-
-    fn printSpecifier(self: *Self, name: NodeIndex, alias: NodeIndex) void {
-        self.emit(name);
-        if (!sameIdentifier(self.tree, name, alias) or self.hasPrintedComments(alias)) {
-            self.out.writeStr(" as ");
-            self.emit(alias);
-        }
-    }
-
-    fn printAttributes(self: *Self, attrs: IndexRange) void {
-        if (attrs.len == 0) return;
-        self.out.writeStr(" with ");
-        self.out.writeByte('{');
-        self.out.space();
-        self.emitList(attrs);
-        self.out.space();
-        self.out.writeByte('}');
-    }
-
-    fn emit_ts_type_annotation(self: *Self, t: *const ast.TSTypeAnnotation) void {
-        self.printColon();
-        self.emit(t.type_annotation);
-    }
-
-    fn emit_ts_type_reference(self: *Self, t: *const ast.TSTypeReference) void {
-        self.emit(t.type_name);
-        self.emit(t.type_arguments);
-    }
-
-    fn emit_ts_type_query(self: *Self, q: *const ast.TSTypeQuery) void {
-        self.out.writeStr("typeof ");
-        self.emit(q.expr_name);
-        self.emit(q.type_arguments);
-    }
-
-    fn emit_ts_import_type(self: *Self, t: *const ast.TSImportType) void {
-        self.out.writeStr("import(");
-        self.emit(t.source);
-        if (t.options != .null) {
-            self.out.writeByte(',');
-            self.out.space();
-            self.emit(t.options);
-        }
-        self.out.writeByte(')');
-        if (t.qualifier != .null) {
-            self.out.writeByte('.');
-            self.emit(t.qualifier);
-        }
-        self.emit(t.type_arguments);
-    }
-
-    fn emit_ts_type_parameter(self: *Self, p: *const ast.TSTypeParameter) void {
-        if (p.@"const") self.out.writeStr("const ");
-        if (p.in) self.out.writeStr("in ");
-        if (p.out) self.out.writeStr("out ");
-        self.emit(p.name);
-        if (p.constraint != .null) {
-            self.out.writeStr(" extends ");
-            self.emit(p.constraint);
-        }
-        if (p.default != .null) {
-            self.printSpaced('=');
-            self.emit(p.default);
-        }
+    fn printSpecifier(self: *Self, type_only: bool, name: NodeIndex, alias: NodeIndex) void {
+        const aliased = !sameIdentifier(self.tree, name, alias) or self.hasPrintedComments(alias);
+        self.print(.{ .{ type_only, "type " }, name, .{ aliased, " as ", alias } });
     }
 
     fn emit_ts_type_parameter_declaration(
@@ -2302,24 +1718,11 @@ const Printer = struct {
         d: *const ast.TSTypeParameterDeclaration,
         ctx: Ctx,
     ) void {
-        self.out.writeByte('<');
-        self.emitList(d.params);
         // in TSX a lone `<T>` opens a JSX tag, and `<T,>` is valid TS too
         const params = self.tree.extra(d.params);
-        if (ctx.no_jsx_tag and params.len == 1) {
-            const param = self.tree.data(params[0]).ts_type_parameter;
-            if (param.constraint == .null) self.out.writeByte(',');
-        }
-        self.out.writeByte('>');
-    }
-
-    fn emit_ts_type_parameter_instantiation(
-        self: *Self,
-        d: *const ast.TSTypeParameterInstantiation,
-    ) void {
-        self.out.writeByte('<');
-        self.emitList(d.params);
-        self.out.writeByte('>');
+        const comma = ctx.no_jsx_tag and params.len == 1 and
+            self.nodeData(params[0]).ts_type_parameter.constraint == .null;
+        self.print(.{ "<", d.params, .{ comma, "," }, ">" });
     }
 
     fn emit_ts_literal_type(self: *Self, t: *const ast.TSLiteralType) void {
@@ -2330,124 +1733,21 @@ const Printer = struct {
         }
     }
 
-    fn emit_ts_template_literal_type(self: *Self, t: *const ast.TSTemplateLiteralType) void {
-        self.printTemplate(t.quasis, t.types, false);
-    }
-
-    fn emitType(self: *Self, idx: NodeIndex, floor: u8, ctx: Ctx) void {
-        self.wrapIf(self.typePrec(idx) < floor, idx, ctx);
-    }
-
-    fn typePrec(self: *const Self, idx: NodeIndex) u8 {
-        return switch (self.nodeData(idx)) {
-            .ts_function_type,
-            .ts_constructor_type,
-            .ts_conditional_type,
-            .ts_infer_type,
-            => TPrec.trailing,
-            .ts_union_type => TPrec.@"union",
-            .ts_intersection_type => TPrec.intersection,
-            .ts_type_operator => TPrec.operator,
-            else => TPrec.primary,
-        };
-    }
-
-    fn emit_ts_tuple_type(self: *Self, idx: NodeIndex, t: *const ast.TSTupleType) void {
-        self.out.writeByte('[');
-        self.emitInsideCommentsInline(idx);
-        self.emitList(t.element_types);
-        self.out.writeByte(']');
-    }
-
-    fn emit_ts_named_tuple_member(self: *Self, m: *const ast.TSNamedTupleMember) void {
-        self.emit(m.label);
-        if (m.optional) self.out.writeByte('?');
-        self.printColon();
-        self.emit(m.element_type);
-    }
-
-    fn emit_ts_optional_type(self: *Self, t: *const ast.TSOptionalType) void {
-        self.emitType(t.type_annotation, TPrec.primary, .{});
-        self.out.writeByte('?');
-    }
-
-    fn emit_ts_rest_type(self: *Self, t: *const ast.TSRestType) void {
-        self.out.writeStr("...");
-        self.emit(t.type_annotation);
-    }
-
-    fn emit_ts_union_type(self: *Self, t: *const ast.TSUnionType) void {
-        self.emitTypeList(t.types, '|');
-    }
-
-    fn emit_ts_intersection_type(self: *Self, t: *const ast.TSIntersectionType) void {
-        self.emitTypeList(t.types, '&');
-    }
-
     // a lone member keeps its leading operator (`type X = | A`) so reparse keeps the wrapper
-    fn emitTypeList(self: *Self, types: IndexRange, comptime op: u8) void {
+    fn emitTypeList(self: *Self, types: IndexRange, comptime op: *const [1:0]u8, floor: u8) void {
         const list = self.tree.extra(types);
-        if (list.len == 1) {
-            self.out.writeByte(op);
-            self.out.space();
-        }
-        const floor: u8 = if (op == '|') TPrec.intersection else TPrec.operator;
+        if (list.len == 1) self.print(.{ op, sp });
         for (list, 0..) |x, i| {
-            if (i > 0) self.printSpaced(op);
-            self.emitType(x, floor, .{});
+            if (i > 0) self.print(.{ sp, op, sp });
+            self.emitExpr(x, .{ .prec = floor });
         }
     }
 
     fn emit_ts_conditional_type(self: *Self, t: *const ast.TSConditionalType) void {
-        self.emitType(t.check_type, TPrec.@"union", .{ .defer_trailing = true });
+        self.emitExpr(t.check_type, .{ .prec = TPrec.@"union", .defer_trailing = true });
         self.writeKeywordThenOwed(" extends");
-        self.emitType(t.extends_type, TPrec.@"union", .{});
-        self.printSpaced('?');
-        self.emit(t.true_type);
-        self.printSpaced(':');
-        self.emit(t.false_type);
-    }
-
-    fn emit_ts_infer_type(self: *Self, t: *const ast.TSInferType) void {
-        self.out.writeStr("infer ");
-        self.emit(t.type_parameter);
-    }
-
-    fn emit_ts_type_operator(self: *Self, t: *const ast.TSTypeOperator) void {
-        self.out.writeStr(t.operator.toString());
-        self.out.writeByte(' ');
-        self.emitType(t.type_annotation, TPrec.operator, .{});
-    }
-
-    fn emit_ts_parenthesized_type(self: *Self, t: *const ast.TSParenthesizedType) void {
-        self.out.writeByte('(');
-        self.emit(t.type_annotation);
-        self.out.writeByte(')');
-    }
-
-    fn emit_ts_function_type(self: *Self, idx: NodeIndex, t: *const ast.TSFunctionType) void {
-        self.printArrowType(idx, t.type_parameters, t.params, t.return_type);
-    }
-
-    fn emit_ts_constructor_type(self: *Self, idx: NodeIndex, t: *const ast.TSConstructorType) void {
-        if (t.abstract) self.out.writeStr("abstract ");
-        self.out.writeStr("new ");
-        self.printArrowType(idx, t.type_parameters, t.params, t.return_type);
-    }
-
-    fn printArrowType(
-        self: *Self,
-        idx: NodeIndex,
-        type_parameters: NodeIndex,
-        params: NodeIndex,
-        return_type: NodeIndex,
-    ) void {
-        self.emit(type_parameters);
-        self.printParams(idx, params);
-        self.out.space();
-        self.out.writeStr("=>");
-        self.out.space();
-        self.emitUnwrappedType(return_type);
+        self.emitExpr(t.extends_type, .{ .prec = TPrec.@"union" });
+        self.print(.{ sp, "?", sp, t.true_type, sp, ":", sp, t.false_type });
     }
 
     fn emitUnwrappedType(self: *Self, idx: NodeIndex) void {
@@ -2470,131 +1770,33 @@ const Printer = struct {
         self.emitUnwrappedType(t.type_annotation);
     }
 
-    fn emit_ts_type_literal(self: *Self, idx: NodeIndex, t: *const ast.TSTypeLiteral) void {
-        self.printMemberBody(idx, t.members);
-    }
-
     fn emit_ts_mapped_type(self: *Self, t: *const ast.TSMappedType) void {
-        self.out.writeByte('{');
-        self.out.space();
-        self.printMappedReadonly(t.readonly);
-        self.out.writeByte('[');
-        self.emit(t.key);
-        self.out.writeStr(" in ");
-        self.emit(t.constraint);
-        if (t.name_type != .null) {
-            self.out.writeStr(" as ");
-            self.emit(t.name_type);
-        }
-        self.out.writeByte(']');
-        self.printMappedOptional(t.optional);
-        if (t.type_annotation != .null) {
-            self.printColon();
-            self.emit(t.type_annotation);
-        }
-        self.softSemi();
+        self.print(.{ "{", sp, .{ t.readonly != .none, mappedSign(t.readonly), "readonly " } });
+        self.print(.{ "[", t.key, " in ", t.constraint, .{ " as ", t.name_type }, "]" });
+        self.print(.{.{ t.optional != .none, mappedSign(t.optional), "?" }});
+        self.print(.{ .{ ":", sp, t.type_annotation }, semi });
         self.pending_semi = false;
-        self.out.space();
-        self.out.writeByte('}');
-    }
-
-    fn printMappedReadonly(self: *Self, m: ast.TSMappedTypeModifier) void {
-        switch (m) {
-            .none => return,
-            .true => {},
-            .plus => self.out.writeByte('+'),
-            .minus => self.out.writeByte('-'),
-        }
-        self.out.writeStr("readonly ");
-    }
-
-    fn printMappedOptional(self: *Self, m: ast.TSMappedTypeModifier) void {
-        switch (m) {
-            .none => {},
-            .true => self.out.writeByte('?'),
-            .plus => self.out.writeStr("+?"),
-            .minus => self.out.writeStr("-?"),
-        }
+        self.print(.{ sp, "}" });
     }
 
     fn emit_ts_property_signature(self: *Self, s: *const ast.TSPropertySignature) void {
         if (s.readonly) self.out.writeStr("readonly ");
         self.printPropertyKey(s.key, s.computed);
-        if (s.optional) self.out.writeByte('?');
-        self.emit(s.type_annotation);
-        self.softSemi();
+        self.print(.{ .{ s.optional, "?" }, s.type_annotation, semi });
     }
 
     fn emit_ts_method_signature(self: *Self, idx: NodeIndex, s: *const ast.TSMethodSignature) void {
-        switch (s.kind) {
-            .get => self.out.writeStr("get "),
-            .set => self.out.writeStr("set "),
-            .method => {},
-        }
+        self.print(.{ .{ s.kind == .get, "get " }, .{ s.kind == .set, "set " } });
         self.printPropertyKey(s.key, s.computed);
         if (s.optional) self.out.writeByte('?');
-        self.printSignatureTail(idx, s.type_parameters, s.params, s.return_type);
+        self.printSignature(idx, s, .null);
     }
 
-    fn printSignatureTail(
-        self: *Self,
-        idx: NodeIndex,
-        type_parameters: NodeIndex,
-        params: NodeIndex,
-        return_type: NodeIndex,
-    ) void {
-        self.emit(type_parameters);
-        self.printParams(idx, params);
-        self.emit(return_type);
-        self.softSemi();
-    }
-
-    fn emit_ts_call_signature_declaration(
-        self: *Self,
-        idx: NodeIndex,
-        s: *const ast.TSCallSignatureDeclaration,
-    ) void {
-        self.printSignatureTail(idx, s.type_parameters, s.params, s.return_type);
-    }
-
-    fn emit_ts_construct_signature_declaration(
-        self: *Self,
-        idx: NodeIndex,
-        s: *const ast.TSConstructSignatureDeclaration,
-    ) void {
-        self.out.writeStr("new ");
-        self.printSignatureTail(idx, s.type_parameters, s.params, s.return_type);
-    }
-
-    fn emit_ts_index_signature(self: *Self, s: *const ast.TSIndexSignature) void {
-        if (s.static) self.out.writeStr("static ");
-        if (s.readonly) self.out.writeStr("readonly ");
-        self.out.writeByte('[');
-        self.emitList(s.parameters);
-        self.out.writeByte(']');
-        self.emit(s.type_annotation);
-        self.softSemi();
-    }
-
-    fn emit_ts_type_alias_declaration(
-        self: *Self,
-        d: *const ast.TSTypeAliasDeclaration,
-    ) void {
-        if (d.declare) self.out.writeStr("declare ");
-        self.out.writeStr("type ");
-        self.emit(d.id);
-        self.emit(d.type_parameters);
-        self.printSpaced('=');
+    fn emit_ts_type_alias_declaration(self: *Self, d: *const ast.TSTypeAliasDeclaration) void {
+        self.print(.{ .{ d.declare, "declare " }, "type ", d.id, d.type_parameters, sp, "=", sp });
         // a leftmost bare `intrinsic` reference would reparse as the keyword
         const intrinsic = self.isLeftmostIntrinsicReference(d.type_annotation);
-        self.wrapIf(intrinsic, d.type_annotation, .{});
-        self.softSemi();
-    }
-
-    inline fn wrapIf(self: *Self, cond: bool, idx: NodeIndex, ctx: Ctx) void {
-        if (cond) self.out.writeByte('(');
-        self.emitExpr(idx, ctx);
-        if (cond) self.out.writeByte(')');
+        self.print(.{ .{ intrinsic, "(" }, d.type_annotation, .{ intrinsic, ")" }, semi });
     }
 
     fn isLeftmostIntrinsicReference(self: *const Self, idx: NodeIndex) bool {
@@ -2605,8 +1807,10 @@ const Printer = struct {
                     isNamed(self.tree, r.type_name, "intrinsic"),
                 .ts_array_type => |a| a.element_type,
                 .ts_indexed_access_type => |a| a.object_type,
-                .ts_union_type => |u| self.firstType(u.types) orelse return false,
-                .ts_intersection_type => |i| self.firstType(i.types) orelse return false,
+                inline .ts_union_type, .ts_intersection_type => |t| if (t.types.len > 0)
+                    self.tree.extra(t.types)[0]
+                else
+                    return false,
                 .ts_conditional_type => |c| c.check_type,
                 else => return false,
             };
@@ -2614,268 +1818,54 @@ const Printer = struct {
         unreachable;
     }
 
-    fn firstType(self: *const Self, types: IndexRange) ?NodeIndex {
-        return if (types.len > 0) self.tree.extra(types)[0] else null;
-    }
-
-    fn emit_ts_interface_declaration(self: *Self, d: *const ast.TSInterfaceDeclaration) void {
-        if (d.declare) self.out.writeStr("declare ");
-        self.out.writeStr("interface ");
-        self.emit(d.id);
-        self.emit(d.type_parameters);
-        if (d.extends.len > 0) {
-            self.out.writeStr(" extends ");
-            self.emitList(d.extends);
-        }
-        self.out.space();
-        self.emit(d.body);
-    }
-
-    fn emit_ts_interface_body(self: *Self, idx: NodeIndex, b: *const ast.TSInterfaceBody) void {
-        self.printMemberBody(idx, b.body);
-    }
-
-    fn emit_ts_interface_heritage(self: *Self, h: *const ast.TSInterfaceHeritage) void {
-        self.emit(h.expression);
-        self.emit(h.type_arguments);
-    }
-
-    fn emit_ts_class_implements(self: *Self, c: *const ast.TSClassImplements) void {
-        self.emit(c.expression);
-        self.emit(c.type_arguments);
-    }
-
-    fn emit_ts_enum_declaration(self: *Self, d: *const ast.TSEnumDeclaration) void {
-        if (d.declare) self.out.writeStr("declare ");
-        if (d.is_const) self.out.writeStr("const ");
-        self.out.writeStr("enum ");
-        self.emit(d.id);
-        self.out.space();
-        self.emit(d.body);
-    }
-
-    fn emit_ts_enum_body(self: *Self, idx: NodeIndex, b: *const ast.TSEnumBody) void {
-        self.out.writeByte('{');
-        const list = self.tree.extra(b.members);
-        if (list.len > 0) {
-            self.indent_depth += 1;
-            for (list, 0..) |m, i| {
-                self.newline();
-                self.emitExpr(m, .{ .defer_trailing = true });
-                self.closeItem(i + 1 < list.len, null);
-            }
-            self.indent_depth -= 1;
-            self.newline();
-        } else if (self.comments_on) {
-            self.emitInsideComments(idx);
-        }
-        self.out.writeByte('}');
-    }
-
-    fn emit_ts_enum_member(self: *Self, m: *const ast.TSEnumMember) void {
-        if (m.computed) {
-            self.out.writeByte('[');
-            self.emit(m.id);
-            self.out.writeByte(']');
-        } else {
-            self.emit(m.id);
-        }
-        if (m.initializer != .null) {
-            self.printSpaced('=');
-            self.emit(m.initializer);
-        }
-    }
-
     fn emit_ts_module_declaration(self: *Self, d: *const ast.TSModuleDeclaration) void {
-        if (d.declare) self.out.writeStr("declare ");
-        self.out.writeStr(d.kind.toString());
-        self.out.writeByte(' ');
-        self.emit(d.id);
-        if (d.body != .null) {
-            self.out.space();
-            self.emit(d.body);
-        } else {
-            self.softSemi();
-        }
-    }
-
-    fn emit_ts_module_block(self: *Self, idx: NodeIndex, b: *const ast.TSModuleBlock) void {
-        self.printBlock(idx, self.tree.extra(b.body), false);
-    }
-
-    fn emit_ts_global_declaration(self: *Self, d: *const ast.TSGlobalDeclaration) void {
-        if (d.declare) self.out.writeStr("declare ");
-        self.emit(d.id);
-        self.out.space();
-        self.emit(d.body);
+        self.print(.{ .{ d.declare, "declare " }, d.kind.toString(), " ", d.id });
+        if (d.body != .null) self.print(.{ sp, d.body }) else self.softSemi();
     }
 
     fn emit_ts_type_assertion(self: *Self, e: *const ast.TSTypeAssertion, ctx: Ctx) void {
-        self.out.writeByte('<');
         // `<<T>` would re-lex as `<<`
-        if (typeStartsWithLeftAngle(self.tree, e.type_annotation)) self.out.writeByte(' ');
-        self.emit(e.type_annotation);
-        self.out.writeByte('>');
-        self.emitExpr(e.expression, .{
-            .prec = Precedence.Unary,
-            .no_instantiation = ctx.no_instantiation,
-        });
-    }
-
-    fn emit_ts_export_assignment(self: *Self, e: *const ast.TSExportAssignment) void {
-        self.out.writeStr("export");
-        self.printSpaced('=');
-        self.emit(e.expression);
-        self.softSemi();
-    }
-
-    fn emit_ts_namespace_export_declaration(
-        self: *Self,
-        d: *const ast.TSNamespaceExportDeclaration,
-    ) void {
-        self.out.writeStr("export as namespace ");
-        self.emit(d.id);
-        self.softSemi();
-    }
-
-    fn emit_ts_import_equals_declaration(
-        self: *Self,
-        d: *const ast.TSImportEqualsDeclaration,
-    ) void {
-        self.out.writeStr("import ");
-        if (d.import_kind == .type) self.out.writeStr("type ");
-        self.emit(d.id);
-        self.printSpaced('=');
-        self.emit(d.module_reference);
-        self.softSemi();
-    }
-
-    fn emit_ts_external_module_reference(
-        self: *Self,
-        r: *const ast.TSExternalModuleReference,
-    ) void {
-        self.out.writeStr("require(");
-        self.emit(r.expression);
-        self.out.writeByte(')');
+        const angled = typeStartsWithLeftAngle(self.tree, e.type_annotation);
+        self.print(.{ "<", .{ angled, " " }, e.type_annotation, ">" });
+        self.emitExpr(e.expression, ctx.unary());
     }
 
     fn emit_ts_parameter_property(self: *Self, p: *const ast.TSParameterProperty) void {
+        const access = p.accessibility;
         self.printDecorators(p.decorators, .same_line);
-        self.printAccessibility(p.accessibility);
-        if (p.override) self.out.writeStr("override ");
-        if (p.readonly) self.out.writeStr("readonly ");
-        self.emit(p.parameter);
+        self.print(.{ .{ access != .none, access.toString(), " " }, .{ p.override, "override " } });
+        self.print(.{ .{ p.readonly, "readonly " }, p.parameter });
     }
 
-    fn emit_ts_this_parameter(self: *Self, p: *const ast.TSThisParameter) void {
-        self.out.writeStr("this");
-        self.emit(p.type_annotation);
-    }
-
-    fn emit_jsx_element(self: *Self, e: *const ast.JSXElement) void {
-        self.emit(e.opening_element);
-        for (self.tree.extra(e.children)) |c| self.emit(c);
-        self.emit(e.closing_element);
+    fn printChildren(self: *Self, open: NodeIndex, children: IndexRange, close: NodeIndex) void {
+        self.emit(open);
+        for (self.tree.extra(children)) |c| self.emit(c);
+        self.emit(close);
     }
 
     fn emit_jsx_opening_element(self: *Self, o: *const ast.JSXOpeningElement) void {
-        self.out.writeByte('<');
-        self.emit(o.name);
-        self.emit(o.type_arguments);
-        for (self.tree.extra(o.attributes)) |a| {
-            self.out.writeByte(' ');
-            self.emit(a);
-        }
-        if (o.self_closing) {
-            self.out.space();
-            self.out.writeStr("/>");
-        } else {
-            self.out.writeByte('>');
-        }
-    }
-
-    fn emit_jsx_closing_element(self: *Self, c: *const ast.JSXClosingElement) void {
-        self.out.writeStr("</");
-        self.emit(c.name);
-        self.out.writeByte('>');
-    }
-
-    fn emit_jsx_fragment(self: *Self, f: *const ast.JSXFragment) void {
-        self.emit(f.opening_fragment);
-        for (self.tree.extra(f.children)) |c| self.emit(c);
-        self.emit(f.closing_fragment);
-    }
-
-    fn emit_jsx_identifier(self: *Self, id: *const ast.JSXIdentifier) void {
-        self.writeString(id.name);
-    }
-
-    fn emit_jsx_namespaced_name(self: *Self, n: *const ast.JSXNamespacedName) void {
-        self.emit(n.namespace);
-        self.out.writeByte(':');
-        self.emit(n.name);
+        self.print(.{ "<", o.name, o.type_arguments });
+        for (self.tree.extra(o.attributes)) |a| self.print(.{ " ", a });
+        if (o.self_closing) self.print(.{ sp, "/>" }) else self.out.writeByte('>');
     }
 
     fn emit_jsx_attribute(self: *Self, a: *const ast.JSXAttribute) void {
         self.emit(a.name);
-        if (a.value != .null) {
-            self.out.writeByte('=');
-            switch (self.nodeData(a.value)) {
-                .string_literal => |lit| {
-                    const raw = self.tree.string(lit.raw);
-                    const value = self.tree.string(lit.value);
-                    if (raw.len >= 2 and self.jsxDecodesTo(raw[1 .. raw.len - 1], value)) {
-                        self.writeNodeText(a.value, raw);
-                    } else {
-                        self.writeNodeQuoted(a.value, '"', value, "\"&");
-                    }
-                },
-                else => self.emit(a.value),
-            }
+        if (a.value == .null) return;
+        self.out.writeByte('=');
+        switch (self.nodeData(a.value)) {
+            .string_literal => |lit| {
+                self.writeVerbatimString(a.value, self.tree.string(lit.value), true);
+            },
+            else => self.emit(a.value),
         }
-    }
-
-    fn emit_jsx_spread_attribute(self: *Self, a: *const ast.JSXSpreadAttribute) void {
-        self.printJSXSpread(a.argument);
-    }
-
-    fn printJSXSpread(self: *Self, idx: NodeIndex) void {
-        self.out.writeStr("{...");
-        self.emitValue(idx);
-        self.out.writeByte('}');
-    }
-
-    fn emit_jsx_expression_container(self: *Self, c: *const ast.JSXExpressionContainer) void {
-        self.out.writeByte('{');
-        self.emitValue(c.expression);
-        self.out.writeByte('}');
-    }
-
-    fn emit_jsx_empty_expression(self: *Self, idx: NodeIndex, _: *const ast.JSXEmptyExpression) void {
-        self.emitInsideCommentsInline(idx);
-    }
-
-    fn emit_jsx_opening_fragment(self: *Self, idx: NodeIndex, _: *const ast.JSXOpeningFragment) void {
-        self.out.writeByte('<');
-        self.emitInsideCommentsInline(idx);
-        self.out.writeByte('>');
-    }
-
-    fn emit_jsx_closing_fragment(self: *Self, idx: NodeIndex, _: *const ast.JSXClosingFragment) void {
-        self.out.writeStr("</");
-        self.emitInsideCommentsInline(idx);
-        self.out.writeByte('>');
     }
 
     fn emit_jsx_text(self: *Self, t: *const ast.JSXText) void {
         const raw = self.tree.string(t.raw);
-        const value = self.tree.string(t.value);
-        if (self.jsxDecodesTo(raw, value)) return self.out.writeRawStr(raw);
-        self.writeCharReferences(value, "&<>{}");
-    }
-
-    fn emit_jsx_spread_child(self: *Self, c: *const ast.JSXSpreadChild) void {
-        self.printJSXSpread(c.expression);
+        const text = self.tree.string(t.value);
+        if (self.jsxDecodesTo(raw, text)) return self.out.writeRawStr(raw);
+        self.writeCharReferences(text, "&<>{}");
     }
 };
 
@@ -2901,56 +1891,26 @@ fn fixedString(comptime tag: NodeTag) ?[]const u8 {
     };
 }
 
-fn emittedByParent(comptime tag: NodeTag) bool {
-    return switch (tag) {
-        .formal_parameters, .formal_parameter => true,
-        else => false,
-    };
-}
-
 fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
-    if (a == .null or b == .null) return false;
-    const an = identifierStringOrNull(tree, a) orelse return false;
-    const bn = identifierStringOrNull(tree, b) orelse return false;
-    return std.mem.eql(u8, tree.string(an), tree.string(bn));
+    return isNamed(tree, b, identifierName(tree, a) orelse return false);
 }
 
-fn shorthandStillValid(tree: *const Tree, key: NodeIndex, value: NodeIndex) bool {
-    var v = value;
+fn shorthandStillValid(tree: *const Tree, key: NodeIndex, val: NodeIndex) bool {
+    var v = val;
     if (tree.data(v) == .assignment_pattern) v = tree.data(v).assignment_pattern.left;
     return sameIdentifier(tree, key, v);
 }
 
-fn identifierStringOrNull(tree: *const Tree, idx: NodeIndex) ?ast.String {
-    return switch (tree.data(idx)) {
-        .identifier_name => |id| id.name,
-        .identifier_reference => |id| id.name,
-        .binding_identifier => |id| id.name,
-        else => null,
-    };
+fn identifierName(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
+    if (idx == .null) return null;
+    return tree.string(switch (tree.data(idx)) {
+        inline .identifier_name, .identifier_reference, .binding_identifier => |id| id.name,
+        else => return null,
+    });
 }
 
 fn isNamed(tree: *const Tree, idx: NodeIndex, name: []const u8) bool {
-    const id = identifierStringOrNull(tree, idx) orelse return false;
-    return std.mem.eql(u8, tree.string(id), name);
-}
-
-fn parameterOf(tree: *const Tree, idx: NodeIndex) NodeIndex {
-    return switch (tree.data(idx)) {
-        .formal_parameter => |p| p.pattern,
-        else => idx,
-    };
-}
-
-// the parser drops the parens a ts cast needs inside a destructuring target
-fn needsParensAsAssignTarget(tree: *const Tree, idx: NodeIndex) bool {
-    return switch (tree.data(idx)) {
-        .ts_as_expression,
-        .ts_satisfies_expression,
-        .ts_type_assertion,
-        => true,
-        else => false,
-    };
+    return std.mem.eql(u8, identifierName(tree, idx) orelse return false, name);
 }
 
 fn typeStartsWithLeftAngle(tree: *const Tree, idx: NodeIndex) bool {
@@ -2971,10 +1931,11 @@ fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
     return if (lexical.isIdentifierName(s)) s else null;
 }
 
-fn needsSpaceBeforeInlineComment(last: u8) bool {
-    return switch (last) {
-        0, ' ', '\n', '(', '[', '{', '<' => false,
-        else => true,
+fn mappedSign(modifier: ast.TSMappedTypeModifier) []const u8 {
+    return switch (modifier) {
+        .plus => "+",
+        .minus => "-",
+        .none, .true => "",
     };
 }
 
@@ -2988,9 +1949,7 @@ fn endsWithTsCast(tree: *const Tree, idx: NodeIndex) bool {
     for (0..tree.nodes.len) |_| {
         node = switch (tree.data(node)) {
             .ts_as_expression, .ts_satisfies_expression => return true,
-            .binary_expression => |b| b.right,
-            .logical_expression => |b| b.right,
-            .assignment_expression => |a| a.right,
+            inline .binary_expression, .logical_expression, .assignment_expression => |e| e.right,
             .conditional_expression => |c| c.alternate,
             else => return false,
         };
@@ -3044,8 +2003,6 @@ fn isChainLink(tag: NodeTag) bool {
     };
 }
 
-const NodeTag = std.meta.Tag(NodeData);
-
 const handlers = blk: {
     const tags = std.enums.values(NodeTag);
     var table: [tags.len]*const fn (*Printer, NodeIndex, Ctx) void = undefined;
@@ -3073,16 +2030,8 @@ fn isLeaf(comptime tag: NodeTag) bool {
     };
 }
 
-// decided per node by `needsParens`
-const operator_precedence = Precedence.Lowest;
-
-comptime {
-    std.debug.assert(operator_precedence < Precedence.Comma);
-}
-
-const node_precedence = blk: {
-    var table: [@typeInfo(NodeTag).@"enum".field_names.len]u8 = undefined;
-    for (std.enums.values(NodeTag)) |tag| table[@backingInt(tag)] = switch (tag) {
+fn precedenceOf(tag: NodeTag) u8 {
+    return switch (tag) {
         .sequence_expression => Precedence.Comma,
         .assignment_expression,
         .arrow_function_expression,
@@ -3101,16 +2050,21 @@ const node_precedence = blk: {
         .ts_non_null_expression,
         .ts_instantiation_expression,
         => Precedence.Call,
-        .logical_expression, .binary_expression, .boolean_literal => operator_precedence,
+        // decided per node by `needsParens`
+        .logical_expression, .binary_expression, .boolean_literal => Precedence.Lowest,
+        .ts_function_type,
+        .ts_constructor_type,
+        .ts_conditional_type,
+        .ts_infer_type,
+        => TPrec.trailing,
+        .ts_union_type => TPrec.@"union",
+        .ts_intersection_type => TPrec.intersection,
+        .ts_type_operator => TPrec.operator,
         else => Precedence.Grouping,
     };
-    break :blk table;
-};
+}
 
-const TPrec = struct {
-    const trailing: u8 = 1;
-    const @"union": u8 = 2;
-    const intersection: u8 = 3;
-    const operator: u8 = 4;
-    const primary: u8 = 5;
-};
+test {
+    _ = output;
+    _ = sourcemap;
+}

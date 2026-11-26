@@ -33,33 +33,31 @@ pub const Output = struct {
     const fast_spaces = 4 * space_chunk_len;
     const fast_text = 32;
 
-    pub const Capacity = struct { code: usize, map: usize };
-
     pub fn init(
         allocator: Allocator,
         pretty: bool,
-        capacity: Capacity,
-        map_options: ?sourcemap.Options,
         source: []const u8,
+        map_options: ?sourcemap.Options,
+        mappings_capacity: usize,
     ) Error!Output {
         var out: Output = .{ .allocator = allocator, .pretty = pretty };
         if (source.len >= backed_len) {
             out.backed_from = @intFromPtr(source.ptr) + backed_len;
             out.backed_span = source.len - backed_len;
         }
-        try out.code.ensureTotalCapacity(allocator, capacity.code);
+        try out.code.ensureTotalCapacity(allocator, source.len);
         errdefer out.code.deinit(allocator);
         if (comptime source_maps) if (map_options) |options| {
-            out.map = sourcemap.State.init(options, source);
+            out.map = .{ .options = options, .source = source };
             out.mapped = true;
-            try out.map.?.out.ensureTotalCapacity(allocator, capacity.map);
+            try out.map.?.out.ensureTotalCapacity(allocator, mappings_capacity);
         };
         return out;
     }
 
     pub fn deinit(self: *Output) void {
         self.code.deinit(self.allocator);
-        if (comptime source_maps) if (self.map) |*map| map.deinit(self.allocator);
+        if (comptime source_maps) if (self.map) |*map| map.out.deinit(self.allocator);
     }
 
     pub inline fn len(self: *const Output) usize {
@@ -167,7 +165,6 @@ pub const Output = struct {
         self.held_literal = false;
     }
 
-    /// Maps the next token to `span`, unless the node is synthetic.
     pub inline fn recordMapping(self: *Output, span: ast.Span) void {
         // a synthetic node has no source position
         if (span.start == 0 and span.end == 0) return;
@@ -313,9 +310,7 @@ pub const Output = struct {
     noinline fn recordPlacement(self: *Output, col_offset: u32) void {
         const start = self.map_start.?;
         self.map_start = null;
-        const map = &self.map.?;
-        const orig = map.resolve(start);
-        map.record(self.allocator, orig.line, orig.col, col_offset) catch {
+        self.map.?.record(self.allocator, start, col_offset) catch {
             self.failed = true;
         };
     }

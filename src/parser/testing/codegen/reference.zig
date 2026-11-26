@@ -1,23 +1,3 @@
-//! Prints each source file named in a list with the Zig code generator. The output is the
-//! reference the JavaScript printer is checked against, byte for byte.
-//!
-//!   codegen-reference <list> <out> [option...]
-//!
-//! `list` holds one `<source type> <path>` pair per line, the source type being `script`,
-//! `module`, or `commonjs`. `out` receives one record per path, in list order, with little
-//! endian integers.
-//!
-//!   u8    status, 0 when printed and 1 when skipped for parse diagnostics
-//!   u32   code length, then the code
-//!   u32   source map mappings length, then the mappings
-//!   u32   diagnostic count, then per diagnostic a u32 start, u32 end, u32 message length, message
-//!
-//! Only the status is written for a skipped file. The options mirror `codegen.Options`, and
-//! `--no-preserve-parens` parses without parenthesized expressions.
-//!
-//!   --minify --compact --source-map --no-preserve-parens --indent=<n>
-//!   --quotes=<preserve|double|single|shortest> --comments=<none|all|some|line|block>
-
 const std = @import("std");
 const parser = @import("parser");
 
@@ -30,7 +10,6 @@ const list_bytes_max = 64 * 1024 * 1024;
 const Plan = struct {
     codegen: codegen.Options = .{},
     preserve_parens: bool = true,
-    source_map: bool = false,
 };
 
 pub fn main(init: std.process.Init) !void {
@@ -92,11 +71,9 @@ fn printFile(
         return;
     }
 
-    var options = plan.codegen;
-    if (plan.source_map) options.source_map = .{};
-    const result = try codegen.generate(gpa, &tree, options);
+    const result = try codegen.generate(gpa, &tree, plan.codegen);
     defer result.deinit(gpa);
-    std.debug.assert(plan.source_map == (result.map != null));
+    std.debug.assert((plan.codegen.source_map != null) == (result.map != null));
 
     try out.writeByte(0);
     try writeBytes(out, result.code);
@@ -124,15 +101,15 @@ fn planParse(args: []const []const u8) !Plan {
         } else if (std.mem.eql(u8, arg, "--compact")) {
             plan.codegen.format = .compact;
         } else if (std.mem.eql(u8, arg, "--source-map")) {
-            plan.source_map = true;
+            plan.codegen.source_map = .{};
         } else if (std.mem.eql(u8, arg, "--no-preserve-parens")) {
             plan.preserve_parens = false;
-        } else if (valueOf(arg, "--indent=")) |value| {
+        } else if (std.mem.cutPrefix(u8, arg, "--indent=")) |value| {
             plan.codegen.indent = try std.fmt.parseInt(u8, value, 10);
-        } else if (valueOf(arg, "--quotes=")) |value| {
+        } else if (std.mem.cutPrefix(u8, arg, "--quotes=")) |value| {
             plan.codegen.quotes = std.meta.stringToEnum(codegen.Quotes, value) orelse
                 return error.InvalidQuotes;
-        } else if (valueOf(arg, "--comments=")) |value| {
+        } else if (std.mem.cutPrefix(u8, arg, "--comments=")) |value| {
             plan.codegen.comments = std.meta.stringToEnum(codegen.Comments, value) orelse
                 return error.InvalidComments;
         } else {
@@ -141,9 +118,4 @@ fn planParse(args: []const []const u8) !Plan {
         }
     }
     return plan;
-}
-
-fn valueOf(arg: []const u8, prefix: []const u8) ?[]const u8 {
-    if (!std.mem.startsWith(u8, arg, prefix)) return null;
-    return arg[prefix.len..];
 }

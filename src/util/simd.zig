@@ -1,22 +1,23 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-/// 16 bytes as one vector.
 pub const Chunk = @Vector(16, u8);
 
-/// `byte` in every lane.
 pub inline fn splat(byte: u8) Chunk {
     return @splat(byte);
 }
 
-/// Unaligned 16-byte load at `offset`.
 pub inline fn loadChunk(bytes: []const u8, offset: usize) Chunk {
     std.debug.assert(offset <= bytes.len);
     std.debug.assert(bytes.len - offset >= 16);
     return @as(*align(1) const Chunk, @ptrCast(bytes.ptr + offset)).*;
 }
 
-pub inline fn loadTail(bytes: []const u8) Chunk {
+pub inline fn loadAt(bytes: []const u8, offset: usize) Chunk {
+    return if (bytes.len - offset >= 16) loadChunk(bytes, offset) else loadTail(bytes[offset..]);
+}
+
+inline fn loadTail(bytes: []const u8) Chunk {
     const n = bytes.len;
     std.debug.assert(n < 16);
     var low: u64 = 0;
@@ -39,7 +40,6 @@ pub inline fn loadTail(bytes: []const u8) Chunk {
     return out;
 }
 
-/// First set lane, 16 if none.
 pub inline fn firstTrueLane(lanes: @Vector(16, bool)) u32 {
     const index: u32 = if (comptime has_nibble_mask)
         @ctz(nibbleMask(lanes)) >> 2
@@ -49,18 +49,9 @@ pub inline fn firstTrueLane(lanes: @Vector(16, bool)) u32 {
     return index;
 }
 
-/// Count of leading set lanes.
-pub inline fn leadingTrueCount(lanes: @Vector(16, bool)) u32 {
-    const count: u32 = if (comptime has_nibble_mask)
-        @ctz(~nibbleMask(lanes)) >> 2
-    else
-        @ctz(~@as(u16, @bitCast(lanes)));
-    std.debug.assert(count <= 16);
-    return count;
-}
-
 pub inline fn mask64(bytes: *const [64]u8, comptime predicate: anytype) u64 {
-    if (comptime has_nibble_mask) {
+    if (comptime has_neon) {
+        const pairSums = @"llvm.aarch64.neon.addp.v16i8";
         const lane_bits: Chunk = .{ 1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128 };
         var bits: [4]Chunk = undefined;
         inline for (&bits, 0..) |*chunk_bits, k| {
@@ -77,22 +68,6 @@ pub inline fn mask64(bytes: *const [64]u8, comptime predicate: anytype) u64 {
         mask |= @as(u64, @as(u16, @bitCast(lanes))) << (16 * k);
     }
     return mask;
-}
-
-inline fn pairSums(a: Chunk, b: Chunk) Chunk {
-    if (comptime has_neon) return @"llvm.aarch64.neon.addp.v16i8"(a, b);
-    const even = comptime pairLanes(0);
-    const odd = comptime pairLanes(1);
-    return @shuffle(u8, a, b, even) +% @shuffle(u8, a, b, odd);
-}
-
-fn pairLanes(comptime first: comptime_int) @Vector(16, i32) {
-    var lanes: [16]i32 = undefined;
-    for (0..8) |i| {
-        lanes[i] = 2 * i + first;
-        lanes[8 + i] = ~@as(i32, 2 * i + first);
-    }
-    return lanes;
 }
 
 // aarch64 lacks movemask, `shrn` packs a nibble per lane
@@ -195,7 +170,6 @@ test "lane scans find every boundary" {
         const chunk = loadChunk(&bytes, 0);
         const expected: u32 = @intCast(boundary);
         try testing.expectEqual(expected, firstTrueLane(chunk == splat('b')));
-        try testing.expectEqual(expected, leadingTrueCount(chunk == splat('a')));
     }
 }
 

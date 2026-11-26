@@ -44,128 +44,72 @@ pub const State = struct {
     gen_col: u32 = 0,
 
     pending: ?Segment = null,
+    prev: Segment = .{},
 
-    prev_gen_col: i32 = 0,
-    prev_orig_line: i32 = 0,
-    prev_orig_col: i32 = 0,
-    enc_gen_line: i32 = 0,
-    first_in_line: bool = true,
-
-    const Segment = struct { gen_line: u32, gen_col: u32, orig_line: u32, orig_col: u32 };
-
-    pub fn init(options: Options, source: []const u8) State {
-        return .{ .options = options, .source = source };
-    }
-
-    pub fn deinit(self: *State, allocator: Allocator) void {
-        self.out.deinit(allocator);
-    }
-
-    pub fn resolve(self: *State, offset: u32) LineCol {
-        return self.cursor.resolve(self.source, offset);
-    }
+    const Segment = struct {
+        gen_line: u32 = 0,
+        gen_col: u32 = 0,
+        orig_line: u32 = 0,
+        orig_col: u32 = 0,
+    };
 
     pub fn advance(self: *State, bytes: []const u8) void {
-        if (isPlainAscii(bytes)) {
-            self.gen_col += @intCast(bytes.len);
-            return;
-        }
-
-        var i: usize = 0;
-        var col_inc: u32 = 0;
-        var saw_break = false;
-        while (i < bytes.len) {
-            const brk = spec.line_terminators.lineBreakLen(bytes, i);
-            if (brk > 0) {
-                self.gen_line += 1;
-                col_inc = 0;
-                saw_break = true;
-                i += brk;
-            } else {
-                const n = std.unicode.utf8ByteSequenceLength(bytes[i]) catch 1;
-                col_inc += utf16Width(n);
-                i += n;
-            }
-        }
-        self.gen_col = if (saw_break) col_inc else self.gen_col + col_inc;
-    }
-
-    inline fn isPlainAscii(bytes: []const u8) bool {
+        const len: u32 = @intCast(bytes.len);
         var i: usize = 0;
         while (i < bytes.len) : (i += 16) {
-            const chunk = if (bytes.len - i >= 16) Simd.loadChunk(bytes, i) else Simd.loadTail(bytes[i..]);
-            if (@reduce(.Or, notPlainAscii(chunk))) return false;
+            if (@reduce(.Or, notPlainAscii(Simd.loadAt(bytes, i)))) break;
+        } else {
+            self.gen_col += len;
+            return;
         }
-        return true;
+        const start: SourceCursor = .{ .line = self.gen_line, .col = self.gen_col };
+        const end = start.forward(bytes, len);
+        self.gen_line = end.line;
+        self.gen_col = end.col;
     }
 
-    /// Records a mapping `col_offset` columns past the generated position. A later record at
-    /// the same position replaces it.
+    /// Maps the generated position `col_offset` columns ahead to the source `offset`. A later
+    /// record at the same position replaces it.
     pub fn record(
         self: *State,
         allocator: Allocator,
-        orig_line: u32,
-        orig_col: u32,
+        offset: u32,
         col_offset: u32,
     ) Allocator.Error!void {
-        const gen_col = self.gen_col + col_offset;
-        if (self.pending) |*pending| {
-            if (pending.gen_line == self.gen_line and pending.gen_col == gen_col) {
-                pending.orig_line = orig_line;
-                pending.orig_col = orig_col;
-                return;
-            }
-            try self.flush(allocator, pending.*);
-        }
-        self.pending = .{
+        const orig = self.cursor.resolve(self.source, offset);
+        const segment: Segment = .{
             .gen_line = self.gen_line,
-            .gen_col = gen_col,
-            .orig_line = orig_line,
-            .orig_col = orig_col,
+            .gen_col = self.gen_col + col_offset,
+            .orig_line = orig.line,
+            .orig_col = orig.col,
         };
+        if (self.pending) |pending| {
+            if (pending.gen_line != segment.gen_line or pending.gen_col != segment.gen_col) {
+                try self.flush(allocator, pending);
+            }
+        }
+        self.pending = segment;
     }
 
     fn flush(self: *State, allocator: Allocator, segment: Segment) Allocator.Error!void {
-        const gen_line: i32 = @intCast(segment.gen_line);
-        const line_gap: usize = @intCast(gen_line - self.enc_gen_line);
-
-        const needed = line_gap + 2 + 3 * 7;
-        if (self.out.capacity - self.out.items.len < needed) {
-            try self.out.ensureTotalCapacity(allocator, self.out.items.len + needed);
-        }
-        var dst: [*]u8 = self.out.items.ptr + self.out.items.len;
-        const base = dst;
-
-        if (gen_line > self.enc_gen_line) {
-            var gap = line_gap;
-            while (gap > 0) : (gap -= 1) {
-                dst[0] = ';';
-                dst += 1;
-            }
-            self.enc_gen_line = gen_line;
-            self.prev_gen_col = 0;
-            self.first_in_line = true;
-        }
-        if (!self.first_in_line) {
+        const line_gap = segment.gen_line - self.prev.gen_line;
+        try self.out.ensureUnusedCapacity(allocator, line_gap + 2 + 3 * 7);
+        var dst = self.out.items.ptr + self.out.items.len;
+        if (line_gap > 0) {
+            @memset(dst[0..line_gap], ';');
+            dst += line_gap;
+            self.prev.gen_col = 0;
+        } else if (self.out.items.len > 0) {
             dst[0] = ',';
             dst += 1;
         }
-        self.first_in_line = false;
-
-        const gen_col: i32 = @intCast(segment.gen_col);
-        dst = writeVlq(dst, gen_col - self.prev_gen_col);
-        self.prev_gen_col = gen_col;
+        dst = writeVlq(dst, segment.gen_col, self.prev.gen_col);
         // the source index delta, always zero with one source
         dst[0] = 'A';
-        dst += 1;
-        const orig_line: i32 = @intCast(segment.orig_line);
-        dst = writeVlq(dst, orig_line - self.prev_orig_line);
-        self.prev_orig_line = orig_line;
-        const orig_col: i32 = @intCast(segment.orig_col);
-        dst = writeVlq(dst, orig_col - self.prev_orig_col);
-        self.prev_orig_col = orig_col;
-
-        self.out.items.len += @intFromPtr(dst) - @intFromPtr(base);
+        dst = writeVlq(dst + 1, segment.orig_line, self.prev.orig_line);
+        dst = writeVlq(dst, segment.orig_col, self.prev.orig_col);
+        self.prev = segment;
+        self.out.items.len = dst - self.out.items.ptr;
     }
 
     pub fn build(self: *State, allocator: Allocator) Allocator.Error!SourceMap {
@@ -196,67 +140,53 @@ pub const State = struct {
 /// code units, scanning incrementally from the last position.
 pub const SourceCursor = struct {
     byte: u32 = 0,
-    utf16: u32 = 0,
     line: u32 = 0,
-    line_start_utf16: u32 = 0,
+    col: u32 = 0,
 
     pub fn resolve(self: *SourceCursor, source: []const u8, target: u32) LineCol {
         if (target >= self.byte) {
-            const end = @min(target, source.len);
-            var byte = self.byte;
-            var utf16 = self.utf16;
-            while (byte < end) {
-                if (source.len - byte >= 16) {
-                    const chunk = Simd.loadChunk(source, byte);
-                    const plain = @min(Simd.firstTrueLane(notPlainAscii(chunk)), end - byte);
-                    byte += plain;
-                    utf16 += plain;
-                    if (byte == end) break;
-                    if (plain == 16) continue;
-                }
-                const brk = spec.line_terminators.lineBreakLen(source, byte);
-                if (brk > 0) {
-                    self.line += 1;
-                    byte += brk;
-                    utf16 += if (brk == 2) @as(u32, 2) else 1;
-                    self.line_start_utf16 = utf16;
-                } else {
-                    const len = std.unicode.utf8ByteSequenceLength(source[byte]) catch 1;
-                    byte += len;
-                    utf16 += utf16Width(len);
-                }
-            }
-            self.byte = byte;
-            self.utf16 = utf16;
+            self.* = self.forward(source, @intCast(@min(target, source.len)));
         } else {
             while (self.byte > target) {
-                self.byte -= 1;
-                while (self.byte > 0 and isContinuation(source[self.byte])) self.byte -= 1;
-                const lead = source[self.byte];
-                self.utf16 -= utf16Width(std.unicode.utf8ByteSequenceLength(lead) catch 1);
+                self.byte = codePointStart(source, self.byte - 1);
                 // a crlf counts once
-                const is_break = if (lead == '\n')
+                const is_break = if (source[self.byte] == '\n')
                     self.byte == 0 or source[self.byte - 1] != '\r'
                 else
                     spec.line_terminators.lineBreakLen(source, self.byte) > 0;
                 if (is_break) self.line -= 1;
             }
-            self.line_start_utf16 = self.lineStart(source);
+            self.col = 0;
+            var at = self.byte;
+            while (at > 0) {
+                const prev = codePointStart(source, at - 1);
+                if (spec.line_terminators.lineBreakLen(source, prev) > 0) break;
+                self.col += utf16Width(std.unicode.utf8ByteSequenceLength(source[prev]) catch 1);
+                at = prev;
+            }
         }
-        return .{ .line = self.line, .col = self.utf16 - self.line_start_utf16 };
+        return .{ .line = self.line, .col = self.col };
     }
 
-    fn lineStart(self: *const SourceCursor, source: []const u8) u32 {
-        var b = self.byte;
-        var units_back: u32 = 0;
-        while (b > 0) {
-            var p = b - 1;
-            while (p > 0 and isContinuation(source[p])) p -= 1;
-            if (spec.line_terminators.lineBreakLen(source, p) > 0) break;
-            units_back += utf16Width(std.unicode.utf8ByteSequenceLength(source[p]) catch 1);
-            b = p;
+    inline fn forward(self: SourceCursor, text: []const u8, to: u32) SourceCursor {
+        var at = self;
+        while (at.byte < to) {
+            const plain_lanes = Simd.firstTrueLane(notPlainAscii(Simd.loadAt(text, at.byte)));
+            const plain = @min(plain_lanes, to - at.byte);
+            at.byte += plain;
+            at.col += plain;
+            if (at.byte == to) break;
+            if (plain == 16) continue;
+            const brk = spec.line_terminators.lineBreakLen(text, at.byte);
+            if (brk > 0) {
+                at = .{ .byte = at.byte + brk, .line = at.line + 1, .col = 0 };
+            } else {
+                const len = std.unicode.utf8ByteSequenceLength(text[at.byte]) catch 1;
+                at.byte += len;
+                at.col += utf16Width(len);
+            }
         }
-        return self.utf16 - units_back;
+        return at;
     }
 };
 
@@ -264,8 +194,10 @@ inline fn notPlainAscii(chunk: Simd.Chunk) @Vector(16, bool) {
     return (chunk >= Simd.splat(0x80)) | (chunk == Simd.splat('\n')) | (chunk == Simd.splat('\r'));
 }
 
-inline fn isContinuation(byte: u8) bool {
-    return (byte & 0xC0) == 0x80;
+fn codePointStart(source: []const u8, at: u32) u32 {
+    var start = at;
+    while (start > 0 and source[start] & 0xC0 == 0x80) start -= 1;
+    return start;
 }
 
 // a 4-byte utf-8 code point is a utf-16 surrogate pair
@@ -275,8 +207,8 @@ inline fn utf16Width(utf8_len: u8) u32 {
 
 const VLQ_CHARS: [64]u8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".*;
 
-// caller ensures at least 7 bytes of headroom
-inline fn writeVlq(dst: [*]u8, v: i32) [*]u8 {
+inline fn writeVlq(dst: [*]u8, now: u32, before: u32) [*]u8 {
+    const v: i32 = @bitCast(now -% before);
     var bits: u32 = if (v < 0) (@as(u32, @intCast(-v)) << 1) | 1 else @as(u32, @intCast(v)) << 1;
     var p = dst;
     while (true) {
