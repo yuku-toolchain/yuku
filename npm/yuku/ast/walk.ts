@@ -21,18 +21,13 @@ export type Visitors = {
   leave?: WalkHandler;
 };
 
-/** @internal */
-export type Handler = (node: Node, ctx: WalkContext) => void;
-
-/** @internal */
-export interface Handlers {
-  enter: Handler[];
-  leave: Handler[];
+interface Handlers {
+  enter: WalkHandler[];
+  leave: WalkHandler[];
   children: ChildVisitor | null;
 }
 
-/** @internal */
-export interface Frame {
+interface Frame {
   node: Node;
   key: string | null;
   list: Node[] | null;
@@ -54,8 +49,7 @@ export interface Slot {
 
 type Fields = Record<string, unknown>;
 
-/** @internal */
-export type ChildVisit<State> = (state: State, value: unknown, key: string) => boolean;
+type ChildVisit<State> = (state: State, value: unknown, key: string) => boolean;
 
 /** @internal */
 export type ChildVisitor = <State>(
@@ -92,7 +86,7 @@ export const CHILD_KEYS: Readonly<Record<string, readonly string[]>> = Object.as
 /** Walks a node depth-first in source order, every visitor of a list in one pass. */
 export function walk(node: Node, visitors: Visitors | readonly Visitors[]): void {
   assertNode(node, "walk");
-  visit(new WalkContext(new Dispatch([visitors].flat())), node, null, null, 0);
+  visit(new WalkContext([visitors].flat().map(compile)), node, null, null, 0);
 }
 
 /** The walk's position and edits, valid only during the visit that receives it. */
@@ -108,11 +102,13 @@ export class WalkContext {
   /** @internal */
   _replacement: Node[] = NO_NODES;
   /** @internal */
-  _dispatch: Dispatch;
+  _visitors: CompiledVisitor[];
+  /** @internal */
+  _handlers: Record<string, Handlers | undefined> = Object.create(null);
 
   /** @internal */
-  constructor(dispatch: Dispatch) {
-    this._dispatch = dispatch;
+  constructor(visitors: CompiledVisitor[]) {
+    this._visitors = visitors;
   }
 
   get parent(): Node | null {
@@ -197,7 +193,7 @@ function visit(
   let count: number;
   for (;;) {
     count = 1;
-    const handlers = ctx._dispatch.handlersOf(frame.node.type);
+    const handlers = handlersOf(ctx, frame.node.type);
     if (call(handlers.enter, frame.node, ctx)) {
       count = settle(ctx, frame);
       if (count === REVISIT) continue;
@@ -245,9 +241,9 @@ function run(
   for (;;) {
     const frame = frames[ctx._depth - 1]!;
     const entering = frame.phase === ENTER;
-    let handlers: Handler[];
+    let handlers: WalkHandler[];
     if (entering) {
-      frame.handlers = ctx._dispatch.handlersOf(frame.node.type);
+      frame.handlers = handlersOf(ctx, frame.node.type);
       handlers = frame.handlers.enter;
     } else {
       if (frame.phase === CHILDREN) {
@@ -278,7 +274,7 @@ function run(
   }
 }
 
-function call(handlers: Handler[], node: Node, ctx: WalkContext): boolean {
+function call(handlers: WalkHandler[], node: Node, ctx: WalkContext): boolean {
   for (let i = 0; i < handlers.length; i++) {
     handlers[i]!(node, ctx);
     if (ctx._signal !== SIGNAL_NONE) return true;
@@ -290,15 +286,18 @@ function settle(ctx: WalkContext, frame: Frame): number {
   const signal = ctx._signal;
   if (signal === SIGNAL_STOP) return STOPPED;
   ctx._signal = SIGNAL_NONE;
-  const slot = frameSlot(ctx._frames, ctx._depth);
+  const parent = ctx._frames[ctx._depth - 2]!.node;
+  const { list, index } = frame;
+  const key = frame.key!;
   if (signal === SIGNAL_REMOVE) {
     ctx._skipped = false;
-    removeAt(slot);
+    if (list === null) fieldsOf(parent)[key] = null;
+    else list.splice(index, 1);
     return 0;
   }
   const nodes = ctx._replacement;
   ctx._replacement = NO_NODES;
-  replaceAt(slot, nodes);
+  replaceAt({ parent, key, list, index }, nodes);
   if (++frame.replacements > REPLACEMENTS_MAX) {
     throw new Error(`walk: a node was replaced ${REPLACEMENTS_MAX} times in one place`);
   }
@@ -365,87 +364,51 @@ function openChild(ctx: WalkContext, frame: Frame): boolean {
   return false;
 }
 
-function frameSlot(frames: Frame[], depth: number): Slot {
-  const frame = frames[depth - 1]!;
-  return { parent: frames[depth - 2]!.node, key: frame.key!, list: frame.list, index: frame.index };
-}
-
 interface CompiledVisitor {
-  enter: Handler | null;
-  leave: Handler | null;
+  universal: WalkHooks;
   aliases: { members: ReadonlySet<string>; hooks: WalkHooks }[];
   typed: Record<string, WalkHooks | undefined>;
 }
 
-/** @internal */
-export class Dispatch {
-  private visitors: CompiledVisitor[];
-  private cache: Record<string, Handlers | undefined> = Object.create(null);
-
-  constructor(visitors: readonly Visitors[]) {
-    this.visitors = visitors.map(compile);
-  }
-
-  handlersOf(type: string): Handlers {
-    let handlers = this.cache[type];
-    if (handlers === undefined) {
-      handlers = handlersFor(this.visitors, type);
-      this.cache[type] = handlers;
-    }
-    return handlers;
-  }
-}
-
-function childVisitorOf(type: string): ChildVisitor | null {
-  const keys = CHILD_KEYS[type];
-  if (keys === undefined || keys.length === 0) return null;
-  const generated = CHILD_VISITORS[type];
-  if (generated !== undefined) return generated;
-  return (node, visit, state) => {
-    for (const key of keys) if (!visit(state, node[key], key)) return false;
-    return true;
-  };
+function handlersOf(ctx: WalkContext, type: string): Handlers {
+  return (ctx._handlers[type] ??= handlersFor(ctx._visitors, type));
 }
 
 function handlersFor(visitors: readonly CompiledVisitor[], type: string): Handlers {
-  const enter: Handler[] = [];
-  const leave: Handler[] = [];
+  const enter: WalkHandler[] = [];
+  const leave: WalkHandler[] = [];
   for (const visitor of visitors) {
-    const hooks: WalkHooks[] = [];
+    const hooks = [visitor.universal];
     for (const alias of visitor.aliases) if (alias.members.has(type)) hooks.push(alias.hooks);
     const typed = visitor.typed[type];
     if (typed !== undefined) hooks.push(typed);
-    const leaves: Handler[] = [];
-    if (visitor.enter !== null) enter.push(visitor.enter);
     for (const hook of hooks) {
       if (hook.enter !== undefined) enter.push(hook.enter);
-      if (hook.leave !== undefined) leaves.unshift(hook.leave);
+      if (hook.leave !== undefined) leave.unshift(hook.leave);
     }
-    if (visitor.leave !== null) leaves.push(visitor.leave);
-    leave.unshift(...leaves);
   }
-  return { enter, leave, children: childVisitorOf(type) };
+  const children = type in CHILD_KEYS ? (CHILD_VISITORS[type] ?? null) : null;
+  return { enter, leave, children };
 }
 
 function compile(visitor: Visitors): CompiledVisitor {
   if (visitor === null || typeof visitor !== "object") {
     throw new TypeError("walk: visitors must be an object of handlers by node type");
   }
-  const compiled: CompiledVisitor = { enter: null, leave: null, aliases: [], typed: {} };
+  const universal: WalkHooks = { enter: undefined, leave: undefined };
+  const compiled: CompiledVisitor = { universal, aliases: [], typed: {} };
   for (const [name, value] of Object.entries(visitor)) {
     if (value == null) continue;
-    const universal = name === "enter" || name === "leave";
-    if (universal && typeof value === "function") {
-      compiled[name] = value as Handler;
+    if (name === "enter" || name === "leave") {
+      if (typeof value !== "function") {
+        throw new TypeError(`walk: the '${name}' visitor must be a function`);
+      }
+      universal[name] = value as WalkHandler;
       continue;
     }
-    const members = ALIAS_MEMBERS[name];
-    if (universal || (members === undefined && !(name in CHILD_KEYS))) {
-      throw new TypeError(
-        universal
-          ? `walk: the '${name}' visitor must be a function`
-          : `walk: '${name}' is not a node type or alias`,
-      );
+    const members = ALIAS_MEMBERS.get(name);
+    if (members === undefined && !(name in CHILD_KEYS)) {
+      throw new TypeError(`walk: '${name}' is not a node type or alias`);
     }
     const hooks = hooksOf(name, value);
     if (members === undefined) compiled.typed[name] = hooks;
@@ -455,7 +418,7 @@ function compile(visitor: Visitors): CompiledVisitor {
 }
 
 function hooksOf(name: string, value: unknown): WalkHooks {
-  if (typeof value === "function") return { enter: value as Handler };
+  if (typeof value === "function") return { enter: value as WalkHandler };
   const hooks = value as WalkHooks;
   const valid =
     typeof value === "object" &&
@@ -496,11 +459,6 @@ export function replaceAt(slot: Slot, nodes: readonly Node[]): void {
   if (slot.list === null) fields[slot.key] = nodes[0];
   else slot.list.splice(slot.index, 1, ...nodes);
   moveComments(old, nodes[0]!, nodes[nodes.length - 1]!);
-}
-
-function removeAt(slot: Slot): void {
-  if (slot.list === null) fieldsOf(slot.parent)[slot.key] = null;
-  else slot.list.splice(slot.index, 1);
 }
 
 function moveComments(old: Node, first: Node, last: Node): void {

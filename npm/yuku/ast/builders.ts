@@ -1,4 +1,4 @@
-import type { Node, NodeOfType, NodeType } from "../types";
+import type { FunctionDeclaration, Node, NodeOfType, NodeType, TSDeclareFunction } from "../types";
 import { NODE_TYPES } from "./generated";
 
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
@@ -37,6 +37,26 @@ type Defaults<T> = {
 
 type Defaulted<K extends NodeType> = keyof Defaults<NodeOfType<K>>;
 
+const FUNCTION: Defaults<FunctionDeclaration> = {
+  async: false,
+  body: null,
+  expression: false,
+  generator: false,
+  id: null,
+  params: [],
+};
+const BODILESS_FUNCTION: Defaults<TSDeclareFunction> = {
+  async: false,
+  body: null,
+  declare: false,
+  expression: false,
+  generator: false,
+  id: null,
+  params: [],
+  returnType: null,
+  typeParameters: null,
+};
+
 const DEFAULTS: Partial<Record<string, object>> = {
   Program: { body: [], hashbang: null },
   BlockStatement: { body: [] },
@@ -48,41 +68,17 @@ const DEFAULTS: Partial<Record<string, object>> = {
   TryStatement: { finalizer: null, handler: null },
   ForStatement: { init: null, test: null, update: null },
   ForOfStatement: { await: false },
-  FunctionDeclaration: {
-    async: false,
-    body: null,
-    expression: false,
-    generator: false,
-    id: null,
-    params: [],
-  },
+  FunctionDeclaration: FUNCTION,
   ClassDeclaration: { decorators: [], id: null, superClass: null },
   VariableDeclaration: { declarations: [] },
-  TSDeclareFunction: {
-    async: false,
-    body: null,
-    declare: false,
-    expression: false,
-    generator: false,
-    id: null,
-    params: [],
-    returnType: null,
-    typeParameters: null,
-  },
+  TSDeclareFunction: BODILESS_FUNCTION,
   TSTypeAliasDeclaration: { declare: false, typeParameters: null },
   TSInterfaceDeclaration: { declare: false, extends: [], typeParameters: null },
   TSEnumDeclaration: { const: false, declare: false },
   TSModuleDeclaration: { declare: false, global: false },
   ArrayExpression: { elements: [] },
   ObjectExpression: { properties: [] },
-  FunctionExpression: {
-    async: false,
-    body: null,
-    expression: false,
-    generator: false,
-    id: null,
-    params: [],
-  },
+  FunctionExpression: FUNCTION,
   ArrowFunctionExpression: {
     async: false,
     expression: false,
@@ -120,17 +116,7 @@ const DEFAULTS: Partial<Record<string, object>> = {
   AccessorProperty: { computed: false, decorators: [], static: false, value: null },
   TSAbstractAccessorProperty: { computed: false, decorators: [], static: false, value: null },
   StaticBlock: { body: [] },
-  TSEmptyBodyFunctionExpression: {
-    async: false,
-    body: null,
-    declare: false,
-    expression: false,
-    generator: false,
-    id: null,
-    params: [],
-    returnType: null,
-    typeParameters: null,
-  },
+  TSEmptyBodyFunctionExpression: BODILESS_FUNCTION,
   JSXOpeningElement: { attributes: [], selfClosing: false },
   JSXAttribute: { value: null },
   TSTypeReference: { typeArguments: null },

@@ -2,7 +2,7 @@ import { slotOf, walk } from "../ast/walk";
 import type { Core } from "../core/core";
 import { decode, type Decoded, type EncodedNodes, type Semantic } from "../core/decode";
 import { encode } from "../core/encode";
-import { isTs, read, shippedCore, sourceText, treeFlags } from "../core/read";
+import { isTs, parseFlags, shippedCore, sourceText, treeFlags } from "../core/read";
 import type {
   Comment,
   Diagnostic,
@@ -109,12 +109,13 @@ export class SourceFile {
     this.source = text;
     this.project = project;
     this._core = options.core ?? shippedCore;
-    const entry = project !== null || options.analyze === true ? "analyze" : "parse";
-    const { buffer, lang, sourceType, flags } = read(text, options, entry);
+    const backend = this._core.backend();
+    const { lang, sourceType, flags } = parseFlags(options);
     this.lang = lang;
     this.sourceType = sourceType;
     this.flags = flags;
-    this.syntax = decode(buffer, text, this.path);
+    const entry = project !== null || options.analyze === true ? "analyze" : "parse";
+    this.syntax = decode(backend.run(entry, text, flags, 0), text, this.path);
     this.analyzed = this.syntax;
     if (malformed >= 0) {
       const span = { start: malformed, end: malformed + 1 };

@@ -12,7 +12,7 @@ import type {
   ParenthesizedExpression,
   PrivateFieldExpression,
   RegExpLiteral,
-    StaticMemberExpression,
+  StaticMemberExpression,
   StringLiteral,
   TSAsExpression,
   TSNonNullExpression,
@@ -20,7 +20,7 @@ import type {
   TSTypeAssertion,
 } from "../types";
 import { decodeBase64 } from "../core/base64";
-import { ALIAS_GROUPS, ALIAS_MEMBERS, type AliasMap, type AliasName } from "./aliases";
+import { ALIAS_MEMBERS, type AliasMap, type AliasName } from "./aliases";
 import { NODE_TYPES } from "./generated";
 import { CHAR, CHUNKS, START } from "./identifier-tables";
 import { JSX_ENTITIES } from "./jsx-entities";
@@ -43,11 +43,6 @@ const WRAPPERS: ReadonlySet<string> = new Set<Wrapper["type"]>([
   "TSTypeAssertion",
 ]);
 
-type _missing = Record<Exclude<NodeType, (typeof NODE_TYPES)[number]>, never>;
-type _extra = Record<Exclude<(typeof NODE_TYPES)[number], NodeType>, never>;
-const _exhaustive: [_missing, _extra] = [{}, {}];
-void _exhaustive;
-
 type ConcreteGuards = { [K in NodeType]: (node: MaybeNode) => node is NodeOfType<K> };
 
 type AliasGuards = { [K in AliasName]: (node: MaybeNode) => node is AliasMap[K] };
@@ -57,10 +52,10 @@ const concrete = Object.fromEntries(
 ) as ConcreteGuards;
 
 const aliases = Object.fromEntries(
-  (Object.keys(ALIAS_GROUPS) as AliasName[]).map((name) => {
-    const types = ALIAS_MEMBERS[name]!;
-    return [name, (node: MaybeNode) => node != null && types.has(node.type)];
-  }),
+  [...ALIAS_MEMBERS].map(([name, types]) => [
+    name,
+    (node: MaybeNode) => node != null && types.has(node.type),
+  ]),
 ) as AliasGuards;
 
 const shapes = {
