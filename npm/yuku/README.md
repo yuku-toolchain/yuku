@@ -54,9 +54,9 @@ The [guide](https://yuku.fyi/javascript/) documents how to [parse](https://yuku.
 
 Analyzing a whole codebase, it is faster than typescript-eslint and the TypeScript API, and on a single large file too.
 
-![Analyzing three.js (755 files) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/three.svg)
+![Analyzing Svelte (416 files) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/svelte.svg)
 
-![Analyzing typescript.js (7.8 MB) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/typescript_js.svg)
+![Analyzing lib.dom.d.ts (2.2 MB) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/lib_dom.svg)
 
 Measured on an Apple M3, see the [parser](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) and [analyzer](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js) benchmarks. Pass one `walk` all your visitors.
 
