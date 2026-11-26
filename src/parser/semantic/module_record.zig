@@ -7,6 +7,7 @@ const binder = @import("binder.zig");
 const sc = @import("scope.zig");
 
 const Allocator = std.mem.Allocator;
+const NodeIndex = ast.NodeIndex;
 const SymbolId = binder.SymbolId;
 const Semantic = binder.Semantic;
 
@@ -24,7 +25,7 @@ pub const Import = struct {
     /// The phase modifier, or `null`.
     phase: ?ast.ImportPhase = null,
     /// The specifier, call, or declaration the record comes from.
-    node: ast.NodeIndex,
+    node: NodeIndex,
     /// The body of an `.augmentation`.
     scope: sc.ScopeId = .none,
 
@@ -60,7 +61,7 @@ pub const Export = struct {
     /// True for type only exports.
     type_only: bool = false,
     /// The specifier, binding identifier, or declaration the record comes from.
-    node: ast.NodeIndex,
+    node: NodeIndex,
 
     pub const Kind = enum(u3) {
         /// `export { x }` and exported declarations, `export default` included
@@ -96,18 +97,10 @@ pub const Records = struct {
     imports: []const Import,
     exports: []const Export,
     flags: Flags,
-
-    pub const empty: Records = .{
-        .imports = &.{},
-        .exports = &.{},
-        .flags = .{},
-    };
 };
 
 /// Collects the records of an analyzed tree, static ones first, each group in source order.
 pub fn collect(tree: *ast.Tree, sem: *const Semantic) Allocator.Error!Records {
-    std.debug.assert(tree.root != .null);
-
     var collector = Collector{
         .tree = tree,
         .sem = sem,
@@ -122,9 +115,14 @@ pub fn collect(tree: *ast.Tree, sem: *const Semantic) Allocator.Error!Records {
     try collector.sweep();
     // in a script, `declare module "m"` declares `m` instead
     if (!collector.flags.uses_import_meta and !binder.hasModuleSyntax(tree, body)) {
-        collector.dropAugmentations();
+        var kept: usize = 0;
+        for (collector.imports.items) |record| {
+            if (record.kind == .augmentation) continue;
+            collector.imports.items[kept] = record;
+            kept += 1;
+        }
+        collector.imports.shrinkRetainingCapacity(kept);
     }
-
     return .{
         .imports = collector.imports.items,
         .exports = collector.exports.items,
@@ -143,12 +141,26 @@ const Collector = struct {
     exports: std.ArrayList(Export) = .empty,
     flags: Flags = .{},
 
-    fn statement(self: *Collector, index: ast.NodeIndex) Allocator.Error!void {
+    fn statement(self: *Collector, index: NodeIndex) Allocator.Error!void {
         switch (self.tree.data(index)) {
             .import_declaration => |decl| try self.importDeclaration(decl, index),
             .ts_import_equals_declaration => |decl| try self.importEquals(decl, index),
             .export_named_declaration => |decl| try self.exportNamed(decl, index),
-            .export_default_declaration => |decl| try self.exportDefault(decl, index),
+            .export_default_declaration => |decl| {
+                const declaration = self.tree.data(decl.declaration);
+                const symbol: SymbolId = switch (declaration) {
+                    inline .function, .class, .ts_interface_declaration => |d| self.symbolAt(d.id),
+                    .identifier_reference => |id| self.moduleBinding(id.name),
+                    else => .none,
+                };
+                try self.exports.append(self.allocator, .{
+                    .kind = .named,
+                    .name = self.default_name,
+                    .symbol = symbol,
+                    .type_only = declaration == .ts_interface_declaration,
+                    .node = index,
+                });
+            },
             .export_all_declaration => |decl| try self.exports.append(self.allocator, .{
                 .kind = if (decl.exported != .null) .namespace else .star,
                 .name = if (decl.exported != .null) self.stringOf(decl.exported) else .empty,
@@ -186,79 +198,56 @@ const Collector = struct {
         }
     }
 
-    fn dropAugmentations(self: *Collector) void {
-        var kept: usize = 0;
-        for (self.imports.items) |record| {
-            if (record.kind == .augmentation) continue;
-            self.imports.items[kept] = record;
-            kept += 1;
-        }
-        self.imports.shrinkRetainingCapacity(kept);
-    }
-
     fn importDeclaration(
         self: *Collector,
         decl: ast.ImportDeclaration,
-        index: ast.NodeIndex,
+        index: NodeIndex,
     ) Allocator.Error!void {
         const specifier = self.stringOf(decl.source);
         const type_only = decl.import_kind == .type;
         const specifiers = self.tree.extra(decl.specifiers);
+        if (specifiers.len == 0) return self.imports.append(self.allocator, .{
+            .kind = .side_effect,
+            .specifier = specifier,
+            .type_only = type_only,
+            .phase = decl.phase,
+            .node = index,
+        });
 
-        if (specifiers.len == 0) {
-            return self.imports.append(self.allocator, .{
-                .kind = .side_effect,
+        for (specifiers) |spec_index| switch (self.tree.data(spec_index)) {
+            inline .import_specifier,
+            .import_default_specifier,
+            .import_namespace_specifier,
+            => |spec, tag| try self.imports.append(self.allocator, .{
+                .kind = if (tag == .import_namespace_specifier) .namespace else .named,
+                .name = switch (tag) {
+                    .import_specifier => self.stringOf(spec.imported),
+                    .import_default_specifier => self.default_name,
+                    else => .empty,
+                },
+                .symbol = self.symbolAt(spec.local),
                 .specifier = specifier,
-                .type_only = type_only,
+                .type_only = type_only or (tag == .import_specifier and spec.import_kind == .type),
                 .phase = decl.phase,
-                .node = index,
-            });
-        }
-
-        for (specifiers) |spec_index| {
-            switch (self.tree.data(spec_index)) {
-                .import_specifier => |spec| try self.imports.append(self.allocator, .{
-                    .kind = .named,
-                    .name = self.stringOf(spec.imported),
-                    .symbol = self.bindingSymbol(spec.local),
-                    .specifier = specifier,
-                    .type_only = type_only or spec.import_kind == .type,
-                    .phase = decl.phase,
-                    .node = spec_index,
-                }),
-                .import_default_specifier => |spec| try self.imports.append(self.allocator, .{
-                    .kind = .named,
-                    .name = self.default_name,
-                    .symbol = self.bindingSymbol(spec.local),
-                    .specifier = specifier,
-                    .type_only = type_only,
-                    .phase = decl.phase,
-                    .node = spec_index,
-                }),
-                .import_namespace_specifier => |spec| try self.imports.append(self.allocator, .{
-                    .kind = .namespace,
-                    .symbol = self.bindingSymbol(spec.local),
-                    .specifier = specifier,
-                    .type_only = type_only,
-                    .phase = decl.phase,
-                    .node = spec_index,
-                }),
-                else => {},
-            }
-        }
+                .node = spec_index,
+            }),
+            else => {},
+        };
     }
 
     // the qualified name form aliases a namespace, not a module
     fn importEquals(
         self: *Collector,
         decl: ast.TSImportEqualsDeclaration,
-        index: ast.NodeIndex,
+        index: NodeIndex,
     ) Allocator.Error!void {
-        if (self.tree.data(decl.module_reference) != .ts_external_module_reference) return;
-        const reference = self.tree.data(decl.module_reference).ts_external_module_reference;
+        const reference = switch (self.tree.data(decl.module_reference)) {
+            .ts_external_module_reference => |reference| reference,
+            else => return,
+        };
         try self.imports.append(self.allocator, .{
             .kind = .import_equals,
-            .symbol = self.bindingSymbol(decl.id),
+            .symbol = self.symbolAt(decl.id),
             .specifier = self.stringOf(reference.expression),
             .type_only = decl.import_kind == .type,
             .node = index,
@@ -268,41 +257,39 @@ const Collector = struct {
     fn exportNamed(
         self: *Collector,
         decl: ast.ExportNamedDeclaration,
-        index: ast.NodeIndex,
+        index: NodeIndex,
     ) Allocator.Error!void {
-        if (decl.declaration != .null) {
-            const type_only = decl.export_kind == .type;
-            if (self.tree.data(decl.declaration) == .ts_import_equals_declaration) {
-                const alias = self.tree.data(decl.declaration).ts_import_equals_declaration;
+        const type_only = decl.export_kind == .type;
+        if (decl.declaration != .null) switch (self.tree.data(decl.declaration)) {
+            .ts_import_equals_declaration => |alias| {
                 try self.importEquals(alias, decl.declaration);
                 return self.exportLocal(alias.id, type_only or alias.import_kind == .type);
-            }
-            return self.declarationNames(decl.declaration, type_only);
-        }
+            },
+            else => return self.declarationNames(decl.declaration, type_only),
+        };
 
         const has_source = decl.source != .null;
         const specifier = if (has_source) self.stringOf(decl.source) else ast.String.empty;
-
-        if (has_source and decl.specifiers.len == 0) {
-            return self.imports.append(self.allocator, .{
-                .kind = .side_effect,
-                .specifier = specifier,
-                .type_only = decl.export_kind == .type,
-                .node = index,
-            });
-        }
+        if (has_source and decl.specifiers.len == 0) return self.imports.append(self.allocator, .{
+            .kind = .side_effect,
+            .specifier = specifier,
+            .type_only = type_only,
+            .node = index,
+        });
 
         for (self.tree.extra(decl.specifiers)) |spec_index| {
-            if (self.tree.data(spec_index) != .export_specifier) continue;
-            const spec = self.tree.data(spec_index).export_specifier;
-
+            const spec = switch (self.tree.data(spec_index)) {
+                .export_specifier => |spec| spec,
+                else => continue,
+            };
+            const local = self.stringOf(spec.local);
             try self.exports.append(self.allocator, .{
                 .kind = if (has_source) .re_export else .named,
                 .name = self.stringOf(spec.exported),
-                .symbol = if (has_source) .none else self.moduleBinding(self.stringOf(spec.local)),
-                .from_name = if (has_source) self.stringOf(spec.local) else .empty,
+                .symbol = if (has_source) .none else self.moduleBinding(local),
+                .from_name = if (has_source) local else .empty,
                 .specifier = specifier,
-                .type_only = decl.export_kind == .type or spec.export_kind == .type,
+                .type_only = type_only or spec.export_kind == .type,
                 .node = spec_index,
             });
         }
@@ -310,26 +297,23 @@ const Collector = struct {
 
     fn declarationNames(
         self: *Collector,
-        declaration: ast.NodeIndex,
+        declaration: NodeIndex,
         type_only: bool,
     ) Allocator.Error!void {
         switch (self.tree.data(declaration)) {
-            .variable_declaration => |decl| {
-                for (self.tree.extra(decl.declarators)) |declarator| {
-                    const id = self.tree.data(declarator).variable_declarator.id;
-                    try self.patternNames(id, type_only);
-                }
+            .variable_declaration => |decl| for (self.tree.extra(decl.declarators)) |declarator| {
+                const id = self.tree.data(declarator).variable_declarator.id;
+                try self.patternNames(id, type_only);
             },
-            inline .function, .class => |decl| {
+            inline .function, .class, .ts_enum_declaration => |decl| {
                 if (decl.id != .null) try self.exportLocal(decl.id, type_only);
             },
             inline .ts_type_alias_declaration, .ts_interface_declaration => |decl| {
                 try self.exportLocal(decl.id, true);
             },
-            .ts_enum_declaration => |decl| try self.exportLocal(decl.id, type_only),
             .ts_module_declaration => |decl| {
-                if (decl.id == .null) return;
                 var head = decl.id;
+                if (head == .null) return;
                 while (self.tree.data(head) == .ts_qualified_name) {
                     head = self.tree.data(head).ts_qualified_name.left;
                 }
@@ -342,12 +326,8 @@ const Collector = struct {
         }
     }
 
-    fn patternNames(
-        self: *Collector,
-        root: ast.NodeIndex,
-        type_only: bool,
-    ) Allocator.Error!void {
-        var stack: std.ArrayList(ast.NodeIndex) = .empty;
+    fn patternNames(self: *Collector, root: NodeIndex, type_only: bool) Allocator.Error!void {
+        var stack: std.ArrayList(NodeIndex) = .empty;
         defer stack.deinit(self.allocator);
         try stack.append(self.allocator, root);
 
@@ -357,31 +337,19 @@ const Collector = struct {
                 .binding_identifier => try self.exportLocal(pattern, type_only),
                 .assignment_pattern => |p| try stack.append(self.allocator, p.left),
                 .binding_rest_element => |p| try stack.append(self.allocator, p.argument),
-                .array_pattern => |p| {
+                .binding_property => |p| try stack.append(self.allocator, p.value),
+                inline .array_pattern, .object_pattern => |p, tag| {
                     try stack.append(self.allocator, p.rest);
-                    var elements = std.mem.reverseIterator(self.tree.extra(p.elements));
-                    while (elements.next()) |element| try stack.append(self.allocator, element);
-                },
-                .object_pattern => |p| {
-                    try stack.append(self.allocator, p.rest);
-                    var properties = std.mem.reverseIterator(self.tree.extra(p.properties));
-                    while (properties.next()) |property| {
-                        if (self.tree.data(property) == .binding_property) {
-                            const value = self.tree.data(property).binding_property.value;
-                            try stack.append(self.allocator, value);
-                        }
-                    }
+                    const nested = if (tag == .array_pattern) p.elements else p.properties;
+                    var children = std.mem.reverseIterator(self.tree.extra(nested));
+                    while (children.next()) |child| try stack.append(self.allocator, child);
                 },
                 else => {},
             }
         }
     }
 
-    fn exportLocal(
-        self: *Collector,
-        binding: ast.NodeIndex,
-        type_only: bool,
-    ) Allocator.Error!void {
+    fn exportLocal(self: *Collector, binding: NodeIndex, type_only: bool) Allocator.Error!void {
         const name = self.tree.data(binding).binding_identifier.name;
         try self.exports.append(self.allocator, .{
             .kind = .named,
@@ -392,97 +360,60 @@ const Collector = struct {
         });
     }
 
-    fn exportDefault(
-        self: *Collector,
-        decl: ast.ExportDefaultDeclaration,
-        index: ast.NodeIndex,
-    ) Allocator.Error!void {
-        const declaration = self.tree.data(decl.declaration);
-        const symbol: SymbolId = switch (declaration) {
-            inline .function, .class => |d| if (d.id != .null) self.bindingSymbol(d.id) else .none,
-            .ts_interface_declaration => |d| self.bindingSymbol(d.id),
-            .identifier_reference => |id| self.moduleBinding(id.name),
-            else => .none,
-        };
-        try self.exports.append(self.allocator, .{
-            .kind = .named,
-            .name = self.default_name,
-            .symbol = symbol,
-            .type_only = declaration == .ts_interface_declaration,
-            .node = index,
-        });
-    }
-
     fn sweep(self: *Collector) Allocator.Error!void {
-        for (0..self.tree.nodes.len) |i| {
-            const index: ast.NodeIndex = @fromBackingInt(@intCast(i));
-            switch (self.tree.data(index)) {
-                .import_expression => |expr| try self.dynamicImport(expr, index),
-                .call_expression => |call| try self.requireCall(call, index),
-                .meta_property => |meta| self.metaProperty(meta),
+        const tree = self.tree;
+        for (tree.nodes.items(.data), 0..) |data, i| {
+            const index: NodeIndex = @fromBackingInt(@intCast(i));
+            switch (data) {
+                .import_expression => |expr| if (self.literal(expr.source)) |specifier| {
+                    try self.imports.append(self.allocator, .{
+                        .kind = .dynamic,
+                        .specifier = specifier,
+                        .phase = expr.phase,
+                        .node = index,
+                    });
+                },
+                .call_expression => |call| if (self.requireSpecifier(call)) |specifier| {
+                    try self.imports.append(self.allocator, .{
+                        .kind = .require,
+                        .specifier = specifier,
+                        .node = index,
+                    });
+                },
+                .meta_property => |meta| {
+                    if (meta.meta == .null or tree.data(meta.meta) != .identifier_name) continue;
+                    const head = tree.string(tree.data(meta.meta).identifier_name.name);
+                    if (std.mem.eql(u8, head, "import")) self.flags.uses_import_meta = true;
+                },
                 else => {},
             }
         }
 
         for (self.sem.references) |ref| {
             if (ref.symbol != .none or ref.flags.type_position) continue;
-            const name = self.tree.string(ref.name);
-            if (std.mem.eql(u8, name, "require")) {
-                self.flags.uses_require = true;
-            } else if (std.mem.eql(u8, name, "module")) {
-                self.flags.uses_module = true;
-            } else if (std.mem.eql(u8, name, "exports")) {
-                self.flags.uses_exports = true;
+            const name = tree.string(ref.name);
+            inline for (.{ "require", "module", "exports" }) |free| {
+                if (std.mem.eql(u8, name, free)) @field(self.flags, "uses_" ++ free) = true;
             }
         }
     }
 
-    fn dynamicImport(
-        self: *Collector,
-        expr: ast.ImportExpression,
-        index: ast.NodeIndex,
-    ) Allocator.Error!void {
-        const specifier = self.literal(expr.source) orelse return;
-        try self.imports.append(self.allocator, .{
-            .kind = .dynamic,
-            .specifier = specifier,
-            .phase = expr.phase,
-            .node = index,
-        });
-    }
-
-    // a local binding named `require` makes the call an ordinary call
-    fn requireCall(
-        self: *Collector,
-        call: ast.CallExpression,
-        index: ast.NodeIndex,
-    ) Allocator.Error!void {
-        if (call.callee == .null) return;
-        if (self.tree.data(call.callee) != .identifier_reference) return;
-        const callee = self.tree.data(call.callee).identifier_reference;
-        if (!std.mem.eql(u8, self.tree.string(callee.name), "require")) return;
-        if (self.sem.symbolOf(call.callee) != null) return;
-
+    // the specifier of a `require("m")` call, which a local binding named `require` makes an
+    // ordinary call
+    fn requireSpecifier(self: *const Collector, call: ast.CallExpression) ?ast.String {
+        if (call.callee == .null) return null;
+        const callee = switch (self.tree.data(call.callee)) {
+            .identifier_reference => |callee| callee,
+            else => return null,
+        };
+        if (!std.mem.eql(u8, self.tree.string(callee.name), "require")) return null;
+        if (self.sem.symbolOf(call.callee) != null) return null;
         const arguments = self.tree.extra(call.arguments);
-        if (arguments.len != 1) return;
-        const specifier = self.literal(arguments[0]) orelse return;
-
-        try self.imports.append(self.allocator, .{
-            .kind = .require,
-            .specifier = specifier,
-            .node = index,
-        });
+        return if (arguments.len == 1) self.literal(arguments[0]) else null;
     }
 
-    fn metaProperty(self: *Collector, meta: ast.MetaProperty) void {
-        if (meta.meta == .null or self.tree.data(meta.meta) != .identifier_name) return;
-        const head = self.tree.data(meta.meta).identifier_name;
-        if (std.mem.eql(u8, self.tree.string(head.name), "import")) {
-            self.flags.uses_import_meta = true;
-        }
-    }
-
-    fn bindingSymbol(self: *const Collector, binding: ast.NodeIndex) SymbolId {
+    fn symbolAt(self: *const Collector, binding: NodeIndex) SymbolId {
+        if (binding == .null) return .none;
         return self.moduleBinding(self.tree.data(binding).binding_identifier.name);
     }
 
@@ -490,14 +421,13 @@ const Collector = struct {
         return self.sem.binding(self.top_scope, self.tree.string(name)) orelse .none;
     }
 
-    fn literal(self: *const Collector, node: ast.NodeIndex) ?ast.String {
+    fn literal(self: *const Collector, node: NodeIndex) ?ast.String {
         if (node == .null) return null;
         const unwrapped = static_semantics.unwrapParens(self.tree, node);
         return static_semantics.stringLiteralLike(self.tree, unwrapped);
     }
 
-    fn stringOf(self: *const Collector, node: ast.NodeIndex) ast.String {
-        std.debug.assert(node != .null);
+    fn stringOf(self: *const Collector, node: NodeIndex) ast.String {
         return switch (self.tree.data(node)) {
             inline .identifier_name, .identifier_reference, .binding_identifier => |id| id.name,
             .string_literal => |lit| lit.value,

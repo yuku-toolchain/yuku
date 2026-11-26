@@ -30,8 +30,6 @@ pub fn walk(
     comptime options: Options,
 ) Allocator.Error!void {
     comptime validateHooks(V);
-    std.debug.assert(ctx.tree.root != .null);
-
     var path_buffer: [walk_depth_max]ast.NodeIndex = undefined;
     if (comptime @hasField(C, "path")) ctx.path.items = &path_buffer;
     defer if (comptime @hasField(C, "path")) {
@@ -203,13 +201,18 @@ fn Walker(comptime C: type, comptime V: type, comptime options: Options) type {
             index: ast.NodeIndex,
         ) Allocator.Error!Action {
             if (comptime @hasDecl(V, "enter_node")) {
-                const action = try unwrapAction(self.visitor.enter_node(data, index, ctx));
+                const action = try actionOf(self.visitor.enter_node(data, index, ctx));
                 if (action != .proceed) return action;
             }
             const name = "enter_" ++ @tagName(tag);
             if (comptime !@hasDecl(V, name)) return .proceed;
             const payload = @field(data, @tagName(tag));
-            return unwrapAction(@field(V, name)(self.visitor, payload, index, ctx));
+            return actionOf(@field(V, name)(self.visitor, payload, index, ctx));
+        }
+
+        inline fn actionOf(result: anytype) Allocator.Error!Action {
+            const value = if (@typeInfo(@TypeOf(result)) == .error_union) try result else result;
+            return if (@TypeOf(value) == void) .proceed else value;
         }
 
         inline fn exit(
@@ -336,10 +339,6 @@ fn walkDeepPushChildren(
     std.mem.reverse(WalkStep, steps.items[children_start..]);
 }
 
-inline fn unwrapAction(result: anytype) Allocator.Error!Action {
-    return result;
-}
-
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decl_names) |name| {
         const node_name = if (std.mem.startsWith(u8, name, "enter_"))
@@ -353,19 +352,6 @@ fn validateHooks(comptime V: type) void {
         if (!@hasField(ast.NodeData, node_name)) {
             @compileError("Invalid visitor hook '" ++ name ++
                 "': no field '" ++ node_name ++ "' exists in ast.NodeData");
-        }
-
-        const expected = @FieldType(ast.NodeData, node_name);
-        const hook_param_types = @typeInfo(@TypeOf(@field(V, name))).@"fn".param_types;
-
-        if (hook_param_types.len >= 3) {
-            if (hook_param_types[1]) |actual| {
-                if (actual != expected) {
-                    @compileError("Visitor hook '" ++ name ++
-                        "': expected payload type '" ++ @typeName(expected) ++
-                        "', found '" ++ @typeName(actual) ++ "'");
-                }
-            }
         }
     }
 }

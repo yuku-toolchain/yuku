@@ -41,7 +41,6 @@ pub const Ctx = struct {
 
 /// Walks the tree tracking the node path and scopes, and returns the `ScopeTree`.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!ScopeTree {
-    std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree);
     try wk.walk(Ctx, V, visitor, &ctx, .{ .whole_tree = false });
     return ctx.scope.toScopeTree();

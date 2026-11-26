@@ -7,7 +7,7 @@ const Allocator = std.mem.Allocator;
 /// Identifier for a `Scope`. `.root` is the global scope and `.none` means absent.
 pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
 
-pub const module_scope: ScopeId = @fromBackingInt(@intCast(1));
+pub const module_scope: ScopeId = @fromBackingInt(1);
 
 /// A lexical scope.
 pub const Scope = struct {
@@ -68,14 +68,11 @@ pub const ScopeTree = struct {
 
     /// The scope with the given id.
     pub inline fn get(self: ScopeTree, id: ScopeId) Scope {
-        std.debug.assert(id != .none);
-        std.debug.assert(@backingInt(id) < self.list.len);
         return self.list[@backingInt(id)];
     }
 
     /// Iterates from `start` up to the root.
     pub inline fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
-        std.debug.assert(start == .none or @backingInt(start) < self.list.len);
         return .{ .list = self.list, .current = start };
     }
 
@@ -88,7 +85,6 @@ pub const ScopeTree = struct {
         pub inline fn next(self: *AncestorIterator) ?ScopeId {
             const id = self.current;
             if (id == .none) return null;
-            std.debug.assert(@backingInt(id) < self.list.len);
             self.current = self.list[@backingInt(id)].parent;
             return id;
         }
@@ -102,248 +98,7 @@ pub const ScopeTracker = struct {
     current: ScopeId = .root,
     decorator_saved: std.ArrayList(ScopeId) = .empty,
 
-    pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
-        std.debug.assert(tree.root != .null);
-
-        const alloc = tree.allocator();
-        var self = ScopeTracker{ .tree = tree, .allocator = alloc };
-
-        const estimated_scopes: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 16)));
-        try self.scopes.ensureTotalCapacity(alloc, estimated_scopes);
-        std.debug.assert(self.scopes.items.len == 0);
-
-        self.scopes.appendAssumeCapacity(.{
-            .node = tree.root,
-            .parent = .none,
-            .hoist_target = .root,
-            .kind = .global,
-            .flags = .{},
-        });
-        if (tree.source_type == .module) {
-            self.scopes.appendAssumeCapacity(.{
-                .node = tree.root,
-                .parent = .root,
-                .hoist_target = module_scope,
-                .kind = .module,
-                .flags = .{ .strict = true },
-            });
-            self.current = module_scope;
-        }
-
-        std.debug.assert(self.scopes.items.len == if (tree.source_type == .module)
-            @as(usize, 2)
-        else
-            1);
-        return self;
-    }
-
-    fn pushScope(
-        self: *ScopeTracker,
-        kind: Scope.Kind,
-        node: ast.NodeIndex,
-        flags: Scope.Flags,
-    ) Allocator.Error!void {
-        std.debug.assert(self.scopes.items.len < std.math.maxInt(u32));
-
-        const id: ScopeId = @fromBackingInt(@intCast(self.scopes.items.len));
-        const parent = self.currentScope();
-        std.debug.assert(opens_scope.contains(self.tree.data(node)));
-
-        try self.scopes.append(self.allocator, .{
-            .node = node,
-            .parent = self.current,
-            .hoist_target = if (kind.isHoistTarget()) id else parent.hoist_target,
-            .kind = kind,
-            .flags = flags,
-        });
-        self.current = id;
-    }
-
-    fn popScope(self: *ScopeTracker) void {
-        std.debug.assert(self.current != .none);
-        std.debug.assert(self.current != .root);
-
-        self.current = self.currentScope().parent;
-    }
-
-    pub inline fn enter(
-        self: *ScopeTracker,
-        comptime tag: ast.NodeTag,
-        index: ast.NodeIndex,
-        parent: ast.NodeIndex,
-        data: ast.NodeData,
-    ) Allocator.Error!void {
-        switch (tag) {
-            .directive => {
-                const d = data.directive;
-                if (std.mem.eql(u8, self.tree.string(d.value), "use strict")) {
-                    self.currentMut().flags.strict = true;
-                }
-            },
-            .function => {
-                const func = data.function;
-                const flags = self.functionFlags(func.body);
-                const declaration = func.type == .function_declaration or
-                    func.type == .ts_declare_function;
-                if (!declaration and func.id != .null) {
-                    try self.pushScope(.expression_name, index, flags);
-                }
-                if (declaration and !self.tree.isTs() and isIfClause(self.tree, parent)) {
-                    try self.pushScope(.block, index, self.inheritStrictFlag());
-                }
-                try self.pushScope(.function, index, flags);
-            },
-            .arrow_function_expression => {
-                const expr = data.arrow_function_expression;
-                try self.pushScope(.function, index, self.functionFlags(expr.body));
-            },
-            .function_body => {
-                if (parent == .null) return;
-                const params = switch (self.tree.data(parent)) {
-                    .function => |f| f.params,
-                    .arrow_function_expression => |a| a.params,
-                    else => return,
-                };
-                try self.pushScope(.function_body, index, self.inheritStrictFlag());
-                // a separate var environment exists only with parameter expressions (10.2.11)
-                if (!hasParameterExpression(self.tree, params)) {
-                    const enclosing = self.currentScope().parent;
-                    self.currentMut().hoist_target = self.get(enclosing).hoist_target;
-                }
-            },
-            .block_statement => {
-                // a catch body shares the parameter scope so 14.15.1 conflicts surface,
-                // unless a parameter expression runs before the body exists (14.15.2)
-                const current = self.tree.data(self.currentScope().node);
-                const shares_catch_scope = current == .catch_clause and
-                    current.catch_clause.body == index and
-                    static_semantics.findPatternExpression(
-                        self.tree,
-                        current.catch_clause.param,
-                    ) == null;
-                if (!shares_catch_scope) {
-                    try self.pushScope(.block, index, self.inheritStrictFlag());
-                }
-            },
-            .switch_case => {
-                // one case-block scope per switch, entered after the discriminant (14.12.4)
-                if (parent == .null) return;
-                if (self.currentScope().node != parent) {
-                    try self.pushScope(.block, parent, self.inheritStrictFlag());
-                }
-            },
-            .for_statement,
-            .for_in_statement,
-            .for_of_statement,
-            .catch_clause,
-            .ts_interface_declaration,
-            .ts_type_alias_declaration,
-            .ts_function_type,
-            .ts_constructor_type,
-            .ts_method_signature,
-            .ts_call_signature_declaration,
-            .ts_construct_signature_declaration,
-            .ts_index_signature,
-            .ts_mapped_type,
-            .ts_conditional_type,
-            // tsc resolves unqualified member references inside the body
-            .ts_enum_body,
-            => try self.pushScope(.block, index, self.inheritStrictFlag()),
-            .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
-            // a scope per qualifier of `namespace A.B.C {}`
-            .ts_module_declaration => {
-                const decl = data.ts_module_declaration;
-                var name = decl.id;
-                while (self.tree.data(name) == .ts_qualified_name) {
-                    try self.pushScope(.ts_module, index, self.inheritStrictFlag());
-                    name = self.tree.data(name).ts_qualified_name.left;
-                }
-            },
-            .class => {
-                const cls = data.class;
-                // class code is always strict (15.7.14)
-                const flags = Scope.Flags{ .strict = true };
-                if (cls.type != .class_declaration and cls.id != .null) {
-                    try self.pushScope(.expression_name, index, flags);
-                }
-                try self.pushScope(.class, index, flags);
-            },
-            .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
-            .decorator => {
-                try self.decorator_saved.append(self.allocator, self.current);
-                const on_class = parent != .null and self.tree.data(parent) == .class;
-                self.current = self.decoratorScope(on_class);
-            },
-            else => {},
-        }
-    }
-
-    fn decoratorScope(self: *const ScopeTracker, on_class: bool) ScopeId {
-        var it = self.ancestors(self.current);
-        const class = while (it.next()) |id| {
-            if (self.get(id).kind == .class) break id;
-        } else return self.current;
-        if (!on_class) return class;
-        const outer = self.get(class).parent;
-        if (self.get(outer).kind == .expression_name) return self.get(outer).parent;
-        return outer;
-    }
-
-    // a body's "use strict" also covers its parameters
-    fn functionFlags(self: *const ScopeTracker, body_index: ast.NodeIndex) Scope.Flags {
-        const strict = self.currentScope().flags.strict;
-        return .{ .strict = strict or hasUseStrict(self.tree, body_index) };
-    }
-
-    // a function an if clause holds sits alone in a block of its own (B.3.3)
-    // https://tc39.es/ecma262/#sec-functiondeclarations-in-ifstatement-statement-clauses
-    fn isIfClause(tree: *const ast.Tree, parent: ast.NodeIndex) bool {
-        return parent != .null and tree.data(parent) == .if_statement;
-    }
-
-    fn hasUseStrict(tree: *const ast.Tree, body_index: ast.NodeIndex) bool {
-        if (body_index == .null) return false;
-        const body = tree.data(body_index);
-        if (body != .function_body) return false;
-        for (tree.extra(body.function_body.body)) |statement| {
-            const data = tree.data(statement);
-            if (data != .directive) break;
-            if (std.mem.eql(u8, tree.string(data.directive.value), "use strict")) return true;
-        }
-        return false;
-    }
-
-    inline fn inheritStrictFlag(self: *const ScopeTracker) Scope.Flags {
-        return .{ .strict = self.currentScope().flags.strict };
-    }
-
-    pub inline fn exit(
-        self: *ScopeTracker,
-        comptime tag: ast.NodeTag,
-        index: ast.NodeIndex,
-    ) void {
-        switch (tag) {
-            // the root and module scopes outlive the walk
-            .program => {},
-            .decorator => {
-                std.debug.assert(self.decorator_saved.items.len > 0);
-                self.current = self.decorator_saved.pop().?;
-            },
-            else => if (comptime opens_scope.contains(tag)) {
-                while (self.current != .root and self.currentScope().node == index) {
-                    self.popScope();
-                }
-            },
-        }
-    }
-
-    // the tags `enter` pushes a scope for, a switch's case block included
-    const opens_scope = std.EnumSet(ast.NodeTag).initMany(&.{
-        .function,
-        .arrow_function_expression,
-        .function_body,
-        .block_statement,
-        .switch_statement,
+    const opens_block = std.EnumSet(ast.NodeTag).initMany(&.{
         .for_statement,
         .for_in_statement,
         .for_of_statement,
@@ -358,28 +113,186 @@ pub const ScopeTracker = struct {
         .ts_index_signature,
         .ts_mapped_type,
         .ts_conditional_type,
+        // tsc resolves unqualified member references inside the body
         .ts_enum_body,
+    });
+
+    const opens_scope = opens_block.unionWith(.initMany(&.{
+        .function,
+        .arrow_function_expression,
+        .function_body,
+        .block_statement,
+        .switch_statement,
         .ts_module_block,
         .ts_module_declaration,
         .class,
         .static_block,
-    });
+    }));
 
-    fn hasParameterExpression(tree: *const ast.Tree, params: ast.NodeIndex) bool {
-        if (params == .null) return false;
-        const data = tree.data(params);
-        if (data != .formal_parameters) return false;
-        return static_semantics.findParameterExpression(tree, data.formal_parameters) != null;
+    pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
+        const alloc = tree.allocator();
+        var self = ScopeTracker{ .tree = tree, .allocator = alloc };
+        try self.scopes.ensureTotalCapacity(alloc, @max(16, tree.nodes.len / 16));
+        self.scopes.appendAssumeCapacity(.{
+            .node = tree.root,
+            .parent = .none,
+            .hoist_target = .root,
+            .kind = .global,
+            .flags = .{},
+        });
+        if (tree.source_type == .module) try self.pushScope(.module, tree.root, true);
+        return self;
     }
 
-    inline fn currentScope(self: *const ScopeTracker) Scope {
-        std.debug.assert(self.current != .none);
-        return self.get(self.current);
+    fn pushScope(
+        self: *ScopeTracker,
+        kind: Scope.Kind,
+        node: ast.NodeIndex,
+        strict: bool,
+    ) Allocator.Error!void {
+        std.debug.assert(kind == .module or opens_scope.contains(self.tree.data(node)));
+        const id: ScopeId = @fromBackingInt(@intCast(self.scopes.items.len));
+        const parent = self.get(self.current);
+        try self.scopes.append(self.allocator, .{
+            .node = node,
+            .parent = self.current,
+            .hoist_target = if (kind.isHoistTarget()) id else parent.hoist_target,
+            .kind = kind,
+            .flags = .{ .strict = strict or parent.flags.strict },
+        });
+        self.current = id;
     }
 
-    inline fn currentMut(self: *ScopeTracker) *Scope {
-        std.debug.assert(self.current != .none);
-        return &self.scopes.items[@backingInt(self.current)];
+    pub inline fn enter(
+        self: *ScopeTracker,
+        comptime tag: ast.NodeTag,
+        index: ast.NodeIndex,
+        parent: ast.NodeIndex,
+        data: ast.NodeData,
+    ) Allocator.Error!void {
+        switch (tag) {
+            .directive => if (isUseStrict(self.tree, data)) {
+                self.scopes.items[@backingInt(self.current)].flags.strict = true;
+            },
+            .function => {
+                const func = data.function;
+                const strict = self.isStrictFunction(func.body);
+                const declaration = func.type == .function_declaration or
+                    func.type == .ts_declare_function;
+                if (!declaration and func.id != .null) {
+                    try self.pushScope(.expression_name, index, strict);
+                }
+                // a function an if clause holds sits alone in a block of its own (B.3.3)
+                // https://tc39.es/ecma262/#sec-functiondeclarations-in-ifstatement-statement-clauses
+                if (declaration and !self.tree.isTs() and parent != .null and
+                    self.tree.data(parent) == .if_statement)
+                {
+                    try self.pushScope(.block, index, false);
+                }
+                try self.pushScope(.function, index, strict);
+            },
+            .arrow_function_expression => {
+                const body = data.arrow_function_expression.body;
+                try self.pushScope(.function, index, self.isStrictFunction(body));
+            },
+            .function_body => {
+                if (parent == .null) return;
+                const params = switch (self.tree.data(parent)) {
+                    inline .function, .arrow_function_expression => |f| f.params,
+                    else => return,
+                };
+                const enclosing = self.current;
+                try self.pushScope(.function_body, index, false);
+                // a separate var environment exists only with parameter expressions (10.2.11)
+                if (!static_semantics.containsExpression(self.tree, params)) {
+                    const hoist_target = self.get(enclosing).hoist_target;
+                    self.scopes.items[@backingInt(self.current)].hoist_target = hoist_target;
+                }
+            },
+            .block_statement => {
+                // a catch body shares the parameter scope so 14.15.1 conflicts surface,
+                // unless a parameter expression runs before the body exists (14.15.2)
+                const shares_catch_scope = switch (self.tree.data(self.get(self.current).node)) {
+                    .catch_clause => |clause| clause.body == index and
+                        !static_semantics.containsExpression(self.tree, clause.param),
+                    else => false,
+                };
+                if (!shares_catch_scope) try self.pushScope(.block, index, false);
+            },
+            .switch_case => {
+                // one case-block scope per switch, entered after the discriminant (14.12.4)
+                if (parent == .null or self.get(self.current).node == parent) return;
+                try self.pushScope(.block, parent, false);
+            },
+            .ts_module_block => try self.pushScope(.ts_module, index, false),
+            // a scope per qualifier of `namespace A.B.C {}`
+            .ts_module_declaration => {
+                var name = data.ts_module_declaration.id;
+                while (self.tree.data(name) == .ts_qualified_name) {
+                    try self.pushScope(.ts_module, index, false);
+                    name = self.tree.data(name).ts_qualified_name.left;
+                }
+            },
+            .class => {
+                const cls = data.class;
+                // class code is always strict (15.7.14)
+                if (cls.type != .class_declaration and cls.id != .null) {
+                    try self.pushScope(.expression_name, index, true);
+                }
+                try self.pushScope(.class, index, true);
+            },
+            .static_block => try self.pushScope(.static_block, index, false),
+            .decorator => {
+                try self.decorator_saved.append(self.allocator, self.current);
+                const on_class = parent != .null and self.tree.data(parent) == .class;
+                self.current = self.decoratorScope(on_class);
+            },
+            else => if (comptime opens_block.contains(tag)) {
+                try self.pushScope(.block, index, false);
+            },
+        }
+    }
+
+    pub inline fn exit(
+        self: *ScopeTracker,
+        comptime tag: ast.NodeTag,
+        index: ast.NodeIndex,
+    ) void {
+        if (tag == .decorator) {
+            self.current = self.decorator_saved.pop().?;
+        } else if (comptime opens_scope.contains(tag)) {
+            while (self.current != .root and self.get(self.current).node == index) {
+                self.current = self.get(self.current).parent;
+            }
+        }
+    }
+
+    fn decoratorScope(self: *const ScopeTracker, on_class: bool) ScopeId {
+        var it = self.ancestors(self.current);
+        const class = while (it.next()) |id| {
+            if (self.get(id).kind == .class) break id;
+        } else return self.current;
+        if (!on_class) return class;
+        const outer = self.get(class).parent;
+        if (self.get(outer).kind == .expression_name) return self.get(outer).parent;
+        return outer;
+    }
+
+    fn isStrictFunction(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
+        if (self.get(self.current).flags.strict) return true;
+        if (body_index == .null) return false;
+        const body = self.tree.data(body_index);
+        if (body != .function_body) return false;
+        for (self.tree.extra(body.function_body.body)) |statement| {
+            const data = self.tree.data(statement);
+            if (data != .directive) break;
+            if (isUseStrict(self.tree, data)) return true;
+        }
+        return false;
+    }
+
+    fn isUseStrict(tree: *const ast.Tree, directive: ast.NodeData) bool {
+        return std.mem.eql(u8, tree.string(directive.directive.value), "use strict");
     }
 
     /// The scope with the given id.

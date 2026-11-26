@@ -23,49 +23,33 @@ pub fn propName(tree: *const ast.Tree, key: ast.NodeIndex) ?PropName {
 }
 
 /// https://tc39.es/ecma262/#sec-static-semantics-containsexpression
-pub fn findParameterExpression(tree: *const ast.Tree, params: ast.FormalParameters) ?ast.NodeIndex {
-    for (tree.extra(params.items)) |param_idx| {
-        const pattern = switch (tree.data(param_idx)) {
-            .formal_parameter => |fp| fp.pattern,
-            .ts_parameter_property => |pp| pp.parameter,
-            else => param_idx,
-        };
-        if (findPatternExpression(tree, pattern)) |found| return found;
-    }
-    if (params.rest != .null) return findPatternExpression(tree, params.rest);
-    return null;
-}
-
-/// https://tc39.es/ecma262/#sec-static-semantics-containsexpression
-pub fn findPatternExpression(tree: *const ast.Tree, pattern: ast.NodeIndex) ?ast.NodeIndex {
-    if (pattern == .null) return null;
+pub fn containsExpression(tree: *const ast.Tree, pattern: ast.NodeIndex) bool {
+    if (pattern == .null) return false;
     switch (tree.data(pattern)) {
-        .assignment_pattern => return pattern,
-        .binding_rest_element => |rest| return findPatternExpression(tree, rest.argument),
-        .array_pattern => |arr| {
-            for (tree.extra(arr.elements)) |element| {
-                if (findPatternExpression(tree, element)) |found| return found;
+        .assignment_pattern => return true,
+        .formal_parameter => |parameter| return containsExpression(tree, parameter.pattern),
+        .ts_parameter_property => |property| return containsExpression(tree, property.parameter),
+        .binding_rest_element => |rest| return containsExpression(tree, rest.argument),
+        inline .formal_parameters, .array_pattern => |list, tag| {
+            const items = if (tag == .array_pattern) list.elements else list.items;
+            for (tree.extra(items)) |item| {
+                if (containsExpression(tree, item)) return true;
             }
-            return findPatternExpression(tree, arr.rest);
+            return containsExpression(tree, list.rest);
         },
-        .object_pattern => |obj| {
-            for (tree.extra(obj.properties)) |prop_idx| {
-                switch (tree.data(prop_idx)) {
-                    .binding_property => |prop| {
-                        if (prop.computed) return prop.key;
-                        if (findPatternExpression(tree, prop.value)) |found| return found;
-                    },
-                    else => {},
-                }
+        .object_pattern => |object| {
+            for (tree.extra(object.properties)) |property| {
+                if (containsExpression(tree, property)) return true;
             }
             // a BindingRestProperty is always `...BindingIdentifier`
-            return null;
+            return false;
         },
-        else => return null,
+        .binding_property => |property| return property.computed or
+            containsExpression(tree, property.value),
+        else => return false,
     }
 }
 
-/// The value of a string literal, or of a template literal without substitutions.
 pub fn stringLiteralLike(tree: *const ast.Tree, node: ast.NodeIndex) ?ast.String {
     std.debug.assert(node != .null);
     switch (tree.data(node)) {
@@ -80,7 +64,6 @@ pub fn stringLiteralLike(tree: *const ast.Tree, node: ast.NodeIndex) ?ast.String
     }
 }
 
-/// The expression inside any number of parentheses.
 pub fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
     std.debug.assert(node != .null);
     var current = node;
@@ -99,11 +82,8 @@ pub fn isAnnexBForInHead(
     declarator_id: ast.NodeIndex,
     is_for_in: bool,
 ) bool {
-    if (!is_for_in) return false;
-    if (kind != .@"var") return false;
-    if (tree.isTs()) return false;
-    if (tree.isModule()) return false;
-    return tree.data(declarator_id) == .binding_identifier;
+    return is_for_in and kind == .@"var" and !tree.isTs() and !tree.isModule() and
+        tree.data(declarator_id) == .binding_identifier;
 }
 
 /// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist

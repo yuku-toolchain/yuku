@@ -1,5 +1,3 @@
-//! Walker mechanics, from hook dispatch order to transform-traverser mutation.
-
 const std = @import("std");
 const parser = @import("parser");
 const helpers = @import("../helpers.zig");

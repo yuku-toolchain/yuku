@@ -1,5 +1,3 @@
-//! Shared helpers for the Zig-side tests.
-
 const std = @import("std");
 const parser = @import("parser");
 
