@@ -53,10 +53,8 @@ pub const SourceType = enum {
 
     /// `.commonjs` for `.cjs` and `.cts` paths, `.module` otherwise.
     pub fn fromPath(path: []const u8) SourceType {
-        if (std.mem.endsWith(u8, path, ".cjs") or std.mem.endsWith(u8, path, ".cts")) {
-            return .commonjs;
-        }
-        return .module;
+        const commonjs = std.mem.endsWith(u8, path, ".cjs") or std.mem.endsWith(u8, path, ".cts");
+        return if (commonjs) .commonjs else .module;
     }
 };
 
@@ -70,17 +68,13 @@ pub const Lang = enum {
 
     /// Infers the language from a file extension, `js` for any unknown one.
     pub fn fromPath(path: []const u8) Lang {
-        if (std.mem.endsWith(u8, path, ".d.ts") or
-            std.mem.endsWith(u8, path, ".d.mts") or
-            std.mem.endsWith(u8, path, ".d.cts"))
-        {
-            return .dts;
+        const extensions = [_]struct { []const u8, Lang }{
+            .{ ".d.ts", .dts }, .{ ".d.mts", .dts }, .{ ".d.cts", .dts }, .{ ".tsx", .tsx },
+            .{ ".ts", .ts },    .{ ".mts", .ts },    .{ ".cts", .ts },    .{ ".jsx", .jsx },
+        };
+        for (extensions) |extension| {
+            if (std.mem.endsWith(u8, path, extension[0])) return extension[1];
         }
-        if (std.mem.endsWith(u8, path, ".tsx")) return .tsx;
-        if (std.mem.endsWith(u8, path, ".ts") or
-            std.mem.endsWith(u8, path, ".mts") or
-            std.mem.endsWith(u8, path, ".cts")) return .ts;
-        if (std.mem.endsWith(u8, path, ".jsx")) return .jsx;
         return .js;
     }
 };
@@ -194,35 +188,26 @@ pub const Tree = struct {
 
     /// Returns the data for the node at the given index.
     pub inline fn data(self: *const Tree, index: NodeIndex) NodeData {
-        std.debug.assert(index != .null);
-        std.debug.assert(@backingInt(index) < self.nodes.len);
         return self.nodes.items(.data)[@backingInt(index)];
     }
 
     /// Returns the span for the node at the given index.
     pub inline fn span(self: *const Tree, index: NodeIndex) Span {
-        std.debug.assert(index != .null);
-        std.debug.assert(@backingInt(index) < self.nodes.len);
         return self.nodes.items(.span)[@backingInt(index)];
     }
 
     /// The nodes of a child list.
     pub inline fn extra(self: *const Tree, range: IndexRange) []const NodeIndex {
-        std.debug.assert(range.start + range.len <= self.extras.items.len);
         return self.extras.items[range.start..][0..range.len];
     }
 
     /// Replaces an existing node's data in place.
     pub inline fn setData(self: *Tree, index: NodeIndex, new_data: NodeData) void {
-        std.debug.assert(index != .null);
-        std.debug.assert(@backingInt(index) < self.nodes.len);
         self.nodes.items(.data)[@backingInt(index)] = new_data;
     }
 
     /// Replaces an existing node's span in place.
     pub inline fn setSpan(self: *Tree, index: NodeIndex, new_span: Span) void {
-        std.debug.assert(index != .null);
-        std.debug.assert(@backingInt(index) < self.nodes.len);
         std.debug.assert(new_span.start <= new_span.end);
         self.nodes.items(.span)[@backingInt(index)] = new_span;
     }
@@ -230,8 +215,6 @@ pub const Tree = struct {
     /// Renames a name node in place, any node a declaration or a reference can be. A quoted
     /// name, such as the enum member `"a"`, keeps its quotes.
     pub fn setName(self: *Tree, index: NodeIndex, name: String) void {
-        std.debug.assert(index != .null);
-        std.debug.assert(@backingInt(index) < self.nodes.len);
         switch (self.nodes.items(.data)[@backingInt(index)]) {
             inline .binding_identifier,
             .identifier_reference,
@@ -278,7 +261,6 @@ pub const Tree = struct {
 
     /// Appends a child list and returns its range.
     pub inline fn addExtra(self: *Tree, children: []const NodeIndex) std.mem.Allocator.Error!IndexRange {
-        std.debug.assert(self.extras.items.len + children.len <= std.math.maxInt(u32));
         const start: u32 = @intCast(self.extras.items.len);
         if (self.extras.items.len + children.len > self.extras.capacity) {
             try self.growExtras(children.len);
@@ -292,7 +274,6 @@ pub const Tree = struct {
             4 => dest[0..4].* = children[0..4].*,
             else => @memcpy(dest, children),
         }
-        std.debug.assert(self.extras.items.len == start + children.len);
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
@@ -507,13 +488,30 @@ pub const StaticBlock = struct {
     body: IndexRange,
 };
 
-fn operatorText(comptime Operator: type, operator: Operator) []const u8 {
-    const texts = comptime blk: {
-        var t: [@typeInfo(Operator).@"enum".field_names.len][]const u8 = undefined;
-        for (std.enums.values(Operator)) |o| t[@backingInt(o)] = o.toToken().toString().?;
-        break :blk t;
+fn OperatorTokens(comptime Operator: type, comptime tokens: []const TokenTag) type {
+    std.debug.assert(tokens.len == @typeInfo(Operator).@"enum".field_names.len);
+    return struct {
+        const texts = blk: {
+            var table: [tokens.len][]const u8 = undefined;
+            for (tokens, &table) |token, *text| text.* = token.toString().?;
+            break :blk table;
+        };
+
+        pub fn fromToken(token: TokenTag) Operator {
+            inline for (tokens, 0..) |operator_token, i| {
+                if (token == operator_token) return @fromBackingInt(i);
+            }
+            unreachable;
+        }
+
+        pub fn toToken(self: Operator) TokenTag {
+            return tokens[@backingInt(self)];
+        }
+
+        pub fn toString(self: Operator) []const u8 {
+            return texts[@backingInt(self)];
+        }
     };
-    return texts[@backingInt(operator)];
 }
 
 /// Operator of a `binary_expression`.
@@ -545,64 +543,17 @@ pub const BinaryOperator = enum {
     in,
     instanceof,
 
-    pub fn fromToken(token: TokenTag) BinaryOperator {
-        return switch (token) {
-            .equal => .equal,
-            .not_equal => .not_equal,
-            .strict_equal => .strict_equal,
-            .strict_not_equal => .strict_not_equal,
-            .less_than => .less_than,
-            .less_than_equal => .less_than_or_equal,
-            .greater_than => .greater_than,
-            .greater_than_equal => .greater_than_or_equal,
-            .plus => .add,
-            .minus => .subtract,
-            .star => .multiply,
-            .slash => .divide,
-            .percent => .modulo,
-            .exponent => .exponent,
-            .bitwise_or => .bitwise_or,
-            .bitwise_xor => .bitwise_xor,
-            .bitwise_and => .bitwise_and,
-            .left_shift => .left_shift,
-            .right_shift => .right_shift,
-            .unsigned_right_shift => .unsigned_right_shift,
-            .in => .in,
-            .instanceof => .instanceof,
-            else => unreachable,
-        };
-    }
-
-    pub fn toToken(self: BinaryOperator) TokenTag {
-        return switch (self) {
-            .equal => .equal,
-            .not_equal => .not_equal,
-            .strict_equal => .strict_equal,
-            .strict_not_equal => .strict_not_equal,
-            .less_than => .less_than,
-            .less_than_or_equal => .less_than_equal,
-            .greater_than => .greater_than,
-            .greater_than_or_equal => .greater_than_equal,
-            .add => .plus,
-            .subtract => .minus,
-            .multiply => .star,
-            .divide => .slash,
-            .modulo => .percent,
-            .exponent => .exponent,
-            .bitwise_or => .bitwise_or,
-            .bitwise_xor => .bitwise_xor,
-            .bitwise_and => .bitwise_and,
-            .left_shift => .left_shift,
-            .right_shift => .right_shift,
-            .unsigned_right_shift => .unsigned_right_shift,
-            .in => .in,
-            .instanceof => .instanceof,
-        };
-    }
-
-    pub fn toString(self: BinaryOperator) []const u8 {
-        return operatorText(BinaryOperator, self);
-    }
+    const tokens = OperatorTokens(BinaryOperator, &.{
+        .equal,       .not_equal,       .strict_equal, .strict_not_equal,
+        .less_than,   .less_than_equal, .greater_than, .greater_than_equal,
+        .plus,        .minus,           .star,         .slash,
+        .percent,     .exponent,        .bitwise_or,   .bitwise_xor,
+        .bitwise_and, .left_shift,      .right_shift,  .unsigned_right_shift,
+        .in,          .instanceof,
+    });
+    pub const fromToken = tokens.fromToken;
+    pub const toToken = tokens.toToken;
+    pub const toString = tokens.toString;
 };
 
 /// A binary expression with a non-logical operator.
@@ -620,26 +571,12 @@ pub const LogicalOperator = enum {
     @"or",
     nullish_coalescing,
 
-    pub fn fromToken(token: TokenTag) LogicalOperator {
-        return switch (token) {
-            .logical_and => .@"and",
-            .logical_or => .@"or",
-            .nullish_coalescing => .nullish_coalescing,
-            else => unreachable,
-        };
-    }
-
-    pub fn toToken(self: LogicalOperator) TokenTag {
-        return switch (self) {
-            .@"and" => .logical_and,
-            .@"or" => .logical_or,
-            .nullish_coalescing => .nullish_coalescing,
-        };
-    }
-
-    pub fn toString(self: LogicalOperator) []const u8 {
-        return operatorText(LogicalOperator, self);
-    }
+    const tokens = OperatorTokens(LogicalOperator, &.{
+        .logical_and, .logical_or, .nullish_coalescing,
+    });
+    pub const fromToken = tokens.fromToken;
+    pub const toToken = tokens.toToken;
+    pub const toString = tokens.toString;
 };
 
 /// A short-circuiting `&&`, `||`, or `??` expression.
@@ -671,34 +608,12 @@ pub const UnaryOperator = enum {
     void,
     delete,
 
-    pub fn fromToken(token: TokenTag) UnaryOperator {
-        return switch (token) {
-            .minus => .negate,
-            .plus => .positive,
-            .logical_not => .logical_not,
-            .bitwise_not => .bitwise_not,
-            .typeof => .typeof,
-            .void => .void,
-            .delete => .delete,
-            else => unreachable,
-        };
-    }
-
-    pub fn toToken(self: UnaryOperator) TokenTag {
-        return switch (self) {
-            .negate => .minus,
-            .positive => .plus,
-            .logical_not => .logical_not,
-            .bitwise_not => .bitwise_not,
-            .typeof => .typeof,
-            .void => .void,
-            .delete => .delete,
-        };
-    }
-
-    pub fn toString(self: UnaryOperator) []const u8 {
-        return operatorText(UnaryOperator, self);
-    }
+    const tokens = OperatorTokens(UnaryOperator, &.{
+        .minus, .plus, .logical_not, .bitwise_not, .typeof, .void, .delete,
+    });
+    pub const fromToken = tokens.fromToken;
+    pub const toToken = tokens.toToken;
+    pub const toString = tokens.toString;
 };
 
 /// A prefix unary expression such as `!x` or `typeof x`.
@@ -713,24 +628,12 @@ pub const UpdateOperator = enum {
     increment,
     decrement,
 
-    pub fn fromToken(token: TokenTag) UpdateOperator {
-        return switch (token) {
-            .increment => .increment,
-            .decrement => .decrement,
-            else => unreachable,
-        };
-    }
-
-    pub fn toToken(self: UpdateOperator) TokenTag {
-        return switch (self) {
-            .increment => .increment,
-            .decrement => .decrement,
-        };
-    }
-
-    pub fn toString(self: UpdateOperator) []const u8 {
-        return operatorText(UpdateOperator, self);
-    }
+    const tokens = OperatorTokens(UpdateOperator, &.{
+        .increment, .decrement,
+    });
+    pub const fromToken = tokens.fromToken;
+    pub const toToken = tokens.toToken;
+    pub const toString = tokens.toString;
 };
 
 /// A prefix or postfix `++` or `--` expression.
@@ -760,52 +663,17 @@ pub const AssignmentOperator = enum {
     logical_and_assign,
     nullish_assign,
 
-    pub fn fromToken(token: TokenTag) AssignmentOperator {
-        return switch (token) {
-            .assign => .assign,
-            .plus_assign => .add_assign,
-            .minus_assign => .subtract_assign,
-            .star_assign => .multiply_assign,
-            .slash_assign => .divide_assign,
-            .percent_assign => .modulo_assign,
-            .exponent_assign => .exponent_assign,
-            .left_shift_assign => .left_shift_assign,
-            .right_shift_assign => .right_shift_assign,
-            .unsigned_right_shift_assign => .unsigned_right_shift_assign,
-            .bitwise_or_assign => .bitwise_or_assign,
-            .bitwise_xor_assign => .bitwise_xor_assign,
-            .bitwise_and_assign => .bitwise_and_assign,
-            .logical_or_assign => .logical_or_assign,
-            .logical_and_assign => .logical_and_assign,
-            .nullish_assign => .nullish_assign,
-            else => unreachable,
-        };
-    }
-
-    pub fn toToken(self: AssignmentOperator) TokenTag {
-        return switch (self) {
-            .assign => .assign,
-            .add_assign => .plus_assign,
-            .subtract_assign => .minus_assign,
-            .multiply_assign => .star_assign,
-            .divide_assign => .slash_assign,
-            .modulo_assign => .percent_assign,
-            .exponent_assign => .exponent_assign,
-            .left_shift_assign => .left_shift_assign,
-            .right_shift_assign => .right_shift_assign,
-            .unsigned_right_shift_assign => .unsigned_right_shift_assign,
-            .bitwise_or_assign => .bitwise_or_assign,
-            .bitwise_xor_assign => .bitwise_xor_assign,
-            .bitwise_and_assign => .bitwise_and_assign,
-            .logical_or_assign => .logical_or_assign,
-            .logical_and_assign => .logical_and_assign,
-            .nullish_assign => .nullish_assign,
-        };
-    }
-
-    pub fn toString(self: AssignmentOperator) []const u8 {
-        return operatorText(AssignmentOperator, self);
-    }
+    const tokens = OperatorTokens(AssignmentOperator, &.{
+        .assign,                      .plus_assign,       .minus_assign,
+        .star_assign,                 .slash_assign,      .percent_assign,
+        .exponent_assign,             .left_shift_assign, .right_shift_assign,
+        .unsigned_right_shift_assign, .bitwise_or_assign, .bitwise_xor_assign,
+        .bitwise_and_assign,          .logical_or_assign, .logical_and_assign,
+        .nullish_assign,
+    });
+    pub const fromToken = tokens.fromToken;
+    pub const toToken = tokens.toToken;
+    pub const toString = tokens.toString;
 };
 
 /// An assignment such as `x = 1` or `x += 1`.
