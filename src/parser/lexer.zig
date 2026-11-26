@@ -1062,15 +1062,18 @@ pub const Lexer = struct {
 
     noinline fn scanLineComment(self: *Lexer, start: u32, comptime head: u32) !u32 {
         const src = self.source;
+        const stops = if (head == 4) "\r\n\xe2-" else "\r\n\xe2";
         var end = start + head;
         while (true) : (end += 1) {
-            end = findAnyPos("\r\n\xe2", src, end);
-            if (end == src.len or src[end] != 0xE2) break;
-            if (line_terminators.unicodeSeparatorLen(src, end) > 0) break;
-        }
-        if (head == 4) {
-            if (std.mem.findPosLinear(u8, src[0..end], start + head, "-->")) |close| {
-                end = @intCast(close + 3);
+            end = findAnyPos(stops, src, end);
+            if (end == src.len) break;
+            switch (src[end]) {
+                '-' => if (std.mem.startsWith(u8, src[end..], "-->")) {
+                    end += 3;
+                    break;
+                },
+                0xE2 => if (line_terminators.unicodeSeparatorLen(src, end) > 0) break,
+                else => break,
             }
         }
         try self.recordComment(.line, start, end, head);
