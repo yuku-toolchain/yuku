@@ -40,7 +40,8 @@ function decodeDiagnostics(buffer, offset, count, path) {
     out[j] = { severity: sev, message: msg, path, start: ds, end: de, labels, help };
   }
   return out;
-}const BINARY_OPS = ["==", "!=", "===", "!==", "<", "<=", ">", ">=", "+", "-", "*", "/", "%", "**", "|", "^", "&", "<<", ">>", ">>>", "in", "instanceof"];
+}
+const BINARY_OPS = ["==", "!=", "===", "!==", "<", "<=", ">", ">=", "+", "-", "*", "/", "%", "**", "|", "^", "&", "<<", ">>", ">>>", "in", "instanceof"];
 const LOGICAL_OPS = ["&&", "||", "??"];
 const UNARY_OPS = ["-", "+", "!", "~", "typeof", "void", "delete"];
 const UPDATE_OPS = ["++", "--"];

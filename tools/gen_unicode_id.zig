@@ -8,14 +8,11 @@ const extraction_path = ".zig-cache/ucd";
 const properties_path = extraction_path ++ "/DerivedCoreProperties.txt";
 const output_path = "./src/spec/unicode_id.zig";
 
-const chunk_elements = 16;
-const bits_per_element = 32;
-const elements_per_chunk = chunk_elements * bits_per_element;
+const chunk_bits = 512;
 const codepoint_count = std.math.maxInt(u21) + 1;
-const chunk_count = codepoint_count / elements_per_chunk;
 
 const CodepointSet = std.bit_set.Dynamic;
-const Chunk = [chunk_elements]u32;
+const Chunk = [chunk_bits / 32]u32;
 
 pub fn main(init: std.process.Init) !void {
     const gpa = init.gpa;
@@ -68,7 +65,6 @@ pub fn main(init: std.process.Init) !void {
     try file_writer.end();
 }
 
-/// Downloads the Unicode data on first use, then returns the ID_Start and ID_Continue sets.
 pub fn downloadAndParseProperties(
     io: std.Io,
     gpa: std.mem.Allocator,
@@ -116,15 +112,12 @@ fn writeTables(
     var leaves: std.array_hash_map.Auto(Chunk, void) = .empty;
     defer leaves.deinit(gpa);
 
-    var root: [chunk_count]u32 = undefined;
+    var root: [codepoint_count / chunk_bits]u32 = undefined;
     for (&root, 0..) |*leaf_index, chunk_index| {
         var chunk: Chunk = @splat(0);
-        for (&chunk, 0..) |*element, element_index| {
-            for (0..bits_per_element) |bit_index| {
-                const cp = chunk_index * elements_per_chunk +
-                    element_index * bits_per_element + bit_index;
-                if (codepoints.isSet(cp)) element.* |= @as(u32, 1) << @intCast(bit_index);
-            }
+        for (0..chunk_bits) |bit| {
+            if (!codepoints.isSet(chunk_index * chunk_bits + bit)) continue;
+            chunk[bit / 32] |= @as(u32, 1) << @intCast(bit % 32);
         }
         leaf_index.* = @intCast((try leaves.getOrPut(gpa, chunk)).index);
     }

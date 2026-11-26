@@ -1,11 +1,10 @@
-//! The core's entries, each writing its result into the buffer `output.bytes` returns.
-
 const std = @import("std");
 const parser = @import("parser");
 const transfer = @import("transfer/root.zig");
 
 const Allocator = std.mem.Allocator;
 const Tree = parser.ast.Tree;
+const enumOf = transfer.enumOf;
 
 // packed by npm/yuku/core/read.ts, npm/yuku/core/core.ts and npm/yuku/print/index.ts
 const source_type_mask = 0b11;
@@ -133,10 +132,6 @@ fn parseOptions(flags: u32) error{InvalidTree}!parser.Options {
         .comments = if (flags & attach_comments != 0) .attach else .collect,
         .tokens = flags & tokens != 0,
     };
-}
-
-fn enumOf(comptime E: type, value: u32) error{InvalidTree}!E {
-    return std.enums.fromInt(E, value) orelse error.InvalidTree;
 }
 
 fn printOptions(options: u32) error{InvalidTree}!parser.codegen.Options {

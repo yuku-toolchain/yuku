@@ -1,16 +1,11 @@
 const std = @import("std");
 
-/// The UTF-16 offset of each byte offset into UTF-8 text, as a JavaScript string indexes it.
 pub const Offsets = struct {
-    /// The bytes before the first non-ASCII byte, where both offsets agree.
     ascii_len: u32,
     bytes_len: u32,
     units_len: u32,
-    /// The 64-byte block that `bases` and `starts` begin at.
     block_first: u32,
-    /// The UTF-16 offset at the start of each block.
     bases: []u32,
-    /// The bytes of each block that begin a UTF-16 unit, one bit per byte.
     starts: []u64,
 
     pub fn init(gpa: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Offsets {
@@ -104,10 +99,8 @@ pub const Offsets = struct {
     }
 };
 
-/// The byte offset of each UTF-16 offset into UTF-8 text, the inverse of `Offsets`.
 pub const Bytes = struct {
     units_len: u32,
-    /// The byte offset of each unit, empty for ASCII text, where both offsets agree.
     starts: []u32,
 
     pub fn init(gpa: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Bytes {
@@ -148,10 +141,8 @@ pub const Bytes = struct {
     }
 };
 
-/// How a lone surrogate encodes, as U+FFFD the way `TextEncoder` does, or kept as WTF-8.
 pub const LoneSurrogates = enum { replace, keep };
 
-/// Encodes UTF-16 code units as UTF-8 into `target` and returns the bytes written.
 pub fn encodeUtf8(
     units: []align(1) const u16,
     target: []u8,

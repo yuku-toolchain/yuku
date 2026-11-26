@@ -1,26 +1,28 @@
 const std = @import("std");
+const Module = std.Build.Module;
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const host = b.graph.host;
 
-    const codegen_options = b.addOptions();
-    codegen_options.addOption(bool, "source_maps", b.option(
+    const options = b.addOptions();
+    options.addOption(bool, "source_maps", b.option(
         bool,
         "codegen-source-maps",
         "Compile source-map support into the code generator (default true)",
     ) orelse true);
-    const config: ParserConfig = .{ .codegen_options = codegen_options.createModule() };
+    const codegen_options = options.createModule();
 
-    const util = createUtil(b, target, optimize);
-    const parser = config.add(b, "parser", util);
+    const parser = addParser(b, codegen_options, "parser", target, optimize);
     const spec = parser.import_table.get("spec").?;
+    const transfer = createTransfer(b, parser);
 
     const gen_unicode_id = b.addExecutable(.{
         .name = "gen-unicode-id",
         .root_module = b.createModule(.{
             .root_source_file = b.path("tools/gen_unicode_id.zig"),
-            .target = b.graph.host,
+            .target = host,
             .optimize = optimize,
         }),
     });
@@ -38,49 +40,33 @@ pub fn build(b: *std.Build) void {
     b.step("test-tools", "Run the tools tests").dependOn(&b.addRunArtifact(tools_tests).step);
 
     const test_step = b.step("test", "Run all tests");
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util })).step);
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = spec })).step);
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser })).step);
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{
-        .root_module = createTransfer(b, parser),
-    })).step);
-    const zig_tests = b.addRunArtifact(b.addTest(.{ .root_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/testing/root.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{.{ .name = "parser", .module = parser }},
-    }) }));
+    for ([_]*Module{ parser.import_table.get("util").?, spec, parser, transfer }) |tested| {
+        test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = tested })).step);
+    }
+    const zig_tests = b.addRunArtifact(b.addTest(.{
+        .root_module = withParser(b, "src/parser/testing/root.zig", parser),
+    }));
     // corpus tests read fixtures relative to the repo root
     zig_tests.setCwd(b.path("."));
     test_step.dependOn(&zig_tests.step);
 
-    const safe_parser = config.add(b, null, createUtil(b, b.graph.host, .safe));
+    const safe_parser = addParser(b, codegen_options, null, host, .safe);
     const fuzz = b.addRunArtifact(b.addExecutable(.{
         .name = "fuzz",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/parser/testing/fuzz/main.zig"),
-            .target = b.graph.host,
-            .optimize = .safe,
-            .imports = &.{.{ .name = "parser", .module = safe_parser }},
-        }),
+        .root_module = withParser(b, "src/parser/testing/fuzz/main.zig", safe_parser),
     }));
     fuzz.has_side_effects = true;
     b.step("fuzz", "Fuzz the JS/TS parser for crashes and memory bugs").dependOn(&fuzz.step);
 
     const codegen_reference = b.addExecutable(.{
         .name = "codegen-reference",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/parser/testing/codegen/reference.zig"),
-            .target = b.graph.host,
-            .optimize = .safe,
-            .imports = &.{.{ .name = "parser", .module = safe_parser }},
-        }),
+        .root_module = withParser(b, "src/parser/testing/codegen/reference.zig", safe_parser),
     });
     b.step("codegen-reference", "Build the Zig printer reference the JS printer is checked against")
         .dependOn(&b.addInstallArtifact(codegen_reference, .{}).step);
 
     const profile_target = b.resolveTargetQuery(.{ .cpu_model = .baseline });
-    const profile_parser = config.add(b, null, createUtil(b, profile_target, .fast));
+    const profile_parser = addParser(b, codegen_options, null, profile_target, .fast);
     const profile = b.addExecutable(.{
         .name = "profile",
         .root_module = b.createModule(.{
@@ -106,7 +92,7 @@ pub fn build(b: *std.Build) void {
         .cpu_model = .{ .explicit = &std.Target.wasm.cpu.mvp },
         .cpu_features_add = std.Target.wasm.featureSet(&.{.simd128}),
     });
-    _ = config.add(b, "parser-wasm", createUtil(b, wasm_target, .fast));
+    _ = addParser(b, codegen_options, "parser-wasm", wasm_target, .fast);
     const yuku_wasm = addWasmFrom(b, b, "yuku");
     b.step("wasm", "Build the WebAssembly module")
         .dependOn(&b.addInstallArtifact(yuku_wasm, .{}).step);
@@ -118,7 +104,7 @@ pub fn build(b: *std.Build) void {
         var query = platform.query;
         query.cpu_model = .baseline;
         const module_name = b.fmt("parser-{s}", .{platform.name});
-        _ = config.add(b, module_name, createUtil(b, b.resolveTargetQuery(query), .fast));
+        _ = addParser(b, codegen_options, module_name, b.resolveTargetQuery(query), .fast);
         const addon = addAddonFrom(b, b, platform.name);
         const addon_files = b.addUpdateSourceFiles();
         addon_files.addCopyFileToSource(
@@ -126,8 +112,7 @@ pub fn build(b: *std.Build) void {
             b.fmt("npm/{s}/yuku.node", .{platform.name}),
         );
         addons.dependOn(&addon_files.step);
-        const host = b.graph.host.result;
-        if (platform.query.os_tag == host.os.tag and platform.query.cpu_arch == host.cpu.arch) {
+        if (query.os_tag == host.result.os.tag and query.cpu_arch == host.result.cpu.arch) {
             std.debug.assert(host_addon == null);
             host_addon = &addon_files.step;
             addon_step.dependOn(&installAddon(b, addon, platform.name).step);
@@ -136,12 +121,7 @@ pub fn build(b: *std.Build) void {
 
     const main = b.addExecutable(.{
         .name = "yuku",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "parser", .module = parser }},
-        }),
+        .root_module = withParser(b, "src/main.zig", parser),
     });
     b.installArtifact(main);
     b.step("run", "Run the src/main.zig toolchain playground")
@@ -151,11 +131,11 @@ pub fn build(b: *std.Build) void {
         .name = "generate",
         .root_module = b.createModule(.{
             .root_source_file = b.path("tools/generate.zig"),
-            .target = b.graph.host,
+            .target = host,
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "parser", .module = parser },
-                .{ .name = "transfer", .module = createTransfer(b, parser) },
+                .{ .name = "transfer", .module = transfer },
                 .{ .name = "spec", .module = spec },
             },
         }),
@@ -182,8 +162,6 @@ pub fn build(b: *std.Build) void {
     if (host_addon) |addon| package_step.dependOn(addon);
 }
 
-/// Each platform the npm package ships a Node-API addon for, by Node's `process.platform` and
-/// `process.arch`. Others fall back to the WebAssembly module.
 const native_platforms = [_]struct { name: []const u8, query: std.Target.Query }{
     .{ .name = "darwin-arm64", .query = .{
         .cpu_arch = .aarch64,
@@ -234,58 +212,6 @@ fn installAddon(
     return b.addInstallFileWithDir(addon.getEmittedBin(), .prefix, path);
 }
 
-const ParserConfig = struct {
-    codegen_options: *std.Build.Module,
-
-    fn add(
-        config: ParserConfig,
-        b: *std.Build,
-        name: ?[]const u8,
-        util: *std.Build.Module,
-    ) *std.Build.Module {
-        const spec = b.createModule(.{
-            .root_source_file = b.path("src/spec/root.zig"),
-            .target = util.resolved_target,
-            .optimize = util.optimize,
-            .imports = &.{.{ .name = "util", .module = util }},
-        });
-        const options: std.Build.Module.CreateOptions = .{
-            .root_source_file = b.path("src/parser/root.zig"),
-            .target = util.resolved_target,
-            .optimize = util.optimize,
-            .imports = &.{
-                .{ .name = "util", .module = util },
-                .{ .name = "spec", .module = spec },
-                .{ .name = "codegen_options", .module = config.codegen_options },
-            },
-        };
-        const parser = if (name) |n| b.addModule(n, options) else b.createModule(options);
-        spec.addImport("parser", parser);
-        return parser;
-    }
-};
-
-fn createUtil(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.lang.Optimize,
-) *std.Build.Module {
-    return b.createModule(.{
-        .root_source_file = b.path("src/util/root.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-}
-
-fn createTransfer(b: *std.Build, parser: *std.Build.Module) *std.Build.Module {
-    return b.createModule(.{
-        .root_source_file = b.path("src/parser/ffi/transfer/root.zig"),
-        .target = parser.resolved_target,
-        .optimize = parser.optimize,
-        .imports = &.{.{ .name = "parser", .module = parser }},
-    });
-}
-
 pub fn addWasm(
     b: *std.Build,
     yuku: *std.Build.Dependency,
@@ -307,4 +233,50 @@ fn addWasmFrom(b: *std.Build, yuku: *std.Build, name: []const u8) *std.Build.Ste
     wasm.rdynamic = true;
     wasm.stack_size = 4 * 1024 * 1024;
     return wasm;
+}
+
+fn addParser(
+    b: *std.Build,
+    codegen_options: *Module,
+    name: ?[]const u8,
+    target: std.Build.ResolvedTarget,
+    optimize: std.lang.Optimize,
+) *Module {
+    const util = b.createModule(.{
+        .root_source_file = b.path("src/util/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const spec = b.createModule(.{
+        .root_source_file = b.path("src/spec/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{.{ .name = "util", .module = util }},
+    });
+    const options: Module.CreateOptions = .{
+        .root_source_file = b.path("src/parser/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "util", .module = util },
+            .{ .name = "spec", .module = spec },
+            .{ .name = "codegen_options", .module = codegen_options },
+        },
+    };
+    const parser = if (name) |n| b.addModule(n, options) else b.createModule(options);
+    spec.addImport("parser", parser);
+    return parser;
+}
+
+fn createTransfer(b: *std.Build, parser: *Module) *Module {
+    return withParser(b, "src/parser/ffi/transfer/root.zig", parser);
+}
+
+fn withParser(b: *std.Build, path: []const u8, parser: *Module) *Module {
+    return b.createModule(.{
+        .root_source_file = b.path(path),
+        .target = parser.resolved_target,
+        .optimize = parser.optimize,
+        .imports = &.{.{ .name = "parser", .module = parser }},
+    });
 }
