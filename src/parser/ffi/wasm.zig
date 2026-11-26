@@ -9,7 +9,6 @@ comptime {
     std.debug.assert(builtin.cpu.arch.endian() == .little);
 }
 
-/// The lengths that start a tree's block, before its sections, each on a 4-byte boundary.
 const TreeHeader = extern struct {
     node_words: u32,
     extra_words: u32,
@@ -27,47 +26,50 @@ export fn free(ptr: [*]align(4) u8, len: usize) void {
 }
 
 export fn parse(ptr: [*]const u8, len: usize, flags: u32) usize {
-    return resultOf(withSource(ptr[0..len], flags, entries.parse, .{}));
+    return call(entries.parse, .{}, ptr[0..len], flags, .{});
 }
 
 export fn analyze(ptr: [*]const u8, len: usize, flags: u32) usize {
-    return resultOf(withSource(ptr[0..len], flags, entries.analyze, .{}));
+    return call(entries.analyze, .{}, ptr[0..len], flags, .{});
 }
 
 export fn printSource(ptr: [*]const u8, len: usize, flags: u32, options: u32) usize {
-    return resultOf(withSource(ptr[0..len], flags, entries.printSource, .{options}));
+    return call(entries.printSource, .{}, ptr[0..len], flags, .{options});
 }
 
 export fn printTree(block: [*]align(4) const u8, flags: u32, options: u32) usize {
-    return resultOf(withTree(block, flags, options, .print));
+    const encoded, const input = treeOf(block) catch return 0;
+    return call(entries.printTree, .{encoded}, input, flags, .{options});
 }
 
 export fn analyzeTree(block: [*]align(4) const u8, flags: u32) usize {
-    return resultOf(withTree(block, flags, 0, .analyze));
+    const encoded, _ = treeOf(block) catch return 0;
+    return resultOf(entries.analyzeTree(gpa, encoded, flags, Prefixed{}));
+}
+
+fn call(
+    comptime entry: anytype,
+    before: anytype,
+    input: []const u8,
+    flags: u32,
+    after: anytype,
+) usize {
+    const utf16 = flags & entries.utf16 != 0;
+    const target = gpa.alloc(u8, if (utf16) input.len / 2 * 3 else 0) catch return 0;
+    defer gpa.free(target);
+    const source = if (utf16)
+        transfer.utf16.encodeUtf8(std.mem.bytesAsSlice(u16, input), target, .replace)
+    else
+        input;
+    const args = .{gpa} ++ before ++ .{ source, flags } ++ after ++ .{Prefixed{}};
+    return resultOf(@call(.auto, entry, args));
 }
 
 fn resultOf(out: transfer.Error![]u8) usize {
     return @intFromPtr((out catch return 0).ptr) - 4;
 }
 
-fn withSource(
-    input: []const u8,
-    flags: u32,
-    comptime run: anytype,
-    args: anytype,
-) transfer.Error![]u8 {
-    const target = try gpa.alloc(u8, if (flags & entries.utf16 != 0) input.len / 2 * 3 else 0);
-    defer gpa.free(target);
-    const source = sourceOf(input, flags, target);
-    return @call(.auto, run, .{ gpa, source, flags } ++ args ++ .{Prefixed{}});
-}
-
-fn withTree(
-    block: [*]align(4) const u8,
-    flags: u32,
-    options: u32,
-    comptime entry: enum { print, analyze },
-) transfer.Error![]u8 {
+fn treeOf(block: [*]align(4) const u8) error{InvalidTree}!struct { transfer.Encoded, []const u8 } {
     const header: *const TreeHeader = @ptrCast(block);
     var at: usize = @sizeOf(TreeHeader);
     const encoded: transfer.Encoded = .{
@@ -76,20 +78,7 @@ fn withTree(
         .comments = try sectionAt(transfer.PackedComment, block, &at, header.comment_words * 4),
         .pool = try sectionAt(u16, block, &at, header.pool_units * 2),
     };
-    const input = block[at..][0..header.source_bytes];
-    const target = try gpa.alloc(u8, if (flags & entries.utf16 != 0) input.len / 2 * 3 else 0);
-    defer gpa.free(target);
-    const source = sourceOf(input, flags, target);
-    return switch (entry) {
-        .print => entries.printTree(gpa, encoded, source, flags, options, Prefixed{}),
-        .analyze => entries.analyzeTree(gpa, encoded, flags, Prefixed{}),
-    };
-}
-
-fn sourceOf(input: []const u8, flags: u32, target: []u8) []const u8 {
-    if (flags & entries.utf16 == 0) return input;
-    std.debug.assert(input.len % 2 == 0);
-    return transfer.utf16.encodeUtf8(std.mem.bytesAsSlice(u16, input), target, .replace);
+    return .{ encoded, block[at..][0..header.source_bytes] };
 }
 
 fn sectionAt(

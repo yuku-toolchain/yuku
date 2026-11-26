@@ -2,18 +2,15 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const Token = @import("../token.zig").Token;
 const TokenTag = @import("../token.zig").TokenTag;
-const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const expressions = @import("expressions.zig");
 
 pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.tag != .string_literal) {
-        try parser.reportExpected(parser.current_token.span, "Expected a string literal", .{});
-        return null;
-    }
     const token = parser.current_token;
+    if (token.tag != .string_literal) return parser.failExpected("Expected a string literal", .{});
     try parser.advance() orelse return null;
+
     const value_span: ast.Span = .{ .start = token.span.start + 1, .end = token.span.end - 1 };
     return try parser.tree.addNode(.{ .string_literal = .{
         .value = try parser.stringValue(token, value_span),
@@ -22,19 +19,8 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .true or parser.current_token.tag == .false);
-    const token = parser.current_token;
-    try parser.advance() orelse return null;
-    return try parser.tree.addNode(.{
-        .boolean_literal = .{ .value = token.tag == .true },
-    }, token.span);
-}
-
-pub fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .null_literal);
-    const token = parser.current_token;
-    try parser.advance() orelse return null;
-    return try parser.tree.addNode(.{ .null_literal = .{} }, token.span);
+    std.debug.assert(parser.at(.true) or parser.at(.false));
+    return parser.leaf(.{ .boolean_literal = .{ .value = parser.at(.true) } });
 }
 
 pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -55,11 +41,9 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .slash or
-        parser.current_token.tag == .slash_assign);
-    const token = parser.current_token;
+    std.debug.assert(parser.at(.slash) or parser.at(.slash_assign));
 
-    const regex = parser.lexer.reScanAsRegex(token.span.start) catch |e| {
+    const regex = parser.lexer.reScanAsRegex(parser.current_token.span.start) catch |e| {
         try parser.reportLexicalError(e);
         return null;
     };
@@ -70,7 +54,7 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const pattern_start = regex.span.start + 1;
     const pattern_end = pattern_start + @as(u32, @intCast(regex.pattern.len));
     const flags_start = regex.span.end - @as(u32, @intCast(regex.flags.len));
-    try parseRegExpLiteralFlags(parser, flags_start, regex.flags);
+    try checkRegExpFlags(parser, flags_start, regex.flags);
 
     return try parser.tree.addNode(.{ .regexp_literal = .{
         .pattern = parser.tree.sourceSlice(pattern_start, pattern_end),
@@ -78,7 +62,7 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     } }, regex.span);
 }
 
-fn parseRegExpLiteralFlags(parser: *Parser, flags_start: u32, flags: []const u8) Error!void {
+fn checkRegExpFlags(parser: *Parser, flags_start: u32, flags: []const u8) Error!void {
     std.debug.assert(flags_start + flags.len <= parser.source.len);
     const unicode_modes = regExpFlagBit('u') | regExpFlagBit('v');
     var seen: u32 = 0;
@@ -121,7 +105,7 @@ fn regExpFlagBit(flag: u8) u32 {
 }
 
 pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .no_substitution_template);
+    std.debug.assert(parser.at(.no_substitution_template));
     const token = parser.current_token;
 
     const element = try addTemplateElement(parser, token, true, tagged);
@@ -129,90 +113,65 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
 
     return try parser.tree.addNode(.{ .template_literal = .{
         .quasis = try parser.tree.addExtra(&.{element}),
-        .expressions = ast.IndexRange.empty,
+        .expressions = .empty,
     } }, token.span);
 }
 
 pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    const parts = try parseTemplateParts(
-        parser,
-        tagged,
-        parseTemplateSubstitution,
-    ) orelse return null;
-
-    return try parser.tree.addNode(.{
+    const parts = try parseTemplateParts(parser, tagged, expressions.parseFull) orelse return null;
+    return try parser.finish(start, .{
         .template_literal = .{ .quasis = parts.quasis, .expressions = parts.substitutions },
-    }, .{ .start = start, .end = parts.end });
-}
-
-fn parseTemplateSubstitution(parser: *Parser) Error!?ast.NodeIndex {
-    return expressions.parseExpression(parser, Precedence.Lowest, .{});
+    });
 }
 
 pub const TemplateParts = struct {
     quasis: ast.IndexRange,
     substitutions: ast.IndexRange,
-    end: u32,
 };
 
 pub fn parseTemplateParts(
     parser: *Parser,
     tagged: bool,
-    comptime parseSubstitution: fn (*Parser) Error!?ast.NodeIndex,
+    comptime parseSubstitution: anytype,
 ) Error!?TemplateParts {
-    std.debug.assert(parser.current_token.tag == .template_head);
+    std.debug.assert(parser.at(.template_head));
 
-    const quasis_checkpoint = parser.scratch_a.begin();
-    defer parser.scratch_a.reset(quasis_checkpoint);
-    const substitutions_checkpoint = parser.scratch_b.begin();
-    defer parser.scratch_b.reset(substitutions_checkpoint);
+    const quasis = parser.list();
+    defer quasis.deinit();
+    const substitutions = parser.sideList();
+    defer substitutions.deinit();
 
-    const head = parser.current_token;
-    try parser.scratch_a.append(
-        parser.allocator(),
-        try addTemplateElement(parser, head, false, tagged),
-    );
+    try quasis.append(try addTemplateElement(parser, parser.current_token, false, tagged));
     try parser.advance() orelse return null;
 
-    var end = head.span.end;
     while (true) {
-        const substitution = try parseSubstitution(parser) orelse return null;
-        try parser.scratch_b.append(parser.allocator(), substitution);
+        try substitutions.append(try parseSubstitution(parser) orelse return null);
 
         // the lexer emits `}` as a punctuator, rescan it as template continuation
-        if (parser.current_token.tag != .right_brace) {
+        if (!parser.at(.right_brace)) {
             try parser.reportExpected(
-                parser.current_token.span,
                 "Expected '}' to close the template placeholder",
                 .{},
             );
             return null;
         }
 
-        const template_token = parser.lexer.reScanTemplateContinuation(
+        const token = parser.lexer.reScanTemplateContinuation(
             parser.current_token.span.start,
         ) catch |e| {
             try parser.reportLexicalError(e);
             return null;
         };
-        const is_tail = template_token.tag == .template_tail;
+        const is_tail = token.tag == .template_tail;
 
-        try parser.scratch_a.append(
-            parser.allocator(),
-            try addTemplateElement(parser, template_token, is_tail, tagged),
-        );
-        end = template_token.span.end;
-        try parser.advanceWithRescannedToken(template_token) orelse return null;
+        try quasis.append(try addTemplateElement(parser, token, is_tail, tagged));
+        try parser.advanceWithRescannedToken(token) orelse return null;
 
         if (is_tail) break;
     }
 
-    return .{
-        .quasis = try parser.flushToExtras(&parser.scratch_a, quasis_checkpoint),
-        .substitutions = try parser.flushToExtras(&parser.scratch_b, substitutions_checkpoint),
-        .end = end,
-    };
+    return .{ .quasis = try quasis.finish(), .substitutions = try substitutions.finish() };
 }
 
 inline fn addTemplateElement(
@@ -221,7 +180,10 @@ inline fn addTemplateElement(
     tail: bool,
     tagged: bool,
 ) Error!ast.NodeIndex {
-    const span = templateElementSpan(token);
+    const span: ast.Span = .{
+        .start = token.span.start + 1,
+        .end = token.span.end - @as(u32, if (tail) 1 else 2),
+    };
     const is_cooked_undefined = token.hasInvalidEscape();
 
     if (!tagged and is_cooked_undefined) {
@@ -241,20 +203,6 @@ inline fn addTemplateElement(
         .tail = tail,
         .is_cooked_undefined = is_cooked_undefined,
     } }, span);
-}
-
-inline fn templateElementSpan(token: Token) ast.Span {
-    return switch (token.tag) {
-        .template_head, .template_middle => .{
-            .start = token.span.start + 1,
-            .end = token.span.end - 2,
-        },
-        .template_tail, .no_substitution_template => .{
-            .start = token.span.start + 1,
-            .end = token.span.end - 1,
-        },
-        else => unreachable,
-    };
 }
 
 pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
@@ -279,7 +227,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .private_identifier);
+    std.debug.assert(parser.at(.private_identifier));
     const token = parser.current_token;
     try parser.advance() orelse return null;
 
@@ -289,8 +237,10 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag.isIdentifierLike());
     const token = parser.current_token;
+    if (!token.tag.isIdentifierLike()) return parser.failExpected("Expected an identifier", .{
+        .help = "Identifiers start with a letter, '_', or '$'",
+    });
     try parser.advanceWithoutEscapeCheck() orelse return null;
     return try addIdentifierName(parser, token);
 }
@@ -337,15 +287,14 @@ fn reportReservedIdentifier(
     @branchHint(.cold);
     const token: Token = .{ .span = .{ .start = start, .end = end }, .tag = tag };
 
-    if (!token.tag.isIdentifierLike()) {
+    if (!tag.isIdentifierLike()) {
         try parser.reportExpected(
-            token.span,
             "Expected an identifier",
             .{ .help = "Identifiers start with a letter, '_', or '$'" },
         );
     }
 
-    if (token.tag.isUnconditionallyReserved()) {
+    if (tag.isUnconditionallyReserved()) {
         try parser.report(
             token.span,
             try parser.fmt(
@@ -356,7 +305,7 @@ fn reportReservedIdentifier(
         );
     }
 
-    if (token.tag == .yield and parser.context.yield) {
+    if (tag == .yield and parser.context.yield) {
         try parser.report(
             token.span,
             "'yield' is a reserved word in generators and cannot be used as " ++ as_what,
@@ -364,7 +313,7 @@ fn reportReservedIdentifier(
         );
     }
 
-    if (token.tag == .await and (parser.context.await or parser.tree.isModule())) {
+    if (tag == .await and (parser.context.await or parser.tree.isModule())) {
         try parser.report(
             token.span,
             "'await' is a reserved word in async functions and modules and cannot be used as " ++

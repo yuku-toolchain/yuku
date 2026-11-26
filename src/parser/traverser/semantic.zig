@@ -27,10 +27,7 @@ pub const Ctx = struct {
     node_parents: []ast.NodeIndex,
 
     pub fn init(tree: *ast.Tree, mode: Mode) Allocator.Error!Ctx {
-        const node_count: usize = switch (mode) {
-            .check => 0,
-            .analyze => tree.nodes.len,
-        };
+        const node_count = if (mode == .analyze) tree.nodes.len else 0;
         const node_scopes = try tree.allocator().alloc(ScopeId, node_count);
         @memset(node_scopes, .root);
         const node_parents = try tree.allocator().alloc(ast.NodeIndex, node_count);
@@ -76,14 +73,10 @@ pub const Ctx = struct {
         const parent = self.path.parent() orelse .null;
         try self.scope.enter(tag, index, parent, data);
 
-        switch (self.mode) {
-            .check => {},
-            .analyze => {
-                self.node_scopes[@backingInt(index)] = self.scope.current;
-                self.node_parents[@backingInt(index)] = parent;
-            },
+        if (self.mode == .analyze) {
+            self.node_scopes[@backingInt(index)] = self.scope.current;
+            self.node_parents[@backingInt(index)] = parent;
         }
-
         if (data.isTypeContext()) self.type_position_depth += 1;
 
         const path = self.path.items[0..self.path.len];
@@ -97,17 +90,13 @@ pub const Ctx = struct {
         data: ast.NodeData,
     ) Allocator.Error!void {
         try self.symbols.declareBindings(tag, index, data, &self.scope, self.inTypePosition());
-        switch (self.mode) {
-            .check => {},
-            .analyze => {
-                var flags: Reference.Flags = .{};
-                if (tag == .identifier_reference and self.placesReference()) {
-                    flags = refPosition(self.tree, &self.path, self.inTypePosition());
-                    flags.write = isWriteTarget(self.tree, &self.path);
-                }
-                try self.symbols.addReferences(tag, index, data, &self.scope, flags);
-            },
+        if (self.mode != .analyze) return;
+        var flags: Reference.Flags = .{};
+        if (tag == .identifier_reference and self.placesReference()) {
+            flags = refPosition(self.tree, &self.path, self.inTypePosition());
+            flags.write = isWriteTarget(self.tree, &self.path);
         }
+        try self.symbols.addReferences(tag, index, data, &self.scope, flags);
     }
 
     inline fn placesReference(self: *const Ctx) bool {
@@ -124,17 +113,13 @@ pub const Ctx = struct {
     ) void {
         self.symbols.exit(tag);
         self.scope.exit(tag, index);
-        if (data.isTypeContext()) {
-            std.debug.assert(self.type_position_depth > 0);
-            self.type_position_depth -= 1;
-        }
+        if (data.isTypeContext()) self.type_position_depth -= 1;
         self.path.pop();
     }
 };
 
 /// Walks the tree tracking the node path, scopes, and symbols, and returns the `Semantic` model.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Semantic {
-    std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree, .analyze);
     try wk.walk(Ctx, V, visitor, &ctx, .{ .whole_tree = true });
     return ctx.finalize();
@@ -168,28 +153,21 @@ fn refPosition(
     path: *const NodePath,
     in_type_position: bool,
 ) Reference.Flags {
-    std.debug.assert(path.depth() > 0);
-
     var qualified_left = false;
-    var child = path.ancestor(0) orelse return .{};
-    var n: usize = 1;
-    while (path.ancestor(n)) |parent| : (n += 1) {
+    var above = path.ancestors();
+    var child = above.next().?;
+    while (above.next()) |parent| : (child = parent) {
         switch (tree.data(parent)) {
             .ts_qualified_name => {
                 qualified_left = true;
-                child = parent;
                 continue;
             },
             // `implements ns.I`
             .member_expression => |m| if (in_type_position and m.object == child) {
                 qualified_left = true;
-                child = parent;
                 continue;
             },
-            .call_expression => |c| if (in_type_position and c.callee == child) {
-                child = parent;
-                continue;
-            },
+            .call_expression => |c| if (in_type_position and c.callee == child) continue,
             // a computed key of a type member is a value use, `[key]: string`
             inline .ts_property_signature, .ts_method_signature, .binding_property => |member| {
                 if (member.computed and member.key == child) {
@@ -200,7 +178,7 @@ fn refPosition(
             .ts_type_query => return .{ .space = .typeof, .type_position = true },
             .export_specifier => |s| {
                 if (s.local != child) return .{};
-                const in_type_export = if (path.ancestor(n + 1)) |declaration|
+                const in_type_export = if (above.next()) |declaration|
                     tree.data(declaration).export_named_declaration.export_kind == .type
                 else
                     false;
@@ -219,10 +197,7 @@ fn refPosition(
         }
         if (!in_type_position) return .{};
         // an expression in a type sits in a computed key
-        if (tree.data(parent).isExpression()) {
-            child = parent;
-            continue;
-        }
+        if (tree.data(parent).isExpression()) continue;
         return .{ .space = if (qualified_left) .namespace else .type, .type_position = true };
     }
     return .{};
@@ -230,37 +205,26 @@ fn refPosition(
 
 // https://tc39.es/ecma262/#sec-static-semantics-assignmenttargettype
 fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
-    std.debug.assert(path.depth() > 0);
-
-    var child = path.ancestor(0) orelse return false;
-    var n: usize = 1;
-    while (path.ancestor(n)) |parent| : (n += 1) {
-        std.debug.assert(parent != child);
-        switch (tree.data(parent)) {
+    var above = path.ancestors();
+    var child = above.next().?;
+    while (above.next()) |parent| : (child = parent) {
+        const through = switch (tree.data(parent)) {
             .assignment_expression => |a| return a.left == child,
             .update_expression => |u| return u.argument == child,
             // the declaration form's leaves are binding identifiers, never references
             inline .for_in_statement, .for_of_statement => |f| return f.left == child,
-            .array_pattern, .object_pattern => child = parent,
-            .binding_property => |bp| {
-                if (bp.value != child) return false;
-                child = parent;
-            },
-            .assignment_pattern => |ap| {
-                if (ap.left != child) return false;
-                child = parent;
-            },
-            .binding_rest_element => |r| {
-                if (r.argument != child) return false;
-                child = parent;
-            },
-            .parenthesized_expression, .ts_non_null_expression => child = parent,
-            inline .ts_as_expression, .ts_satisfies_expression, .ts_type_assertion => |e| {
-                if (e.expression != child) return false;
-                child = parent;
-            },
-            else => return false,
-        }
+            .array_pattern, .object_pattern => true,
+            .parenthesized_expression, .ts_non_null_expression => true,
+            .binding_property => |bp| bp.value == child,
+            .assignment_pattern => |ap| ap.left == child,
+            .binding_rest_element => |r| r.argument == child,
+            inline .ts_as_expression,
+            .ts_satisfies_expression,
+            .ts_type_assertion,
+            => |e| e.expression == child,
+            else => false,
+        };
+        if (!through) return false;
     }
     return false;
 }

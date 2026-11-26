@@ -10,6 +10,7 @@ import {
   print,
   walk,
   type Diagnostic,
+  type ParseOptions,
   type SourceFile,
 } from "yuku";
 
@@ -24,9 +25,11 @@ interface Result {
   diagnostics: readonly Diagnostic[];
 }
 
-interface Scope {
-  setup?(): void;
-  teardown?(): void;
+/** A file parsed once for the tasks that share it, held only while they run. */
+interface Parsed {
+  file: SourceFile | null;
+  setup(): void;
+  teardown(): void;
 }
 
 const NO_DIAGNOSTICS: Result = { diagnostics: [] };
@@ -78,48 +81,34 @@ for (const path of FILES) {
     return { diagnostics: binding?.rename(`${binding.name}_renamed`) ?? [] };
   });
 
-  let file: SourceFile | null = null;
-  const parsed: Scope = {
-    setup() {
-      file = parse(source, { path });
-      void file.program;
-    },
-    teardown() {
-      file = null;
-    },
+  const parsedWith = (options: ParseOptions): Parsed => {
+    const parsed: Parsed = {
+      file: null,
+      setup() {
+        parsed.file = parse(source, { path, ...options });
+        void parsed.file.program;
+      },
+      teardown() {
+        parsed.file = null;
+      },
+    };
+    return parsed;
   };
-  let commented: SourceFile | null = null;
-  const withComments: Scope = {
-    setup() {
-      commented = parse(source, { path, attachComments: true });
-      void commented.program;
-    },
-    teardown() {
-      commented = null;
-    },
-  };
-  let wasmFile: SourceFile | null = null;
-  const parsedWithWasm: Scope = {
-    setup() {
-      wasmFile = parse(source, { path, core });
-      void wasmFile.program;
-    },
-    teardown() {
-      wasmFile = null;
-    },
-  };
-  add(`reanalyze ${name}`, () => reanalyze(file!), parsed);
-  add(`reanalyze ${name} with WebAssembly`, () => reanalyze(wasmFile!), parsedWithWasm);
-  add(`print ${name}`, () => print(file!), parsed);
-  add(`print ${name} with WebAssembly`, () => print(wasmFile!), parsedWithWasm);
-  add(`print ${name} with comments`, () => print(commented!), withComments);
-  add(`print ${name} minified`, () => print(file!, { minify: true }), parsed);
-  add(`print ${name} with source map`, () => print(file!, { sourceMap: true }), parsed);
+  const parsed = parsedWith({});
+  const commented = parsedWith({ attachComments: true });
+  const wasmParsed = parsedWith({ core });
+  add(`reanalyze ${name}`, () => reanalyze(parsed.file!), parsed);
+  add(`reanalyze ${name} with WebAssembly`, () => reanalyze(wasmParsed.file!), wasmParsed);
+  add(`print ${name}`, () => print(parsed.file!), parsed);
+  add(`print ${name} with WebAssembly`, () => print(wasmParsed.file!), wasmParsed);
+  add(`print ${name} with comments`, () => print(commented.file!), commented);
+  add(`print ${name} minified`, () => print(parsed.file!, { minify: true }), parsed);
+  add(`print ${name} with source map`, () => print(parsed.file!, { sourceMap: true }), parsed);
   add(
     `walk ${name}`,
     () => {
       let identifiers = 0;
-      walk(file!.program, {
+      walk(parsed.file!.program, {
         Identifier() {
           identifiers++;
         },
@@ -150,17 +139,17 @@ function reanalyze(file: SourceFile): SourceFile {
   return file;
 }
 
-function add(name: string, run: () => Result, scope: Scope = {}): void {
+function add(name: string, run: () => Result, parsed?: Parsed): void {
   bench.add(name, run, {
     beforeAll() {
-      scope.setup?.();
+      parsed?.setup();
       const { diagnostics } = run();
       if (diagnostics.length > 0) {
         throw new Error(`${name} reports "${diagnostics[0]!.message}"`);
       }
     },
     afterAll() {
-      scope.teardown?.();
+      parsed?.teardown();
     },
   });
 }

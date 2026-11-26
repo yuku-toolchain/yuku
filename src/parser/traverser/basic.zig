@@ -9,7 +9,6 @@ pub const Ctx = wk.PathCtx(*const ast.Tree);
 
 /// Walks the tree tracking only the node path.
 pub fn traverse(comptime V: type, tree: *const ast.Tree, visitor: *V) Allocator.Error!void {
-    std.debug.assert(tree.root != .null);
     var ctx = Ctx{ .tree = tree };
     try wk.walk(Ctx, V, visitor, &ctx, .{ .whole_tree = false });
 }

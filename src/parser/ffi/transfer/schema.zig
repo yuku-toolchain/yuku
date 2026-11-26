@@ -1,15 +1,10 @@
-//! The children each node may have, as the parser builds them. A field listing `.null` may be
-//! absent, or for a list hold holes, and one listing tags holds only nodes of those tags.
-
 const std = @import("std");
 const ast = @import("parser").ast;
 
-pub const Tag = std.meta.Tag(ast.NodeData);
+pub const Tag = ast.NodeTag;
 
-const declaration = .{ .null, .ts_type_parameter_declaration };
 const instantiation = .{ .null, .ts_type_parameter_instantiation };
 const annotation = .{ .null, .ts_type_annotation };
-const decorators = .{.decorator};
 const names = .{ .identifier_name, .string_literal };
 const jsx_names = .{ .jsx_identifier, .jsx_namespaced_name, .jsx_member_expression };
 const jsx_children = .{
@@ -26,83 +21,77 @@ const signatures = .{
     .ts_construct_signature_declaration,
     .ts_index_signature,
 };
-const signature = .{
-    .type_parameters = declaration,
-    .params = .{.formal_parameters},
+const signature = .{ .params = .{.formal_parameters} };
+const pattern = .{ .type_annotation = annotation };
+
+const by_name = .{
+    .decorators = .{.decorator},
+    .type_parameters = .{ .null, .ts_type_parameter_declaration },
+    .type_arguments = instantiation,
     .return_type = annotation,
 };
-const pattern = .{ .decorators = decorators, .type_annotation = annotation };
 
-const structural = blk: {
-    @setEvalBranchQuota(100_000);
-    var set: std.StaticBitSet(@typeInfo(Tag).@"enum".field_names.len) = .empty;
-    for ([_]Tag{
-        .program,
-        .function_body,
-        .formal_parameters,
-        .formal_parameter,
-        .class_body,
-        .method_definition,
-        .property_definition,
-        .static_block,
-        .decorator,
-        .template_element,
-        .switch_case,
-        .catch_clause,
-        .variable_declarator,
-        .object_property,
-        .binding_property,
-        .import_specifier,
-        .import_default_specifier,
-        .import_namespace_specifier,
-        .import_attribute,
-        .export_specifier,
-        .label_identifier,
-        .ts_type_annotation,
-        .ts_type_parameter,
-        .ts_type_parameter_declaration,
-        .ts_type_parameter_instantiation,
-        .ts_property_signature,
-        .ts_method_signature,
-        .ts_call_signature_declaration,
-        .ts_construct_signature_declaration,
-        .ts_index_signature,
-        .ts_interface_body,
-        .ts_interface_heritage,
-        .ts_class_implements,
-        .ts_enum_body,
-        .ts_enum_member,
-        .ts_module_block,
-        .ts_parameter_property,
-        .ts_this_parameter,
-        .ts_external_module_reference,
-        .jsx_opening_element,
-        .jsx_closing_element,
-        .jsx_opening_fragment,
-        .jsx_closing_fragment,
-        .jsx_attribute,
-        .jsx_spread_attribute,
-        .jsx_empty_expression,
-        .jsx_text,
-        .jsx_spread_child,
-    }) |tag| set.set(@backingInt(tag));
-    break :blk set;
-};
+const structural: std.EnumSet(Tag) = .initMany(&.{
+    .program,
+    .function_body,
+    .formal_parameters,
+    .formal_parameter,
+    .class_body,
+    .method_definition,
+    .property_definition,
+    .static_block,
+    .decorator,
+    .template_element,
+    .switch_case,
+    .catch_clause,
+    .variable_declarator,
+    .object_property,
+    .binding_property,
+    .import_specifier,
+    .import_default_specifier,
+    .import_namespace_specifier,
+    .import_attribute,
+    .export_specifier,
+    .label_identifier,
+    .ts_type_annotation,
+    .ts_type_parameter,
+    .ts_type_parameter_declaration,
+    .ts_type_parameter_instantiation,
+    .ts_property_signature,
+    .ts_method_signature,
+    .ts_call_signature_declaration,
+    .ts_construct_signature_declaration,
+    .ts_index_signature,
+    .ts_interface_body,
+    .ts_interface_heritage,
+    .ts_class_implements,
+    .ts_enum_body,
+    .ts_enum_member,
+    .ts_module_block,
+    .ts_parameter_property,
+    .ts_this_parameter,
+    .ts_external_module_reference,
+    .jsx_opening_element,
+    .jsx_closing_element,
+    .jsx_opening_fragment,
+    .jsx_closing_fragment,
+    .jsx_attribute,
+    .jsx_spread_attribute,
+    .jsx_empty_expression,
+    .jsx_text,
+    .jsx_spread_child,
+});
 
 const fields = .{
     .arrow_function_expression = .{
-        .type_parameters = declaration,
         .params = .{.formal_parameters},
-        .return_type = annotation,
         .body = .{ .any, .function_body },
     },
     .formal_parameter = .{ .pattern = .{ .any, .ts_this_parameter } },
     .jsx_expression_container = .{ .expression = .{ .any, .jsx_empty_expression } },
     .function = .{
         .id = .{ .null, .binding_identifier },
-        .type_parameters = declaration,
         .params = .{.formal_parameters},
-        .return_type = annotation,
         .body = .{ .null, .function_body },
     },
     .formal_parameters = .{
@@ -111,21 +100,14 @@ const fields = .{
     },
     .array_expression = .{ .elements = .{.null} },
     .object_expression = .{ .properties = .{ .object_property, .spread_element } },
-    .call_expression = .{ .type_arguments = instantiation },
     .chain_expression = .{
         .expression = .{ .member_expression, .call_expression, .ts_non_null_expression },
     },
-    .tagged_template_expression = .{
-        .type_arguments = instantiation,
-        .quasi = .{.template_literal},
-    },
-    .new_expression = .{ .type_arguments = instantiation },
+    .tagged_template_expression = .{ .quasi = .{.template_literal} },
     .yield_expression = .{ .argument = .{.null} },
     .meta_property = .{ .meta = .{.identifier_name}, .property = .{.identifier_name} },
     .class = .{
-        .decorators = decorators,
         .id = .{ .null, .binding_identifier },
-        .type_parameters = declaration,
         .super_class = .{.null},
         .super_type_arguments = instantiation,
         .implements = .{.ts_class_implements},
@@ -134,12 +116,8 @@ const fields = .{
     .class_body = .{
         .body = .{ .method_definition, .property_definition, .static_block, .ts_index_signature },
     },
-    .method_definition = .{ .decorators = decorators, .value = .{.function} },
-    .property_definition = .{
-        .decorators = decorators,
-        .type_annotation = annotation,
-        .value = .{.null},
-    },
+    .method_definition = .{ .value = .{.function} },
+    .property_definition = .{ .type_annotation = annotation, .value = .{.null} },
     .template_literal = .{ .quasis = .{.template_element} },
     .binding_identifier = pattern,
     .if_statement = .{ .alternate = .{.null} },
@@ -162,13 +140,11 @@ const fields = .{
     .assignment_pattern = pattern,
     .binding_rest_element = pattern,
     .array_pattern = .{
-        .decorators = decorators,
         .elements = .{.null},
         .rest = .{ .null, .binding_rest_element },
         .type_annotation = annotation,
     },
     .object_pattern = .{
-        .decorators = decorators,
         .properties = .{.binding_property},
         .rest = .{ .null, .binding_rest_element },
         .type_annotation = annotation,
@@ -216,15 +192,12 @@ const fields = .{
     },
     .ts_type_reference = .{
         .type_name = .{ .identifier_reference, .ts_qualified_name, .this_expression },
-        .type_arguments = instantiation,
     },
     .ts_qualified_name = .{ .right = .{.identifier_name} },
-    .ts_type_query = .{ .type_arguments = instantiation },
     .ts_import_type = .{
         .source = .{.string_literal},
         .options = .{ .null, .object_expression },
         .qualifier = .{ .null, .identifier_name, .ts_qualified_name },
-        .type_arguments = instantiation,
     },
     .ts_type_parameter = .{
         .name = .{.binding_identifier},
@@ -236,12 +209,10 @@ const fields = .{
     .ts_named_tuple_member = .{ .label = .{.identifier_name} },
     .ts_infer_type = .{ .type_parameter = .{.ts_type_parameter} },
     .ts_function_type = .{
-        .type_parameters = declaration,
         .params = .{.formal_parameters},
         .return_type = .{.ts_type_annotation},
     },
     .ts_constructor_type = .{
-        .type_parameters = declaration,
         .params = .{.formal_parameters},
         .return_type = .{.ts_type_annotation},
     },
@@ -263,16 +234,13 @@ const fields = .{
         .parameters = .{.binding_identifier},
         .type_annotation = .{.ts_type_annotation},
     },
-    .ts_type_alias_declaration = .{ .id = .{.binding_identifier}, .type_parameters = declaration },
+    .ts_type_alias_declaration = .{ .id = .{.binding_identifier} },
     .ts_interface_declaration = .{
         .id = .{.binding_identifier},
-        .type_parameters = declaration,
         .extends = .{.ts_interface_heritage},
         .body = .{.ts_interface_body},
     },
     .ts_interface_body = .{ .body = signatures },
-    .ts_interface_heritage = .{ .type_arguments = instantiation },
-    .ts_class_implements = .{ .type_arguments = instantiation },
     .ts_enum_declaration = .{ .id = .{.binding_identifier}, .body = .{.ts_enum_body} },
     .ts_enum_body = .{ .members = .{.ts_enum_member} },
     .ts_enum_member = .{
@@ -284,10 +252,7 @@ const fields = .{
         .body = .{ .null, .ts_module_block },
     },
     .ts_global_declaration = .{ .id = .{.identifier_name}, .body = .{.ts_module_block} },
-    .ts_parameter_property = .{
-        .decorators = decorators,
-        .parameter = .{ .binding_identifier, .assignment_pattern },
-    },
+    .ts_parameter_property = .{ .parameter = .{ .binding_identifier, .assignment_pattern } },
     .ts_this_parameter = .{ .type_annotation = annotation },
     .ts_instantiation_expression = .{ .type_arguments = .{.ts_type_parameter_instantiation} },
     .ts_namespace_export_declaration = .{ .id = .{.identifier_name} },
@@ -307,7 +272,6 @@ const fields = .{
     },
     .jsx_opening_element = .{
         .name = jsx_names,
-        .type_arguments = instantiation,
         .attributes = .{ .jsx_attribute, .jsx_spread_attribute },
     },
     .jsx_closing_element = .{ .name = jsx_names },
@@ -339,7 +303,8 @@ pub const Field = struct {
     tags: []const Tag = &.{},
 
     pub inline fn allows(comptime field: Field, tag: u8) bool {
-        if (field.open and tag < structural.capacity() and !structural.isSet(tag)) return true;
+        const closed = structural.bits;
+        if (field.open and tag < closed.capacity() and !closed.isSet(tag)) return true;
         inline for (field.tags) |allowed| if (@backingInt(allowed) == tag) return true;
         return false;
     }
@@ -347,12 +312,16 @@ pub const Field = struct {
 
 pub fn of(comptime tag: []const u8, comptime name: []const u8) Field {
     comptime {
-        if (!@hasField(@TypeOf(fields), tag)) return .{};
-        const rules = @field(fields, tag);
-        if (!@hasField(@TypeOf(rules), name)) return .{};
+        const rules = if (@hasField(@TypeOf(fields), tag)) @field(fields, tag) else .{};
+        const kinds = if (@hasField(@TypeOf(rules), name))
+            @field(rules, name)
+        else if (@hasField(@TypeOf(by_name), name))
+            @field(by_name, name)
+        else
+            return .{};
         var field: Field = .{};
         var open = false;
-        for (@field(rules, name)) |kind| {
+        for (kinds) |kind| {
             if (kind == .null) {
                 field.nullable = true;
             } else if (kind == .any) {

@@ -1,13 +1,9 @@
-const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
-const Precedence = @import("../token.zig").Precedence;
 
-const array = @import("array.zig");
-const object = @import("object.zig");
+const grammar = @import("../grammar.zig");
 const literals = @import("literals.zig");
-const expressions = @import("expressions.zig");
 const ts = @import("ts/types.zig");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
@@ -16,66 +12,41 @@ pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isIdentifierLike()) {
         return literals.parseBindingIdentifier(parser);
     }
+    return parseDestructuringPattern(parser);
+}
 
-    return switch (parser.current_token.tag) {
-        .left_bracket => parseArrayPattern(parser),
-        .left_brace => parseObjectPattern(parser),
-        else => {
-            try parser.reportExpected(
-                parser.current_token.span,
-                "Expected an identifier or a destructuring pattern",
-                .{},
-            );
-            return null;
+fn parseDestructuringPattern(parser: *Parser) Error!?ast.NodeIndex {
+    switch (parser.current_token.tag) {
+        .left_bracket => {
+            const literal = try grammar.parseBracketed(parser, .array) orelse return null;
+            const span = literal.span();
+            const pattern = try grammar.arrayToPattern(parser, literal.elements, span, .binding);
+            return try parser.tree.addNode(.{ .array_pattern = pattern }, span);
         },
-    };
-}
-
-fn parseArrayPattern(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .left_bracket);
-    const cover = try array.parseCover(parser) orelse return null;
-    return try array.coverToPattern(parser, cover, .binding);
-}
-
-fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .left_brace);
-    const cover = try object.parseCover(parser) orelse return null;
-    return try object.coverToPattern(parser, cover, .binding);
-}
-
-pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    std.debug.assert(left != .null);
-    if (parser.current_token.tag != .assign) return left;
-
-    try parser.advance() orelse return null;
-
-    const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-        return null;
-
-    return try parser.tree.addNode(
-        .{ .assignment_pattern = .{ .left = left, .right = right } },
-        .{ .start = parser.tree.span(left).start, .end = parser.tree.span(right).end },
-    );
+        .left_brace => {
+            const literal = try grammar.parseBracketed(parser, .object) orelse return null;
+            const span = literal.span();
+            const pattern = try grammar.objectToPattern(parser, literal.elements, span, .binding);
+            return try parser.tree.addNode(.{ .object_pattern = pattern }, span);
+        },
+        else => {
+            return parser.failExpected("Expected an identifier or a destructuring pattern", .{});
+        },
+    }
 }
 
 pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .spread);
-    const start = parser.current_token.span.start;
-    try parser.advance() orelse return null;
-
+    const start = try parser.take(.spread) orelse return null;
     const argument = try parseBindingPattern(parser) orelse return null;
-    var end = parser.tree.span(argument).end;
+    const type_annotation: ast.NodeIndex = if (parser.tree.isTs() and parser.at(.colon))
+        try ts.parseTypeAnnotation(parser) orelse return null
+    else
+        .null;
 
-    var type_annotation: ast.NodeIndex = .null;
-    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        type_annotation = try ts.parseTypeAnnotation(parser) orelse return null;
-        end = parser.tree.span(type_annotation).end;
-    }
-
-    return try parser.tree.addNode(
-        .{ .binding_rest_element = .{ .argument = argument, .type_annotation = type_annotation } },
-        .{ .start = start, .end = end },
-    );
+    const last = if (type_annotation != .null) type_annotation else argument;
+    return try parser.finishAt(start, last, .{
+        .binding_rest_element = .{ .argument = argument, .type_annotation = type_annotation },
+    });
 }
 
 pub fn isDestructuringPattern(parser: *Parser, index: ast.NodeIndex) bool {

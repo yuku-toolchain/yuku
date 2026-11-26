@@ -82,11 +82,9 @@ export interface Decoded {
   semantic(): Semantic | null;
   nodeOf(index: number): Node;
   indexOf(node: Node): number | undefined;
-  /** -1 at the root. */
   parentIndex(index: number): number;
 }
 
-/** A tree `encode` wrote, with the nodes it read, by index. */
 export interface EncodedNodes {
   nodes: Int32Array;
   extras: Int32Array;
@@ -105,5 +103,7 @@ export declare function decodeDiagnostics(
   count: number,
   path: string | null,
 ): Diagnostic[];
+/** Every token kind by name. */
 export declare const TokenKind: TokenKindMap;
+export type TokenKind = TokenKindMap[keyof TokenKindMap];
 export declare const BindingFlags: BindingFlagMap;

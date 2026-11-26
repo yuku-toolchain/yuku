@@ -37,20 +37,18 @@ const ORDER = [
   "security",
 ];
 
-async function main() {
-  const site = await readSite();
-  const pages = await collectPages(site.host);
-  pages.sort((a, b) => rank(a.slug) - rank(b.slug) || a.slug.localeCompare(b.slug));
-  const summary = pages.find((page) => page.slug === "")?.description ?? site.title;
+const site = await readSite();
+const pages = await collectPages(site.host);
+pages.sort((a, b) => rank(a.slug) - rank(b.slug) || a.slug.localeCompare(b.slug));
+const summary = pages.find((page) => page.slug === "")?.description ?? site.title;
 
-  const index = buildIndex(site, pages, summary);
-  const full = buildFull(site, pages, summary);
-  await Bun.write(join(ASSETS_DIR, "llms.txt"), index);
-  await Bun.write(join(ASSETS_DIR, "llms-full.txt"), full);
+const index = buildIndex(site, pages, summary);
+const full = buildFull(site, pages, summary);
+await Bun.write(join(ASSETS_DIR, "llms.txt"), index);
+await Bun.write(join(ASSETS_DIR, "llms-full.txt"), full);
 
-  console.log(`llms.txt       ${index.length} bytes`);
-  console.log(`llms-full.txt  ${full.length} bytes  (${pages.length} pages)`);
-}
+console.log(`llms.txt       ${index.length} bytes`);
+console.log(`llms-full.txt  ${full.length} bytes  (${pages.length} pages)`);
 
 async function readSite(): Promise<Site> {
   const ziggy = await Bun.file(join(DOCS_DIR, "zine.ziggy")).text();
@@ -163,5 +161,3 @@ function cleanBody(markdown: string, host: string): string {
       .trim()
   );
 }
-
-await main();

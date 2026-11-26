@@ -1,22 +1,24 @@
 import type { TokenKindMap } from "./tokens";
 
+export type { TokenKindMap };
+
 /** How the source is parsed. */
-type SourceType = "script" | "module" | "commonjs";
+export type SourceType = "script" | "module" | "commonjs";
 
 /** What `Program.sourceType` reports. `commonjs` input reports `script`. */
-type ModuleKind = "script" | "module";
+export type ModuleKind = "script" | "module";
 
 /** The language of the source. */
-type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";
+export type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";
 
 /** Whether a comment is a line or a block comment. */
-type CommentType = "Line" | "Block";
+export type CommentType = "Line" | "Block";
 
 /** Where an attached comment sits, `inside` meaning within an otherwise empty node. */
-type CommentPosition = "before" | "after" | "inside";
+export type CommentPosition = "before" | "after" | "inside";
 
 /** A comment, also in its node's {@link BaseNode.comments} with `attachComments`. */
-interface Comment {
+export interface Comment {
   type: CommentType;
   /** Text without the delimiters. */
   value: string;
@@ -30,10 +32,10 @@ interface Comment {
 }
 
 /** One of the values of the `TokenKind` object. */
-type TokenKind = TokenKindMap[keyof TokenKindMap];
+export type TokenKind = TokenKindMap[keyof TokenKindMap];
 
 /** The tokens of a file in source order, each an index below `length`. Comments are not tokens. */
-interface TokenList {
+export interface TokenList {
   readonly length: number;
   /** `tokens.kind(i) === TokenKind.Arrow` */
   kind(index: number): TokenKind;
@@ -81,7 +83,7 @@ interface TokenList {
 }
 
 /** A labeled span of a {@link Diagnostic}. */
-interface DiagnosticLabel {
+export interface DiagnosticLabel {
   /** UTF-16 offset. */
   start: number;
   /** UTF-16 offset. */
@@ -90,10 +92,10 @@ interface DiagnosticLabel {
 }
 
 /** Severity level of a {@link Diagnostic}. */
-type DiagnosticSeverity = "error" | "warning" | "hint" | "info";
+export type DiagnosticSeverity = "error" | "warning" | "hint" | "info";
 
 /** A problem in the source. */
-interface Diagnostic {
+export interface Diagnostic {
   severity: DiagnosticSeverity;
   message: string;
   /** Null when the source has no path. */
@@ -109,21 +111,21 @@ interface Diagnostic {
 }
 
 /** The `type` of every node. */
-type NodeType = Node["type"];
+export type NodeType = Node["type"];
 
 /** The node, or union of nodes, carrying a given `type`. */
-type NodeOfType<K extends NodeType> = Extract<Node, { type: K }>;
+export type NodeOfType<K extends NodeType> = Extract<Node, { type: K }>;
 
-interface BaseNode {
+export interface BaseNode {
   start: number;
   end: number;
   /** Attached comments in source order, with `attachComments`. */
   comments?: Comment[];
 }
 
-type Span = BaseNode;
+export type Span = BaseNode;
 
-type BinaryOperator =
+export type BinaryOperator =
   | "=="
   | "!="
   | "==="
@@ -147,13 +149,13 @@ type BinaryOperator =
   | "in"
   | "instanceof";
 
-type LogicalOperator = "&&" | "||" | "??";
+export type LogicalOperator = "&&" | "||" | "??";
 
-type UnaryOperator = "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
+export type UnaryOperator = "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
 
-type UpdateOperator = "++" | "--";
+export type UpdateOperator = "++" | "--";
 
-type AssignmentOperator =
+export type AssignmentOperator =
   | "="
   | "+="
   | "-="
@@ -171,100 +173,98 @@ type AssignmentOperator =
   | "&&="
   | "??=";
 
-type VariableDeclarationKind = "var" | "let" | "const" | "using" | "await using";
+export type VariableDeclarationKind = "var" | "let" | "const" | "using" | "await using";
 
-type PropertyKind = "init" | "get" | "set";
+export type PropertyKind = "init" | "get" | "set";
 
-type MethodDefinitionKind = "constructor" | "method" | "get" | "set";
+export type MethodDefinitionKind = "constructor" | "method" | "get" | "set";
 
-type TSAccessibility = "public" | "private" | "protected";
+export type TSAccessibility = "public" | "private" | "protected";
 
-type TSMethodSignatureKind = "method" | "get" | "set";
+export type TSMethodSignatureKind = "method" | "get" | "set";
 
-type TSTypeOperatorOperator = "keyof" | "unique" | "readonly";
+export type TSTypeOperatorOperator = "keyof" | "unique" | "readonly";
 
-type TSModuleDeclarationKind = "module" | "namespace" | "global";
+export type TSModuleDeclarationKind = "module" | "namespace" | "global";
 
-type TSMappedTypeModifierOperator = true | "+" | "-";
+export type TSMappedTypeModifierOperator = true | "+" | "-";
 
-type ImportPhase = "source" | "defer";
+export type ImportPhase = "source" | "defer";
 
-type ImportOrExportKind = "value" | "type";
+export type ImportOrExportKind = "value" | "type";
 
-type FunctionType =
+export type FunctionType =
   | "FunctionDeclaration"
   | "FunctionExpression"
   | "TSDeclareFunction"
   | "TSEmptyBodyFunctionExpression";
 
-type ClassType = "ClassDeclaration" | "ClassExpression";
+export type ClassType = "ClassDeclaration" | "ClassExpression";
 
-type MethodDefinitionType = "MethodDefinition" | "TSAbstractMethodDefinition";
+export type MethodDefinitionType = "MethodDefinition" | "TSAbstractMethodDefinition";
 
-type PropertyDefinitionType = "PropertyDefinition" | "TSAbstractPropertyDefinition";
+export type PropertyDefinitionType = "PropertyDefinition" | "TSAbstractPropertyDefinition";
 
-type AccessorPropertyType = "AccessorProperty" | "TSAbstractAccessorProperty";
+export type AccessorPropertyType = "AccessorProperty" | "TSAbstractAccessorProperty";
 
-interface Identifier extends BaseNode {
-  type: "Identifier";
-  name: string;
+/** What TypeScript adds to a binding position. */
+interface PatternBase extends BaseNode {
   decorators?: Decorator[];
   optional?: boolean;
   typeAnnotation?: TSTypeAnnotation | null;
 }
 
-type IdentifierName = Identifier;
-type IdentifierReference = Identifier;
-type BindingIdentifier = Identifier;
-type LabelIdentifier = Identifier;
+export interface Identifier extends PatternBase {
+  type: "Identifier";
+  name: string;
+}
 
-interface PrivateIdentifier extends BaseNode {
+export type IdentifierName = Identifier;
+export type IdentifierReference = Identifier;
+export type BindingIdentifier = Identifier;
+export type LabelIdentifier = Identifier;
+
+export interface PrivateIdentifier extends BaseNode {
   type: "PrivateIdentifier";
   name: string;
 }
 
-interface StringLiteral extends BaseNode {
+interface LiteralBase extends BaseNode {
   type: "Literal";
+  raw?: string;
+}
+
+export interface StringLiteral extends LiteralBase {
   value: string;
-  raw?: string;
 }
 
-interface NumericLiteral extends BaseNode {
-  type: "Literal";
+export interface NumericLiteral extends LiteralBase {
   value: number;
-  raw?: string;
 }
 
-interface BigIntLiteral extends BaseNode {
-  type: "Literal";
+export interface BigIntLiteral extends LiteralBase {
   value: bigint;
-  raw?: string;
   bigint: string;
 }
 
-interface BooleanLiteral extends BaseNode {
-  type: "Literal";
+export interface BooleanLiteral extends LiteralBase {
   value: boolean;
-  raw?: string;
 }
 
-interface NullLiteral extends BaseNode {
-  type: "Literal";
+export interface NullLiteral extends LiteralBase {
   value: null;
   raw?: "null";
 }
 
-interface RegExpLiteral extends BaseNode {
-  type: "Literal";
+export interface RegExpLiteral extends LiteralBase {
   value: RegExp | null;
-  raw?: string;
   regex: {
     pattern: string;
     flags: string;
   };
 }
 
-type Literal =
+export type Literal =
   | StringLiteral
   | NumericLiteral
   | BigIntLiteral
@@ -272,116 +272,102 @@ type Literal =
   | NullLiteral
   | RegExpLiteral;
 
-interface ArrayPattern extends BaseNode {
+export interface ArrayPattern extends PatternBase {
   type: "ArrayPattern";
   elements: Array<BindingPattern | SimpleAssignmentTarget | RestElement | null>;
-  decorators?: Decorator[];
-  optional?: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
 }
 
-interface ObjectPattern extends BaseNode {
+export interface ObjectPattern extends PatternBase {
   type: "ObjectPattern";
   properties: Array<BindingProperty | RestElement>;
-  decorators?: Decorator[];
-  optional?: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
 }
 
-interface AssignmentPattern extends BaseNode {
+export interface AssignmentPattern extends PatternBase {
   type: "AssignmentPattern";
   left: BindingPattern | SimpleAssignmentTarget;
   right: Expression;
-  decorators?: Decorator[];
-  optional?: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
 }
 
-interface RestElement extends BaseNode {
+export interface RestElement extends PatternBase {
   type: "RestElement";
   argument: BindingPattern | SimpleAssignmentTarget;
-  decorators?: Decorator[];
-  optional?: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
   value?: null;
 }
 
-type BindingPattern = BindingIdentifier | ArrayPattern | ObjectPattern | AssignmentPattern;
+export type BindingPattern = BindingIdentifier | ArrayPattern | ObjectPattern | AssignmentPattern;
 
-type FunctionParameter = BindingPattern | RestElement | TSParameterProperty;
+export type FunctionParameter = BindingPattern | RestElement | TSParameterProperty;
 
-interface ObjectProperty extends BaseNode {
+interface PropertyBase extends BaseNode {
   type: "Property";
-  kind: PropertyKind;
   key: PropertyKey;
+  shorthand: boolean;
+  computed: boolean;
+  optional?: false;
+}
+
+export interface ObjectProperty extends PropertyBase {
+  kind: PropertyKind;
   value: Expression;
   method: boolean;
-  shorthand: boolean;
-  computed: boolean;
-  optional?: false;
 }
 
-interface BindingProperty extends BaseNode {
-  type: "Property";
+export interface BindingProperty extends PropertyBase {
   kind: "init";
-  key: PropertyKey;
   value: BindingPattern | SimpleAssignmentTarget;
   method: false;
-  shorthand: boolean;
-  computed: boolean;
-  optional?: false;
 }
 
-type Property = ObjectProperty | BindingProperty;
+export type Property = ObjectProperty | BindingProperty;
 
-type PropertyKey = IdentifierName | PrivateIdentifier | Expression;
+export type PropertyKey = IdentifierName | PrivateIdentifier | Expression;
 
-interface SequenceExpression extends BaseNode {
+export interface SequenceExpression extends BaseNode {
   type: "SequenceExpression";
   expressions: Expression[];
 }
 
-interface ParenthesizedExpression extends BaseNode {
+export interface ParenthesizedExpression extends BaseNode {
   type: "ParenthesizedExpression";
   expression: Expression;
 }
 
-interface BinaryExpression extends BaseNode {
+export interface BinaryExpression extends BaseNode {
   type: "BinaryExpression";
   left: Expression | PrivateIdentifier;
   operator: BinaryOperator;
   right: Expression;
 }
 
-interface LogicalExpression extends BaseNode {
+export interface LogicalExpression extends BaseNode {
   type: "LogicalExpression";
   left: Expression;
   operator: LogicalOperator;
   right: Expression;
 }
 
-interface ConditionalExpression extends BaseNode {
+export interface ConditionalExpression extends BaseNode {
   type: "ConditionalExpression";
   test: Expression;
   consequent: Expression;
   alternate: Expression;
 }
 
-interface UnaryExpression extends BaseNode {
+export interface UnaryExpression extends BaseNode {
   type: "UnaryExpression";
   operator: UnaryOperator;
   prefix: true;
   argument: Expression;
 }
 
-interface UpdateExpression extends BaseNode {
+export interface UpdateExpression extends BaseNode {
   type: "UpdateExpression";
   operator: UpdateOperator;
   prefix: boolean;
   argument: Expression;
 }
 
-type SimpleAssignmentTarget =
+export type SimpleAssignmentTarget =
   | IdentifierReference
   | MemberExpression
   | TSAsExpression
@@ -389,76 +375,76 @@ type SimpleAssignmentTarget =
   | TSNonNullExpression
   | TSTypeAssertion;
 
-type AssignmentTargetPattern = ArrayPattern | ObjectPattern;
+export type AssignmentTargetPattern = ArrayPattern | ObjectPattern;
 
-type AssignmentTarget = SimpleAssignmentTarget | AssignmentTargetPattern;
+export type AssignmentTarget = SimpleAssignmentTarget | AssignmentTargetPattern;
 
-interface AssignmentExpression extends BaseNode {
+export interface AssignmentExpression extends BaseNode {
   type: "AssignmentExpression";
   operator: AssignmentOperator;
   left: AssignmentTarget;
   right: Expression;
 }
 
-interface YieldExpression extends BaseNode {
+export interface YieldExpression extends BaseNode {
   type: "YieldExpression";
   delegate: boolean;
   argument: Expression | null;
 }
 
-interface AwaitExpression extends BaseNode {
+export interface AwaitExpression extends BaseNode {
   type: "AwaitExpression";
   argument: Expression;
 }
 
-type ArrayExpressionElement = Expression | SpreadElement | null;
+export type ArrayExpressionElement = Expression | SpreadElement | null;
 
-type ObjectPropertyKind = ObjectProperty | SpreadElement;
+export type ObjectPropertyKind = ObjectProperty | SpreadElement;
 
-type Argument = Expression | SpreadElement;
+export type Argument = Expression | SpreadElement;
 
-interface ArrayExpression extends BaseNode {
+export interface ArrayExpression extends BaseNode {
   type: "ArrayExpression";
   elements: ArrayExpressionElement[];
 }
 
-interface ObjectExpression extends BaseNode {
+export interface ObjectExpression extends BaseNode {
   type: "ObjectExpression";
   properties: ObjectPropertyKind[];
 }
 
-interface SpreadElement extends BaseNode {
+export interface SpreadElement extends BaseNode {
   type: "SpreadElement";
   argument: Expression;
 }
 
-interface ComputedMemberExpression extends BaseNode {
+interface MemberExpressionBase extends BaseNode {
   type: "MemberExpression";
   object: Expression | Super;
+  optional: boolean;
+}
+
+export interface ComputedMemberExpression extends MemberExpressionBase {
   property: Expression;
   computed: true;
-  optional: boolean;
 }
 
-interface StaticMemberExpression extends BaseNode {
-  type: "MemberExpression";
-  object: Expression | Super;
+export interface StaticMemberExpression extends MemberExpressionBase {
   property: IdentifierName;
   computed: false;
-  optional: boolean;
 }
 
-interface PrivateFieldExpression extends BaseNode {
-  type: "MemberExpression";
-  object: Expression | Super;
+export interface PrivateFieldExpression extends MemberExpressionBase {
   property: PrivateIdentifier;
   computed: false;
-  optional: boolean;
 }
 
-type MemberExpression = ComputedMemberExpression | StaticMemberExpression | PrivateFieldExpression;
+export type MemberExpression =
+  | ComputedMemberExpression
+  | StaticMemberExpression
+  | PrivateFieldExpression;
 
-interface CallExpression extends BaseNode {
+export interface CallExpression extends BaseNode {
   type: "CallExpression";
   callee: Expression | Super;
   arguments: Argument[];
@@ -466,47 +452,47 @@ interface CallExpression extends BaseNode {
   typeArguments?: TSTypeParameterInstantiation | null;
 }
 
-interface ChainExpression extends BaseNode {
+export interface ChainExpression extends BaseNode {
   type: "ChainExpression";
   expression: ChainElement;
 }
 
-type ChainElement = CallExpression | MemberExpression | TSNonNullExpression;
+export type ChainElement = CallExpression | MemberExpression | TSNonNullExpression;
 
-interface TaggedTemplateExpression extends BaseNode {
+export interface TaggedTemplateExpression extends BaseNode {
   type: "TaggedTemplateExpression";
   tag: Expression;
   quasi: TemplateLiteral;
   typeArguments?: TSTypeParameterInstantiation | null;
 }
 
-interface NewExpression extends BaseNode {
+export interface NewExpression extends BaseNode {
   type: "NewExpression";
   callee: Expression;
   arguments: Argument[];
   typeArguments?: TSTypeParameterInstantiation | null;
 }
 
-interface MetaProperty extends BaseNode {
+export interface MetaProperty extends BaseNode {
   type: "MetaProperty";
   meta: IdentifierName;
   property: IdentifierName;
 }
 
-interface ImportExpression extends BaseNode {
+export interface ImportExpression extends BaseNode {
   type: "ImportExpression";
   source: Expression;
   options: Expression | null;
   phase: ImportPhase | null;
 }
 
-interface TemplateLiteral extends BaseNode {
+export interface TemplateLiteral extends BaseNode {
   type: "TemplateLiteral";
   quasis: TemplateElement[];
   expressions: Expression[];
 }
 
-interface TemplateElement extends BaseNode {
+export interface TemplateElement extends BaseNode {
   type: "TemplateElement";
   value: {
     raw: string;
@@ -515,54 +501,54 @@ interface TemplateElement extends BaseNode {
   tail: boolean;
 }
 
-interface Super extends BaseNode {
+export interface Super extends BaseNode {
   type: "Super";
 }
 
-interface ThisExpression extends BaseNode {
+export interface ThisExpression extends BaseNode {
   type: "ThisExpression";
 }
 
-interface ExpressionStatement extends BaseNode {
+export interface ExpressionStatement extends BaseNode {
   type: "ExpressionStatement";
   expression: Expression;
   directive?: null;
 }
 
-interface Directive extends BaseNode {
+export interface Directive extends BaseNode {
   type: "ExpressionStatement";
   expression: StringLiteral;
   directive: string;
 }
 
-interface BlockStatement extends BaseNode {
+export interface BlockStatement extends BaseNode {
   type: "BlockStatement";
   body: (Statement | Directive)[];
 }
 
-interface IfStatement extends BaseNode {
+export interface IfStatement extends BaseNode {
   type: "IfStatement";
   test: Expression;
   consequent: Statement;
   alternate: Statement | null;
 }
 
-interface SwitchStatement extends BaseNode {
+export interface SwitchStatement extends BaseNode {
   type: "SwitchStatement";
   discriminant: Expression;
   cases: SwitchCase[];
 }
 
-interface SwitchCase extends BaseNode {
+export interface SwitchCase extends BaseNode {
   type: "SwitchCase";
   test: Expression | null;
   consequent: Statement[];
 }
 
-type ForStatementInit = VariableDeclaration | Expression;
-type ForStatementLeft = VariableDeclaration | AssignmentTarget;
+export type ForStatementInit = VariableDeclaration | Expression;
+export type ForStatementLeft = VariableDeclaration | AssignmentTarget;
 
-interface ForStatement extends BaseNode {
+export interface ForStatement extends BaseNode {
   type: "ForStatement";
   init: ForStatementInit | null;
   test: Expression | null;
@@ -570,14 +556,14 @@ interface ForStatement extends BaseNode {
   body: Statement;
 }
 
-interface ForInStatement extends BaseNode {
+export interface ForInStatement extends BaseNode {
   type: "ForInStatement";
   left: ForStatementLeft;
   right: Expression;
   body: Statement;
 }
 
-interface ForOfStatement extends BaseNode {
+export interface ForOfStatement extends BaseNode {
   type: "ForOfStatement";
   left: ForStatementLeft;
   right: Expression;
@@ -585,144 +571,130 @@ interface ForOfStatement extends BaseNode {
   await: boolean;
 }
 
-interface WhileStatement extends BaseNode {
+export interface WhileStatement extends BaseNode {
   type: "WhileStatement";
   test: Expression;
   body: Statement;
 }
 
-interface DoWhileStatement extends BaseNode {
+export interface DoWhileStatement extends BaseNode {
   type: "DoWhileStatement";
   body: Statement;
   test: Expression;
 }
 
-interface BreakStatement extends BaseNode {
+export interface BreakStatement extends BaseNode {
   type: "BreakStatement";
   label: LabelIdentifier | null;
 }
 
-interface ContinueStatement extends BaseNode {
+export interface ContinueStatement extends BaseNode {
   type: "ContinueStatement";
   label: LabelIdentifier | null;
 }
 
-interface LabeledStatement extends BaseNode {
+export interface LabeledStatement extends BaseNode {
   type: "LabeledStatement";
   label: LabelIdentifier;
   body: Statement;
 }
 
-interface WithStatement extends BaseNode {
+export interface WithStatement extends BaseNode {
   type: "WithStatement";
   object: Expression;
   body: Statement;
 }
 
-interface ReturnStatement extends BaseNode {
+export interface ReturnStatement extends BaseNode {
   type: "ReturnStatement";
   argument: Expression | null;
 }
 
-interface ThrowStatement extends BaseNode {
+export interface ThrowStatement extends BaseNode {
   type: "ThrowStatement";
   argument: Expression;
 }
 
-interface TryStatement extends BaseNode {
+export interface TryStatement extends BaseNode {
   type: "TryStatement";
   block: BlockStatement;
   handler: CatchClause | null;
   finalizer: BlockStatement | null;
 }
 
-interface CatchClause extends BaseNode {
+export interface CatchClause extends BaseNode {
   type: "CatchClause";
   param: BindingPattern | null;
   body: BlockStatement;
 }
 
-interface DebuggerStatement extends BaseNode {
+export interface DebuggerStatement extends BaseNode {
   type: "DebuggerStatement";
 }
 
-interface EmptyStatement extends BaseNode {
+export interface EmptyStatement extends BaseNode {
   type: "EmptyStatement";
 }
 
-interface VariableDeclaration extends BaseNode {
+export interface VariableDeclaration extends BaseNode {
   type: "VariableDeclaration";
   kind: VariableDeclarationKind;
   declarations: VariableDeclarator[];
   declare?: boolean;
 }
 
-interface VariableDeclarator extends BaseNode {
+export interface VariableDeclarator extends BaseNode {
   type: "VariableDeclarator";
   id: BindingPattern;
   init: Expression | null;
   definite?: boolean;
 }
 
-interface FunctionDeclaration extends BaseNode {
+interface FunctionBase extends BaseNode {
+  id: BindingIdentifier | null;
+  generator: boolean;
+  async: boolean;
+  params: FunctionParameter[];
+  expression: false;
+}
+
+interface BodiedFunction extends FunctionBase {
+  body: BlockStatement | null;
+  declare?: boolean;
+  typeParameters?: TSTypeParameterDeclaration | null;
+  returnType?: TSTypeAnnotation | null;
+}
+
+interface BodilessFunction extends FunctionBase {
+  body: null;
+  declare: boolean;
+  typeParameters: TSTypeParameterDeclaration | null;
+  returnType: TSTypeAnnotation | null;
+}
+
+export interface FunctionDeclaration extends BodiedFunction {
   type: "FunctionDeclaration";
-  id: BindingIdentifier | null;
-  generator: boolean;
-  async: boolean;
-  params: FunctionParameter[];
-  body: BlockStatement | null;
-  expression: false;
-  declare?: boolean;
-  typeParameters?: TSTypeParameterDeclaration | null;
-  returnType?: TSTypeAnnotation | null;
 }
 
-interface FunctionExpression extends BaseNode {
+export interface FunctionExpression extends BodiedFunction {
   type: "FunctionExpression";
-  id: BindingIdentifier | null;
-  generator: boolean;
-  async: boolean;
-  params: FunctionParameter[];
-  body: BlockStatement | null;
-  expression: false;
-  declare?: boolean;
-  typeParameters?: TSTypeParameterDeclaration | null;
-  returnType?: TSTypeAnnotation | null;
 }
 
-interface TSDeclareFunction extends BaseNode {
+export interface TSDeclareFunction extends BodilessFunction {
   type: "TSDeclareFunction";
-  id: BindingIdentifier | null;
-  generator: boolean;
-  async: boolean;
-  params: FunctionParameter[];
-  body: null;
-  expression: false;
-  declare: boolean;
-  typeParameters: TSTypeParameterDeclaration | null;
-  returnType: TSTypeAnnotation | null;
 }
 
-interface TSEmptyBodyFunctionExpression extends BaseNode {
+export interface TSEmptyBodyFunctionExpression extends BodilessFunction {
   type: "TSEmptyBodyFunctionExpression";
-  id: BindingIdentifier | null;
-  generator: boolean;
-  async: boolean;
-  params: FunctionParameter[];
-  body: null;
-  expression: false;
-  declare: boolean;
-  typeParameters: TSTypeParameterDeclaration | null;
-  returnType: TSTypeAnnotation | null;
 }
 
-type Function =
+export type Function =
   | FunctionDeclaration
   | FunctionExpression
   | TSDeclareFunction
   | TSEmptyBodyFunctionExpression;
 
-interface ArrowFunctionExpression extends BaseNode {
+export interface ArrowFunctionExpression extends BaseNode {
   type: "ArrowFunctionExpression";
   id: null;
   generator: false;
@@ -734,140 +706,95 @@ interface ArrowFunctionExpression extends BaseNode {
   returnType?: TSTypeAnnotation | null;
 }
 
-interface ClassDeclaration extends BaseNode {
+interface ClassBase extends BaseNode {
+  decorators: Decorator[];
+  id: BindingIdentifier | null;
+  superClass: Expression | null;
+  body: ClassBody;
+  typeParameters?: TSTypeParameterDeclaration | null;
+  superTypeArguments?: TSTypeParameterInstantiation | null;
+  implements?: TSClassImplements[];
+  abstract?: boolean;
+  declare?: boolean;
+}
+
+export interface ClassDeclaration extends ClassBase {
   type: "ClassDeclaration";
-  decorators: Decorator[];
-  id: BindingIdentifier | null;
-  superClass: Expression | null;
-  body: ClassBody;
-  typeParameters?: TSTypeParameterDeclaration | null;
-  superTypeArguments?: TSTypeParameterInstantiation | null;
-  implements?: TSClassImplements[];
-  abstract?: boolean;
-  declare?: boolean;
 }
 
-interface ClassExpression extends BaseNode {
+export interface ClassExpression extends ClassBase {
   type: "ClassExpression";
-  decorators: Decorator[];
-  id: BindingIdentifier | null;
-  superClass: Expression | null;
-  body: ClassBody;
-  typeParameters?: TSTypeParameterDeclaration | null;
-  superTypeArguments?: TSTypeParameterInstantiation | null;
-  implements?: TSClassImplements[];
-  abstract?: boolean;
-  declare?: boolean;
 }
 
-type Class = ClassDeclaration | ClassExpression;
+export type Class = ClassDeclaration | ClassExpression;
 
-interface ClassBody extends BaseNode {
+export interface ClassBody extends BaseNode {
   type: "ClassBody";
   body: ClassElement[];
 }
 
-interface MethodDefinition extends BaseNode {
+interface MethodDefinitionBase extends BaseNode {
+  decorators: Decorator[];
+  key: PropertyKey;
+  value: FunctionExpression | TSEmptyBodyFunctionExpression;
+  kind: MethodDefinitionKind;
+  computed: boolean;
+  static: boolean;
+  override?: boolean;
+  optional?: boolean;
+  accessibility?: TSAccessibility | null;
+}
+
+export interface MethodDefinition extends MethodDefinitionBase {
   type: "MethodDefinition";
-  decorators: Decorator[];
-  key: PropertyKey;
-  value: FunctionExpression | TSEmptyBodyFunctionExpression;
-  kind: MethodDefinitionKind;
-  computed: boolean;
-  static: boolean;
-  override?: boolean;
-  optional?: boolean;
-  accessibility?: TSAccessibility | null;
 }
 
-interface TSAbstractMethodDefinition extends BaseNode {
+export interface TSAbstractMethodDefinition extends MethodDefinitionBase {
   type: "TSAbstractMethodDefinition";
+}
+
+interface PropertyDefinitionBase extends BaseNode {
   decorators: Decorator[];
   key: PropertyKey;
-  value: FunctionExpression | TSEmptyBodyFunctionExpression;
-  kind: MethodDefinitionKind;
+  value: Expression | null;
   computed: boolean;
   static: boolean;
+  typeAnnotation?: TSTypeAnnotation | null;
+  declare?: boolean;
   override?: boolean;
   optional?: boolean;
+  definite?: boolean;
+  readonly?: boolean;
   accessibility?: TSAccessibility | null;
 }
 
-interface PropertyDefinition extends BaseNode {
+export interface PropertyDefinition extends PropertyDefinitionBase {
   type: "PropertyDefinition";
-  decorators: Decorator[];
-  key: PropertyKey;
-  value: Expression | null;
-  computed: boolean;
-  static: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
-  declare?: boolean;
-  override?: boolean;
-  optional?: boolean;
-  definite?: boolean;
-  readonly?: boolean;
-  accessibility?: TSAccessibility | null;
 }
 
-interface TSAbstractPropertyDefinition extends BaseNode {
+export interface TSAbstractPropertyDefinition extends PropertyDefinitionBase {
   type: "TSAbstractPropertyDefinition";
-  decorators: Decorator[];
-  key: PropertyKey;
-  value: Expression | null;
-  computed: boolean;
-  static: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
-  declare?: boolean;
-  override?: boolean;
-  optional?: boolean;
-  definite?: boolean;
-  readonly?: boolean;
-  accessibility?: TSAccessibility | null;
 }
 
-interface AccessorProperty extends BaseNode {
+export interface AccessorProperty extends PropertyDefinitionBase {
   type: "AccessorProperty";
-  decorators: Decorator[];
-  key: PropertyKey;
-  value: Expression | null;
-  computed: boolean;
-  static: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
-  declare?: boolean;
-  override?: boolean;
-  optional?: boolean;
-  definite?: boolean;
-  readonly?: boolean;
-  accessibility?: TSAccessibility | null;
 }
 
-interface TSAbstractAccessorProperty extends BaseNode {
+export interface TSAbstractAccessorProperty extends PropertyDefinitionBase {
   type: "TSAbstractAccessorProperty";
-  decorators: Decorator[];
-  key: PropertyKey;
-  value: Expression | null;
-  computed: boolean;
-  static: boolean;
-  typeAnnotation?: TSTypeAnnotation | null;
-  declare?: boolean;
-  override?: boolean;
-  optional?: boolean;
-  definite?: boolean;
-  readonly?: boolean;
-  accessibility?: TSAccessibility | null;
 }
 
-interface StaticBlock extends BaseNode {
+export interface StaticBlock extends BaseNode {
   type: "StaticBlock";
   body: Statement[];
 }
 
-interface Decorator extends BaseNode {
+export interface Decorator extends BaseNode {
   type: "Decorator";
   expression: Expression;
 }
 
-type ClassElement =
+export type ClassElement =
   | MethodDefinition
   | TSAbstractMethodDefinition
   | PropertyDefinition
@@ -877,7 +804,7 @@ type ClassElement =
   | StaticBlock
   | TSIndexSignature;
 
-interface ImportDeclaration extends BaseNode {
+export interface ImportDeclaration extends BaseNode {
   type: "ImportDeclaration";
   specifiers: ImportDeclarationSpecifier[];
   source: StringLiteral;
@@ -886,37 +813,37 @@ interface ImportDeclaration extends BaseNode {
   importKind?: ImportOrExportKind;
 }
 
-type ImportDeclarationSpecifier =
+export type ImportDeclarationSpecifier =
   | ImportSpecifier
   | ImportDefaultSpecifier
   | ImportNamespaceSpecifier;
 
-interface ImportSpecifier extends BaseNode {
+export interface ImportSpecifier extends BaseNode {
   type: "ImportSpecifier";
   imported: IdentifierName | StringLiteral;
   local: BindingIdentifier;
   importKind?: ImportOrExportKind;
 }
 
-interface ImportDefaultSpecifier extends BaseNode {
+export interface ImportDefaultSpecifier extends BaseNode {
   type: "ImportDefaultSpecifier";
   local: BindingIdentifier;
 }
 
-interface ImportNamespaceSpecifier extends BaseNode {
+export interface ImportNamespaceSpecifier extends BaseNode {
   type: "ImportNamespaceSpecifier";
   local: BindingIdentifier;
 }
 
-interface ImportAttribute extends BaseNode {
+export interface ImportAttribute extends BaseNode {
   type: "ImportAttribute";
   key: ImportAttributeKey;
   value: StringLiteral;
 }
 
-type ImportAttributeKey = IdentifierName | StringLiteral;
+export type ImportAttributeKey = IdentifierName | StringLiteral;
 
-interface ExportNamedDeclaration extends BaseNode {
+export interface ExportNamedDeclaration extends BaseNode {
   type: "ExportNamedDeclaration";
   declaration: Declaration | null;
   specifiers: ExportSpecifier[];
@@ -925,15 +852,15 @@ interface ExportNamedDeclaration extends BaseNode {
   exportKind?: ImportOrExportKind;
 }
 
-interface ExportDefaultDeclaration extends BaseNode {
+export interface ExportDefaultDeclaration extends BaseNode {
   type: "ExportDefaultDeclaration";
   declaration: ExportDefaultDeclarationKind;
   exportKind?: "value";
 }
 
-type ExportDefaultDeclarationKind = Function | Class | TSInterfaceDeclaration | Expression;
+export type ExportDefaultDeclarationKind = Function | Class | TSInterfaceDeclaration | Expression;
 
-interface ExportAllDeclaration extends BaseNode {
+export interface ExportAllDeclaration extends BaseNode {
   type: "ExportAllDeclaration";
   exported: ModuleExportName | null;
   source: StringLiteral;
@@ -941,23 +868,23 @@ interface ExportAllDeclaration extends BaseNode {
   exportKind?: ImportOrExportKind;
 }
 
-interface ExportSpecifier extends BaseNode {
+export interface ExportSpecifier extends BaseNode {
   type: "ExportSpecifier";
   local: ModuleExportName;
   exported: ModuleExportName;
   exportKind?: ImportOrExportKind;
 }
 
-type ModuleExportName = IdentifierName | IdentifierReference | StringLiteral;
+export type ModuleExportName = IdentifierName | IdentifierReference | StringLiteral;
 
-interface JSXElement extends BaseNode {
+export interface JSXElement extends BaseNode {
   type: "JSXElement";
   openingElement: JSXOpeningElement;
   children: JSXChild[];
   closingElement: JSXClosingElement | null;
 }
 
-interface JSXOpeningElement extends BaseNode {
+export interface JSXOpeningElement extends BaseNode {
   type: "JSXOpeningElement";
   name: JSXElementName;
   attributes: JSXAttributeItem[];
@@ -965,174 +892,178 @@ interface JSXOpeningElement extends BaseNode {
   typeArguments?: TSTypeParameterInstantiation | null;
 }
 
-interface JSXClosingElement extends BaseNode {
+export interface JSXClosingElement extends BaseNode {
   type: "JSXClosingElement";
   name: JSXElementName;
 }
 
-type JSXAttributeItem = JSXAttribute | JSXSpreadAttribute;
+export type JSXAttributeItem = JSXAttribute | JSXSpreadAttribute;
 
-interface JSXFragment extends BaseNode {
+export interface JSXFragment extends BaseNode {
   type: "JSXFragment";
   openingFragment: JSXOpeningFragment;
   children: JSXChild[];
   closingFragment: JSXClosingFragment;
 }
 
-interface JSXOpeningFragment extends BaseNode {
+export interface JSXOpeningFragment extends BaseNode {
   type: "JSXOpeningFragment";
 }
 
-interface JSXClosingFragment extends BaseNode {
+export interface JSXClosingFragment extends BaseNode {
   type: "JSXClosingFragment";
 }
 
-interface JSXIdentifier extends BaseNode {
+export interface JSXIdentifier extends BaseNode {
   type: "JSXIdentifier";
   name: string;
 }
 
-interface JSXNamespacedName extends BaseNode {
+export interface JSXNamespacedName extends BaseNode {
   type: "JSXNamespacedName";
   namespace: JSXIdentifier;
   name: JSXIdentifier;
 }
 
-interface JSXMemberExpression extends BaseNode {
+export interface JSXMemberExpression extends BaseNode {
   type: "JSXMemberExpression";
   object: JSXMemberExpressionObject;
   property: JSXIdentifier;
 }
 
-type JSXMemberExpressionObject = JSXIdentifier | JSXMemberExpression;
+export type JSXMemberExpressionObject = JSXIdentifier | JSXMemberExpression;
 
-interface JSXAttribute extends BaseNode {
+export interface JSXAttribute extends BaseNode {
   type: "JSXAttribute";
   name: JSXAttributeName;
   value: JSXAttributeValue | null;
 }
 
-type JSXAttributeName = JSXIdentifier | JSXNamespacedName;
+export type JSXAttributeName = JSXIdentifier | JSXNamespacedName;
 
-type JSXAttributeValue = StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment;
+export type JSXAttributeValue = StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment;
 
-interface JSXSpreadAttribute extends BaseNode {
+export interface JSXSpreadAttribute extends BaseNode {
   type: "JSXSpreadAttribute";
   argument: Expression;
 }
 
-interface JSXExpressionContainer extends BaseNode {
+export interface JSXExpressionContainer extends BaseNode {
   type: "JSXExpressionContainer";
   expression: JSXExpression;
 }
 
-type JSXExpression = JSXEmptyExpression | Expression;
+export type JSXExpression = JSXEmptyExpression | Expression;
 
-interface JSXEmptyExpression extends BaseNode {
+export interface JSXEmptyExpression extends BaseNode {
   type: "JSXEmptyExpression";
 }
 
-interface JSXText extends BaseNode {
+export interface JSXText extends BaseNode {
   type: "JSXText";
   value: string;
   raw?: string;
 }
 
-interface JSXSpreadChild extends BaseNode {
+export interface JSXSpreadChild extends BaseNode {
   type: "JSXSpreadChild";
   expression: Expression;
 }
 
-type JSXElementName = JSXIdentifier | JSXNamespacedName | JSXMemberExpression;
+export type JSXElementName = JSXIdentifier | JSXNamespacedName | JSXMemberExpression;
 
-type JSXTagName = JSXElementName;
+export type JSXTagName = JSXElementName;
 
-type JSXChild = JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild;
+export type JSXChild = JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild;
 
-interface TSTypeAnnotation extends BaseNode {
+export interface TSTypeAnnotation extends BaseNode {
   type: "TSTypeAnnotation";
   typeAnnotation: TSType;
 }
 
-interface TSAnyKeyword extends BaseNode {
+export interface TSAnyKeyword extends BaseNode {
   type: "TSAnyKeyword";
 }
 
-interface TSUnknownKeyword extends BaseNode {
+export interface TSUnknownKeyword extends BaseNode {
   type: "TSUnknownKeyword";
 }
 
-interface TSNeverKeyword extends BaseNode {
+export interface TSNeverKeyword extends BaseNode {
   type: "TSNeverKeyword";
 }
 
-interface TSVoidKeyword extends BaseNode {
+export interface TSVoidKeyword extends BaseNode {
   type: "TSVoidKeyword";
 }
 
-interface TSNullKeyword extends BaseNode {
+export interface TSNullKeyword extends BaseNode {
   type: "TSNullKeyword";
 }
 
-interface TSUndefinedKeyword extends BaseNode {
+export interface TSUndefinedKeyword extends BaseNode {
   type: "TSUndefinedKeyword";
 }
 
-interface TSStringKeyword extends BaseNode {
+export interface TSStringKeyword extends BaseNode {
   type: "TSStringKeyword";
 }
 
-interface TSNumberKeyword extends BaseNode {
+export interface TSNumberKeyword extends BaseNode {
   type: "TSNumberKeyword";
 }
 
-interface TSBigIntKeyword extends BaseNode {
+export interface TSBigIntKeyword extends BaseNode {
   type: "TSBigIntKeyword";
 }
 
-interface TSBooleanKeyword extends BaseNode {
+export interface TSBooleanKeyword extends BaseNode {
   type: "TSBooleanKeyword";
 }
 
-interface TSSymbolKeyword extends BaseNode {
+export interface TSSymbolKeyword extends BaseNode {
   type: "TSSymbolKeyword";
 }
 
-interface TSObjectKeyword extends BaseNode {
+export interface TSObjectKeyword extends BaseNode {
   type: "TSObjectKeyword";
 }
 
-interface TSIntrinsicKeyword extends BaseNode {
+export interface TSIntrinsicKeyword extends BaseNode {
   type: "TSIntrinsicKeyword";
 }
 
-interface TSThisType extends BaseNode {
+export interface TSThisType extends BaseNode {
   type: "TSThisType";
 }
 
-interface TSTypeReference extends BaseNode {
+export interface TSTypeReference extends BaseNode {
   type: "TSTypeReference";
   typeName: TSTypeName;
   typeArguments: TSTypeParameterInstantiation | null;
 }
 
-interface TSQualifiedName extends BaseNode {
+export interface TSQualifiedName extends BaseNode {
   type: "TSQualifiedName";
   left: TSTypeName;
   right: IdentifierName;
 }
 
-type TSTypeName = IdentifierReference | TSQualifiedName | ThisExpression;
+export type TSTypeName = IdentifierReference | TSQualifiedName | ThisExpression;
 
-interface TSTypeQuery extends BaseNode {
+export interface TSTypeQuery extends BaseNode {
   type: "TSTypeQuery";
   exprName: TSTypeQueryExprName;
   typeArguments: TSTypeParameterInstantiation | null;
 }
 
-type TSTypeQueryExprName = IdentifierReference | TSQualifiedName | ThisExpression | TSImportType;
+export type TSTypeQueryExprName =
+  | IdentifierReference
+  | TSQualifiedName
+  | ThisExpression
+  | TSImportType;
 
-interface TSImportType extends BaseNode {
+export interface TSImportType extends BaseNode {
   type: "TSImportType";
   source: StringLiteral;
   options: ObjectExpression | null;
@@ -1140,9 +1071,9 @@ interface TSImportType extends BaseNode {
   typeArguments: TSTypeParameterInstantiation | null;
 }
 
-type TSImportTypeQualifier = IdentifierName | TSQualifiedName;
+export type TSImportTypeQualifier = IdentifierName | TSQualifiedName;
 
-interface TSTypeParameter extends BaseNode {
+export interface TSTypeParameter extends BaseNode {
   type: "TSTypeParameter";
   name: BindingIdentifier;
   constraint: TSType | null;
@@ -1152,17 +1083,17 @@ interface TSTypeParameter extends BaseNode {
   const: boolean;
 }
 
-interface TSTypeParameterDeclaration extends BaseNode {
+export interface TSTypeParameterDeclaration extends BaseNode {
   type: "TSTypeParameterDeclaration";
   params: TSTypeParameter[];
 }
 
-interface TSTypeParameterInstantiation extends BaseNode {
+export interface TSTypeParameterInstantiation extends BaseNode {
   type: "TSTypeParameterInstantiation";
   params: TSType[];
 }
 
-interface TSLiteralType extends BaseNode {
+export interface TSLiteralType extends BaseNode {
   type: "TSLiteralType";
   literal:
     | StringLiteral
@@ -1173,74 +1104,74 @@ interface TSLiteralType extends BaseNode {
     | UnaryExpression;
 }
 
-interface TSTemplateLiteralType extends BaseNode {
+export interface TSTemplateLiteralType extends BaseNode {
   type: "TSTemplateLiteralType";
   quasis: TemplateElement[];
   types: TSType[];
 }
 
-interface TSArrayType extends BaseNode {
+export interface TSArrayType extends BaseNode {
   type: "TSArrayType";
   elementType: TSType;
 }
 
-interface TSIndexedAccessType extends BaseNode {
+export interface TSIndexedAccessType extends BaseNode {
   type: "TSIndexedAccessType";
   objectType: TSType;
   indexType: TSType;
 }
 
-interface TSTupleType extends BaseNode {
+export interface TSTupleType extends BaseNode {
   type: "TSTupleType";
   elementTypes: TSTupleElement[];
 }
 
-interface TSNamedTupleMember extends BaseNode {
+export interface TSNamedTupleMember extends BaseNode {
   type: "TSNamedTupleMember";
   label: IdentifierName;
   elementType: TSType;
   optional: boolean;
 }
 
-interface TSOptionalType extends BaseNode {
+export interface TSOptionalType extends BaseNode {
   type: "TSOptionalType";
   typeAnnotation: TSType;
 }
 
-interface TSRestType extends BaseNode {
+export interface TSRestType extends BaseNode {
   type: "TSRestType";
   typeAnnotation: TSType | TSNamedTupleMember;
 }
 
-type TSTupleElement = TSType | TSNamedTupleMember | TSOptionalType | TSRestType;
+export type TSTupleElement = TSType | TSNamedTupleMember | TSOptionalType | TSRestType;
 
-interface TSJSDocNullableType extends BaseNode {
+export interface TSJSDocNullableType extends BaseNode {
   type: "TSJSDocNullableType";
   typeAnnotation: TSType;
   postfix: boolean;
 }
 
-interface TSJSDocNonNullableType extends BaseNode {
+export interface TSJSDocNonNullableType extends BaseNode {
   type: "TSJSDocNonNullableType";
   typeAnnotation: TSType;
   postfix: boolean;
 }
 
-interface TSJSDocUnknownType extends BaseNode {
+export interface TSJSDocUnknownType extends BaseNode {
   type: "TSJSDocUnknownType";
 }
 
-interface TSUnionType extends BaseNode {
+export interface TSUnionType extends BaseNode {
   type: "TSUnionType";
   types: TSType[];
 }
 
-interface TSIntersectionType extends BaseNode {
+export interface TSIntersectionType extends BaseNode {
   type: "TSIntersectionType";
   types: TSType[];
 }
 
-interface TSConditionalType extends BaseNode {
+export interface TSConditionalType extends BaseNode {
   type: "TSConditionalType";
   checkType: TSType;
   extendsType: TSType;
@@ -1248,52 +1179,52 @@ interface TSConditionalType extends BaseNode {
   falseType: TSType;
 }
 
-interface TSInferType extends BaseNode {
+export interface TSInferType extends BaseNode {
   type: "TSInferType";
   typeParameter: TSTypeParameter;
 }
 
-interface TSTypeOperator extends BaseNode {
+export interface TSTypeOperator extends BaseNode {
   type: "TSTypeOperator";
   operator: TSTypeOperatorOperator;
   typeAnnotation: TSType;
 }
 
-interface TSParenthesizedType extends BaseNode {
+export interface TSParenthesizedType extends BaseNode {
   type: "TSParenthesizedType";
   typeAnnotation: TSType;
 }
 
-interface TSFunctionType extends BaseNode {
-  type: "TSFunctionType";
+interface TSFunctionSignatureBase extends BaseNode {
   typeParameters: TSTypeParameterDeclaration | null;
   params: FunctionParameter[];
   returnType: TSTypeAnnotation | null;
 }
 
-interface TSConstructorType extends BaseNode {
+export interface TSFunctionType extends TSFunctionSignatureBase {
+  type: "TSFunctionType";
+}
+
+export interface TSConstructorType extends TSFunctionSignatureBase {
   type: "TSConstructorType";
   abstract: boolean;
-  typeParameters: TSTypeParameterDeclaration | null;
-  params: FunctionParameter[];
-  returnType: TSTypeAnnotation | null;
 }
 
-interface TSTypePredicate extends BaseNode {
+export interface TSTypePredicate extends BaseNode {
   type: "TSTypePredicate";
   parameterName: TSTypePredicateName;
   typeAnnotation: TSTypeAnnotation | null;
   asserts: boolean;
 }
 
-type TSTypePredicateName = IdentifierName | TSThisType;
+export type TSTypePredicateName = IdentifierName | TSThisType;
 
-interface TSTypeLiteral extends BaseNode {
+export interface TSTypeLiteral extends BaseNode {
   type: "TSTypeLiteral";
   members: TSSignature[];
 }
 
-interface TSMappedType extends BaseNode {
+export interface TSMappedType extends BaseNode {
   type: "TSMappedType";
   key: BindingIdentifier;
   constraint: TSType;
@@ -1303,7 +1234,7 @@ interface TSMappedType extends BaseNode {
   readonly: TSMappedTypeModifierOperator | null;
 }
 
-interface TSPropertySignature extends BaseNode {
+export interface TSPropertySignature extends BaseNode {
   type: "TSPropertySignature";
   key: PropertyKey;
   typeAnnotation: TSTypeAnnotation | null;
@@ -1314,35 +1245,26 @@ interface TSPropertySignature extends BaseNode {
   static: false;
 }
 
-interface TSMethodSignature extends BaseNode {
+export interface TSMethodSignature extends TSFunctionSignatureBase {
   type: "TSMethodSignature";
   key: PropertyKey;
   computed: boolean;
   optional: boolean;
   kind: TSMethodSignatureKind;
-  typeParameters: TSTypeParameterDeclaration | null;
-  params: FunctionParameter[];
-  returnType: TSTypeAnnotation | null;
   accessibility: null;
   readonly: false;
   static: false;
 }
 
-interface TSCallSignatureDeclaration extends BaseNode {
+export interface TSCallSignatureDeclaration extends TSFunctionSignatureBase {
   type: "TSCallSignatureDeclaration";
-  typeParameters: TSTypeParameterDeclaration | null;
-  params: FunctionParameter[];
-  returnType: TSTypeAnnotation | null;
 }
 
-interface TSConstructSignatureDeclaration extends BaseNode {
+export interface TSConstructSignatureDeclaration extends TSFunctionSignatureBase {
   type: "TSConstructSignatureDeclaration";
-  typeParameters: TSTypeParameterDeclaration | null;
-  params: FunctionParameter[];
-  returnType: TSTypeAnnotation | null;
 }
 
-interface TSIndexSignature extends BaseNode {
+export interface TSIndexSignature extends BaseNode {
   type: "TSIndexSignature";
   parameters: BindingIdentifier[];
   typeAnnotation: TSTypeAnnotation;
@@ -1351,14 +1273,14 @@ interface TSIndexSignature extends BaseNode {
   accessibility: null;
 }
 
-type TSSignature =
+export type TSSignature =
   | TSPropertySignature
   | TSMethodSignature
   | TSCallSignatureDeclaration
   | TSConstructSignatureDeclaration
   | TSIndexSignature;
 
-interface TSTypeAliasDeclaration extends BaseNode {
+export interface TSTypeAliasDeclaration extends BaseNode {
   type: "TSTypeAliasDeclaration";
   id: BindingIdentifier;
   typeParameters: TSTypeParameterDeclaration | null;
@@ -1366,7 +1288,7 @@ interface TSTypeAliasDeclaration extends BaseNode {
   declare: boolean;
 }
 
-interface TSInterfaceDeclaration extends BaseNode {
+export interface TSInterfaceDeclaration extends BaseNode {
   type: "TSInterfaceDeclaration";
   id: BindingIdentifier;
   typeParameters: TSTypeParameterDeclaration | null;
@@ -1375,24 +1297,24 @@ interface TSInterfaceDeclaration extends BaseNode {
   declare: boolean;
 }
 
-interface TSInterfaceBody extends BaseNode {
+export interface TSInterfaceBody extends BaseNode {
   type: "TSInterfaceBody";
   body: TSSignature[];
 }
 
-interface TSInterfaceHeritage extends BaseNode {
+export interface TSInterfaceHeritage extends BaseNode {
   type: "TSInterfaceHeritage";
   expression: Expression;
   typeArguments: TSTypeParameterInstantiation | null;
 }
 
-interface TSClassImplements extends BaseNode {
+export interface TSClassImplements extends BaseNode {
   type: "TSClassImplements";
   expression: Expression;
   typeArguments: TSTypeParameterInstantiation | null;
 }
 
-interface TSEnumDeclaration extends BaseNode {
+export interface TSEnumDeclaration extends BaseNode {
   type: "TSEnumDeclaration";
   id: BindingIdentifier;
   body: TSEnumBody;
@@ -1400,21 +1322,21 @@ interface TSEnumDeclaration extends BaseNode {
   declare: boolean;
 }
 
-interface TSEnumBody extends BaseNode {
+export interface TSEnumBody extends BaseNode {
   type: "TSEnumBody";
   members: TSEnumMember[];
 }
 
-interface TSEnumMember extends BaseNode {
+export interface TSEnumMember extends BaseNode {
   type: "TSEnumMember";
   id: TSEnumMemberName;
   initializer: Expression | null;
   computed: boolean;
 }
 
-type TSEnumMemberName = IdentifierName | StringLiteral | TemplateLiteral;
+export type TSEnumMemberName = IdentifierName | StringLiteral | TemplateLiteral;
 
-interface TSModuleDeclaration extends BaseNode {
+export interface TSModuleDeclaration extends BaseNode {
   type: "TSModuleDeclaration";
   id: BindingIdentifier | StringLiteral | TSQualifiedName | IdentifierName;
   body?: TSModuleBlock;
@@ -1423,12 +1345,12 @@ interface TSModuleDeclaration extends BaseNode {
   global: boolean;
 }
 
-interface TSModuleBlock extends BaseNode {
+export interface TSModuleBlock extends BaseNode {
   type: "TSModuleBlock";
   body: ProgramStatement[];
 }
 
-interface TSParameterProperty extends BaseNode {
+export interface TSParameterProperty extends BaseNode {
   type: "TSParameterProperty";
   decorators: Decorator[];
   parameter: BindingIdentifier | AssignmentPattern;
@@ -1438,60 +1360,60 @@ interface TSParameterProperty extends BaseNode {
   static: false;
 }
 
-interface TSAsExpression extends BaseNode {
+export interface TSAsExpression extends BaseNode {
   type: "TSAsExpression";
   expression: Expression;
   typeAnnotation: TSType;
 }
 
-interface TSSatisfiesExpression extends BaseNode {
+export interface TSSatisfiesExpression extends BaseNode {
   type: "TSSatisfiesExpression";
   expression: Expression;
   typeAnnotation: TSType;
 }
 
-interface TSTypeAssertion extends BaseNode {
+export interface TSTypeAssertion extends BaseNode {
   type: "TSTypeAssertion";
   typeAnnotation: TSType;
   expression: Expression;
 }
 
-interface TSNonNullExpression extends BaseNode {
+export interface TSNonNullExpression extends BaseNode {
   type: "TSNonNullExpression";
   expression: Expression;
 }
 
-interface TSInstantiationExpression extends BaseNode {
+export interface TSInstantiationExpression extends BaseNode {
   type: "TSInstantiationExpression";
   expression: Expression;
   typeArguments: TSTypeParameterInstantiation;
 }
 
-interface TSExportAssignment extends BaseNode {
+export interface TSExportAssignment extends BaseNode {
   type: "TSExportAssignment";
   expression: Expression;
 }
 
-interface TSNamespaceExportDeclaration extends BaseNode {
+export interface TSNamespaceExportDeclaration extends BaseNode {
   type: "TSNamespaceExportDeclaration";
   id: IdentifierName;
 }
 
-interface TSImportEqualsDeclaration extends BaseNode {
+export interface TSImportEqualsDeclaration extends BaseNode {
   type: "TSImportEqualsDeclaration";
   id: BindingIdentifier;
   moduleReference: TSModuleReference;
   importKind: ImportOrExportKind;
 }
 
-type TSModuleReference = TSExternalModuleReference | IdentifierReference | TSQualifiedName;
+export type TSModuleReference = TSExternalModuleReference | IdentifierReference | TSQualifiedName;
 
-interface TSExternalModuleReference extends BaseNode {
+export interface TSExternalModuleReference extends BaseNode {
   type: "TSExternalModuleReference";
   expression: StringLiteral;
 }
 
-type TSType =
+export type TSType =
   | TSAnyKeyword
   | TSUnknownKeyword
   | TSNeverKeyword
@@ -1530,12 +1452,12 @@ type TSType =
   | TSTypeLiteral
   | TSMappedType;
 
-interface Hashbang extends BaseNode {
+export interface Hashbang extends BaseNode {
   type: "Hashbang";
   value: string;
 }
 
-interface Program extends BaseNode {
+export interface Program extends BaseNode {
   type: "Program";
   sourceType: ModuleKind;
   hashbang: Hashbang | null;
@@ -1543,9 +1465,9 @@ interface Program extends BaseNode {
 }
 
 /** A statement, module declaration or directive, as `Program.body` holds. */
-type ProgramStatement = Statement | ModuleDeclaration | Directive;
+export type ProgramStatement = Statement | ModuleDeclaration | Directive;
 
-type Declaration =
+export type Declaration =
   | FunctionDeclaration
   | ClassDeclaration
   | VariableDeclaration
@@ -1556,7 +1478,7 @@ type Declaration =
   | TSModuleDeclaration
   | TSImportEqualsDeclaration;
 
-type Expression =
+export type Expression =
   | IdentifierReference
   | Literal
   | ThisExpression
@@ -1592,7 +1514,7 @@ type Expression =
   | JSXElement
   | JSXFragment;
 
-type Statement =
+export type Statement =
   | ExpressionStatement
   | BlockStatement
   | EmptyStatement
@@ -1613,7 +1535,7 @@ type Statement =
   | WithStatement
   | Declaration;
 
-type ModuleDeclaration =
+export type ModuleDeclaration =
   | ImportDeclaration
   | ExportNamedDeclaration
   | ExportDefaultDeclaration
@@ -1621,7 +1543,7 @@ type ModuleDeclaration =
   | TSExportAssignment
   | TSNamespaceExportDeclaration;
 
-type Node =
+export type Node =
   | Program
   | Hashbang
   | Statement
@@ -1689,265 +1611,3 @@ type Node =
   | TSExternalModuleReference
   | TSOptionalType
   | TSRestType;
-
-export type {
-  TokenKind,
-  TokenKindMap,
-  TokenList,
-  NodeOfType,
-  NodeType,
-  Comment,
-  CommentType,
-  CommentPosition,
-  Diagnostic,
-  DiagnosticLabel,
-  DiagnosticSeverity,
-  SourceType,
-  ModuleKind,
-  SourceLang,
-  BaseNode,
-  Span,
-  Program,
-  ProgramStatement,
-  Statement,
-  Expression,
-  Declaration,
-  ModuleDeclaration,
-  Node,
-  Hashbang,
-  AssignmentTarget,
-  SimpleAssignmentTarget,
-  AssignmentTargetPattern,
-  Argument,
-  ArrayExpressionElement,
-  ObjectPropertyKind,
-  ForStatementInit,
-  ForStatementLeft,
-  ChainElement,
-  ExportDefaultDeclarationKind,
-  ImportDeclarationSpecifier,
-  ImportAttributeKey,
-  ModuleExportName,
-  PropertyKey,
-  Identifier,
-  IdentifierName,
-  IdentifierReference,
-  BindingIdentifier,
-  LabelIdentifier,
-  PrivateIdentifier,
-  Literal,
-  StringLiteral,
-  NumericLiteral,
-  BigIntLiteral,
-  BooleanLiteral,
-  NullLiteral,
-  RegExpLiteral,
-  BindingPattern,
-  FunctionParameter,
-  Property,
-  ObjectProperty,
-  BindingProperty,
-  ArrayPattern,
-  ObjectPattern,
-  AssignmentPattern,
-  RestElement,
-  SequenceExpression,
-  ParenthesizedExpression,
-  BinaryExpression,
-  LogicalExpression,
-  ConditionalExpression,
-  UnaryExpression,
-  UpdateExpression,
-  AssignmentExpression,
-  YieldExpression,
-  AwaitExpression,
-  ArrayExpression,
-  ObjectExpression,
-  SpreadElement,
-  MemberExpression,
-  ComputedMemberExpression,
-  StaticMemberExpression,
-  PrivateFieldExpression,
-  CallExpression,
-  ChainExpression,
-  TaggedTemplateExpression,
-  NewExpression,
-  MetaProperty,
-  ImportExpression,
-  TemplateLiteral,
-  TemplateElement,
-  Super,
-  ThisExpression,
-  Directive,
-  ExpressionStatement,
-  BlockStatement,
-  IfStatement,
-  SwitchStatement,
-  SwitchCase,
-  ForStatement,
-  ForInStatement,
-  ForOfStatement,
-  WhileStatement,
-  DoWhileStatement,
-  BreakStatement,
-  ContinueStatement,
-  LabeledStatement,
-  WithStatement,
-  ReturnStatement,
-  ThrowStatement,
-  TryStatement,
-  CatchClause,
-  DebuggerStatement,
-  EmptyStatement,
-  VariableDeclaration,
-  VariableDeclarator,
-  VariableDeclarationKind,
-  Function,
-  FunctionDeclaration,
-  FunctionExpression,
-  TSDeclareFunction,
-  TSEmptyBodyFunctionExpression,
-  FunctionType,
-  ArrowFunctionExpression,
-  Class,
-  ClassDeclaration,
-  ClassExpression,
-  ClassType,
-  ClassBody,
-  MethodDefinition,
-  TSAbstractMethodDefinition,
-  MethodDefinitionType,
-  MethodDefinitionKind,
-  PropertyDefinition,
-  TSAbstractPropertyDefinition,
-  PropertyDefinitionType,
-  AccessorProperty,
-  TSAbstractAccessorProperty,
-  AccessorPropertyType,
-  PropertyKind,
-  StaticBlock,
-  Decorator,
-  ClassElement,
-  ImportDeclaration,
-  ImportSpecifier,
-  ImportDefaultSpecifier,
-  ImportNamespaceSpecifier,
-  ImportAttribute,
-  ImportPhase,
-  ImportOrExportKind,
-  ExportNamedDeclaration,
-  ExportDefaultDeclaration,
-  ExportAllDeclaration,
-  ExportSpecifier,
-  JSXElement,
-  JSXOpeningElement,
-  JSXClosingElement,
-  JSXFragment,
-  JSXOpeningFragment,
-  JSXClosingFragment,
-  JSXIdentifier,
-  JSXNamespacedName,
-  JSXMemberExpression,
-  JSXMemberExpressionObject,
-  JSXAttribute,
-  JSXAttributeItem,
-  JSXAttributeName,
-  JSXAttributeValue,
-  JSXSpreadAttribute,
-  JSXExpressionContainer,
-  JSXExpression,
-  JSXEmptyExpression,
-  JSXText,
-  JSXSpreadChild,
-  JSXTagName,
-  JSXElementName,
-  JSXChild,
-  TSType,
-  TSTypeName,
-  TSSignature,
-  TSTupleElement,
-  TSTypeAnnotation,
-  TSAnyKeyword,
-  TSUnknownKeyword,
-  TSNeverKeyword,
-  TSVoidKeyword,
-  TSNullKeyword,
-  TSUndefinedKeyword,
-  TSStringKeyword,
-  TSNumberKeyword,
-  TSBigIntKeyword,
-  TSBooleanKeyword,
-  TSSymbolKeyword,
-  TSObjectKeyword,
-  TSIntrinsicKeyword,
-  TSThisType,
-  TSTypeReference,
-  TSQualifiedName,
-  TSTypeQuery,
-  TSTypeQueryExprName,
-  TSImportType,
-  TSImportTypeQualifier,
-  TSTypeParameter,
-  TSTypeParameterDeclaration,
-  TSTypeParameterInstantiation,
-  TSLiteralType,
-  TSTemplateLiteralType,
-  TSArrayType,
-  TSIndexedAccessType,
-  TSTupleType,
-  TSNamedTupleMember,
-  TSOptionalType,
-  TSRestType,
-  TSJSDocNullableType,
-  TSJSDocNonNullableType,
-  TSJSDocUnknownType,
-  TSUnionType,
-  TSIntersectionType,
-  TSConditionalType,
-  TSInferType,
-  TSTypeOperator,
-  TSTypeOperatorOperator,
-  TSParenthesizedType,
-  TSFunctionType,
-  TSConstructorType,
-  TSTypePredicate,
-  TSTypePredicateName,
-  TSTypeLiteral,
-  TSMappedType,
-  TSMappedTypeModifierOperator,
-  TSPropertySignature,
-  TSMethodSignature,
-  TSMethodSignatureKind,
-  TSCallSignatureDeclaration,
-  TSConstructSignatureDeclaration,
-  TSIndexSignature,
-  TSTypeAliasDeclaration,
-  TSInterfaceDeclaration,
-  TSInterfaceBody,
-  TSInterfaceHeritage,
-  TSClassImplements,
-  TSEnumDeclaration,
-  TSEnumBody,
-  TSEnumMember,
-  TSEnumMemberName,
-  TSModuleDeclaration,
-  TSModuleDeclarationKind,
-  TSModuleBlock,
-  TSParameterProperty,
-  TSAccessibility,
-  TSAsExpression,
-  TSSatisfiesExpression,
-  TSTypeAssertion,
-  TSNonNullExpression,
-  TSInstantiationExpression,
-  TSExportAssignment,
-  TSNamespaceExportDeclaration,
-  TSImportEqualsDeclaration,
-  TSExternalModuleReference,
-  TSModuleReference,
-  BinaryOperator,
-  LogicalOperator,
-  UnaryOperator,
-  UpdateOperator,
-  AssignmentOperator,
-};

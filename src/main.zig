@@ -16,9 +16,8 @@ const Visitor = struct {
         id: ast.BindingIdentifier,
         _: ast.NodeIndex,
         ctx: *basic.Ctx,
-    ) parser.traverser.Action {
+    ) void {
         std.debug.print("binding {s}\n", .{ctx.tree.string(id.name)});
-        return .proceed;
     }
 };
 

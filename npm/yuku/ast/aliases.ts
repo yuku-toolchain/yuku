@@ -10,8 +10,9 @@ import type {
   Statement,
   TSType,
 } from "../types";
+import type { GeneratedNodeType } from "./generated";
 
-export const ALIAS_GROUPS = {
+const ALIAS_GROUPS = {
   Expression: [
     "Identifier",
     "Literal",
@@ -172,16 +173,13 @@ type GroupType<A extends AliasName> = (typeof ALIAS_GROUPS)[A][number];
 /** The node union each alias covers. */
 export type AliasMap = { [A in AliasName]: NodeOfType<GroupType<A>> };
 
-export const ALIAS_MEMBERS: Readonly<Record<string, ReadonlySet<string> | undefined>> =
-  Object.assign(
-    Object.create(null),
-    Object.fromEntries(
-      Object.entries(ALIAS_GROUPS).map(([name, types]) => [name, new Set<string>(types)]),
-    ),
-  );
+export const ALIAS_MEMBERS: ReadonlyMap<string, ReadonlySet<string>> = new Map(
+  Object.entries(ALIAS_GROUPS).map(([name, types]) => [name, new Set<string>(types)]),
+);
 
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 type Expect<T extends true> = T;
+type _nodes = Expect<Same<GeneratedNodeType, NodeType>>;
 type _groups = Expect<
   typeof ALIAS_GROUPS extends Record<string, readonly NodeType[]> ? true : false
 >;

@@ -9,7 +9,7 @@ pub const lexical = @import("lexical.zig");
 
 pub const traverser = @import("traverser/root.zig");
 pub const semantic = @import("semantic/root.zig");
-pub const codegen = @import("codegen/root.zig");
+pub const codegen = @import("codegen/printer.zig");
 
 test {
     _ = ast;

@@ -1,7 +1,3 @@
-import { BindingFlags as bindingFlags, TokenKind as tokenKind } from "./core/decode";
-import type { BindingFlagMap } from "./file/semantic";
-import type { TokenKindMap } from "./types";
-
 export {
   parse,
   type FileOptions,
@@ -11,9 +7,7 @@ export {
 } from "./file/source-file";
 export { Core, type CoreOptions, type Platform } from "./core/core";
 
-/** Every token kind by name. */
-export const TokenKind: TokenKindMap = tokenKind;
-export type TokenKind = TokenKindMap[keyof TokenKindMap];
+export { BindingFlags, TokenKind } from "./core/decode";
 
 export type * from "./types";
 export type { AliasMap, AliasName } from "./ast/aliases";
@@ -44,7 +38,6 @@ export type {
   ScopeKind,
   Space,
 } from "./file/semantic";
-export const BindingFlags: BindingFlagMap = bindingFlags;
 
 export { Project, type ProjectOptions } from "./file/project";
 

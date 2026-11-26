@@ -2,14 +2,7 @@ import type { ParseOptions } from "../file/source-file";
 import type { SourceLang, SourceType } from "../types";
 import { addons } from "#native";
 import shipped from "#wasm";
-import { Core, type Entry } from "./core";
-
-export interface Read {
-  readonly buffer: ArrayBuffer;
-  readonly lang: SourceLang;
-  readonly sourceType: SourceType;
-  readonly flags: number;
-}
+import { Core } from "./core";
 
 const LANGS: Record<string, number> = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
 const SOURCE_TYPES: Record<string, number> = { script: 0, module: 1, commonjs: 2 };
@@ -36,8 +29,11 @@ export function sourceText(source: string | Uint8Array): { text: string; malform
   }
 }
 
-export function read(source: string, options: ParseOptions, entry: Entry): Read {
-  const backend = (options.core ?? shippedCore).backend();
+export function parseFlags(options: ParseOptions): {
+  lang: SourceLang;
+  sourceType: SourceType;
+  flags: number;
+} {
   const path = options.path ?? "";
   const lang = options.lang ?? langFromPath(path);
   if (LANGS[lang] === undefined) {
@@ -52,8 +48,7 @@ export function read(source: string, options: ParseOptions, entry: Entry): Read 
   if (options.semanticErrors === true) flags |= SEMANTIC_ERRORS;
   if (options.attachComments === true) flags |= ATTACH_COMMENTS;
   if (options.tokens === true) flags |= TOKENS;
-  const buffer = backend.run(entry, source, flags, 0);
-  return { buffer, lang, sourceType, flags };
+  return { lang, sourceType, flags };
 }
 
 export function treeFlags(lang: SourceLang, sourceType: SourceType): number {

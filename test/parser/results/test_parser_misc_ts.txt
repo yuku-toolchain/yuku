@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       110/110 (100.00%)
+Passed:       114/114 (100.00%)
 Failed:       0
-AST mismatch: 0/110
+AST mismatch: 0/114
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: 'abstract' modifier cannot appear on a constructor declaration
@@ -191,6 +191,16 @@ error: An enum member cannot have a numeric name
    = help: Name the member with an identifier or a non-numeric string
 
 
+✓ test/parser/misc/ts/export-as-namespace-invalid-name.ts
+error: Expected an identifier, but found '1'
+   |
+ 1 | export as namespace 1;
+   |                     ^
+ 2 | 
+   |
+   = help: Identifiers start with a letter, '_', or '$'
+
+
 ✓ test/parser/misc/ts/export-duplicate-error.module.ts
 error: Duplicate export 'E1'
    |
@@ -228,6 +238,27 @@ error: The variable declaration of a 'for...in' statement cannot have an initial
 
 ✓ test/parser/misc/ts/function-overloads.ts
 ✓ test/parser/misc/ts/function-type-lookahead.ts
+✓ test/parser/misc/ts/generic-call-empty-type-arguments.ts
+error: Type argument list cannot be empty
+   |
+ 1 | h <>(
+   |    ^
+ 2 | 
+   |
+   = help: Remove the empty '<>'
+
+
+✓ test/parser/misc/ts/generic-call-invalid-arguments.ts
+error: Expected ')' to close the call arguments, but found ':'
+   |
+ 1 | f<T>(a: b);
+   |       ^
+   |     ~ opened here
+ 2 | 
+   |
+   = help: Separate the arguments with ','
+
+
 ✓ test/parser/misc/ts/import-export-in-namespace.ts
 error: Cannot use an export declaration outside a module
    |
@@ -281,6 +312,16 @@ error: An instantiation expression cannot be followed by a property access
  3 | 
    |
    = help: Wrap the instantiation expression in parentheses
+
+
+✓ test/parser/misc/ts/interface-heritage-dangling-dot.ts
+error: Expected an identifier, but found '{'
+   |
+ 1 | interface I extends A. {}
+   |                        ^
+ 2 | 
+   |
+   = help: Identifiers start with a letter, '_', or '$'
 
 
 ✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx

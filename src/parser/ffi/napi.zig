@@ -3,6 +3,8 @@ const builtin = @import("builtin");
 const entries = @import("entries.zig");
 const transfer = @import("transfer/root.zig");
 
+const Allocator = std.mem.Allocator;
+const Arena = std.heap.ArenaAllocator;
 const Error = transfer.Error || error{NodeApi};
 
 const Env = *opaque {};
@@ -50,16 +52,14 @@ const Api = struct {
     ) callconv(.c) Status,
 };
 
-/// Arenas that calls on any thread borrow and return, so each call reuses the memory of an
-/// earlier one.
 const pool = struct {
     const arenas_max = 64;
     const retained_bytes_max = 128 * 1024 * 1024;
     const lock_attempts_max = 1024;
 
     var locked: std.atomic.Value(bool) = .init(false);
-    var arenas: [arenas_max]*std.heap.ArenaAllocator = undefined;
-    var arenas_len: u32 = 0;
+    var buffer: [arenas_max]*Arena = undefined;
+    var arenas: std.ArrayList(*Arena) = .initBuffer(&buffer);
 
     fn lock() bool {
         for (0..lock_attempts_max) |_| {
@@ -69,35 +69,21 @@ const pool = struct {
         return false;
     }
 
-    fn unlock() void {
-        std.debug.assert(locked.load(.monotonic));
-        locked.store(false, .release);
-    }
-
-    fn take() std.mem.Allocator.Error!*std.heap.ArenaAllocator {
+    fn take() Allocator.Error!*Arena {
         if (lock()) {
-            defer unlock();
-            std.debug.assert(arenas_len <= arenas_max);
-            if (arenas_len > 0) {
-                arenas_len -= 1;
-                return arenas[arenas_len];
-            }
+            defer locked.store(false, .release);
+            if (arenas.pop()) |arena| return arena;
         }
-        const arena = try std.heap.page_allocator.create(std.heap.ArenaAllocator);
+        const arena = try std.heap.page_allocator.create(Arena);
         arena.* = .init(std.heap.page_allocator);
         return arena;
     }
 
-    fn give(arena: *std.heap.ArenaAllocator) void {
+    fn give(arena: *Arena) void {
         _ = arena.reset(.{ .retain_with_limit = retained_bytes_max });
         if (lock()) {
-            defer unlock();
-            std.debug.assert(arenas_len <= arenas_max);
-            if (arenas_len < arenas_max) {
-                arenas[arenas_len] = arena;
-                arenas_len += 1;
-                return;
-            }
+            defer locked.store(false, .release);
+            if (arenas.items.len < arenas_max) return arenas.appendAssumeCapacity(arena);
         }
         arena.deinit();
         std.heap.page_allocator.destroy(arena);
@@ -150,97 +136,80 @@ fn bindApi() error{NodeApi}!Api {
 }
 
 export fn napi_register_module_v1(env: Env, exports: Value) ?Value {
-    register(env, exports) catch return null;
+    const api = bindApi() catch return null;
+    inline for (.{ "parse", "analyze", "printSource", "printTree", "analyzeTree" }) |name| {
+        var function: Value = undefined;
+        const run = callback(@field(entries, name));
+        if (api.napi_create_function(env, name, name.len, run, null, &function) != .ok) return null;
+        if (api.napi_set_named_property(env, exports, name, function) != .ok) return null;
+    }
     return exports;
-}
-
-fn register(env: Env, exports: Value) Error!void {
-    const api = try bindApi();
-    try define(&api, env, exports, "parse", withSource(entries.parse));
-    try define(&api, env, exports, "analyze", withSource(entries.analyze));
-    try define(&api, env, exports, "printSource", printSource);
-    try define(&api, env, exports, "printTree", printTree);
-    try define(&api, env, exports, "analyzeTree", analyzeTree);
-}
-
-fn define(
-    api: *const Api,
-    env: Env,
-    exports: Value,
-    comptime name: [:0]const u8,
-    comptime run: Run,
-) Error!void {
-    var function: Value = undefined;
-    try check(api.napi_create_function(env, name.ptr, name.len, callback(run), null, &function));
-    try check(api.napi_set_named_property(env, exports, name.ptr, function));
 }
 
 fn check(status: Status) error{NodeApi}!void {
     if (status != .ok) return error.NodeApi;
 }
 
-const Run = fn (*const Api, std.mem.Allocator, Env, CallbackInfo) Error!Value;
-
-fn callback(comptime run: Run) Callback {
+fn callback(comptime entry: anytype) Callback {
+    const params = @typeInfo(@TypeOf(entry)).@"fn".param_types;
+    const Args, const count = comptime blk: {
+        var types: [params.len]type = undefined;
+        var count: usize = 0;
+        for (params, &types) |Param, *Arg| {
+            Arg.* = Param orelse *Output;
+            count += valuesOf(Param);
+        }
+        break :blk .{ @Tuple(&types), count };
+    };
     return struct {
         fn call(env: Env, info: CallbackInfo) callconv(.c) ?Value {
             const api = bindApi() catch return null;
-            const arena = pool.take() catch {
-                _ = api.napi_throw_error(env, null, "yuku: out of memory");
-                return null;
-            };
-            defer pool.give(arena);
-            return run(&api, arena.allocator(), env, info) catch |err| {
-                const message = switch (err) {
+            return run(&api, env, info) catch |err| {
+                _ = api.napi_throw_error(env, null, switch (err) {
                     error.OutOfMemory => "yuku: out of memory",
                     error.NodeApi => "yuku: a Node-API call failed",
                     error.InvalidTree => "yuku: the tree is malformed",
-                };
-                _ = api.napi_throw_error(env, null, message);
+                });
                 return null;
             };
+        }
+
+        fn run(api: *const Api, env: Env, info: CallbackInfo) Error!Value {
+            const arena = try pool.take();
+            defer pool.give(arena);
+            const gpa = arena.allocator();
+
+            var argc: usize = count;
+            var argv: [count]Value = undefined;
+            try check(api.napi_get_cb_info(env, info, &argc, &argv, null, null));
+            if (argc < count) return error.NodeApi;
+
+            var output: Output = .{ .api = api, .env = env };
+            var args: Args = undefined;
+            comptime var next = 0;
+            inline for (params, 0..) |Param, i| {
+                const values = argv[next..][0..comptime valuesOf(Param)];
+                next += values.len;
+                args[i] = if (Param == null)
+                    &output
+                else if (Param == Allocator)
+                    gpa
+                else if (Param == u32)
+                    try uint32Of(api, env, values[0])
+                else if (Param == []const u8)
+                    try sourceOf(api, gpa, env, values[0])
+                else
+                    try encodedOf(api, env, values);
+            }
+            _ = try @call(.auto, entry, args);
+            return output.value.?;
         }
     }.call;
 }
 
-fn withSource(comptime entry: anytype) Run {
-    return struct {
-        fn run(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
-            const argv = try argsOf(2, api, env, info);
-            var output: Output = .{ .api = api, .env = env };
-            const source = try sourceOf(api, gpa, env, argv[0]);
-            _ = try entry(gpa, source, try uint32Of(api, env, argv[1]), &output);
-            return output.value.?;
-        }
-    }.run;
-}
-
-fn printSource(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
-    const argv = try argsOf(3, api, env, info);
-    var output: Output = .{ .api = api, .env = env };
-    const source = try sourceOf(api, gpa, env, argv[0]);
-    const flags = try uint32Of(api, env, argv[1]);
-    const options = try uint32Of(api, env, argv[2]);
-    _ = try entries.printSource(gpa, source, flags, options, &output);
-    return output.value.?;
-}
-
-fn printTree(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
-    const argv = try argsOf(7, api, env, info);
-    var output: Output = .{ .api = api, .env = env };
-    const source = try sourceOf(api, gpa, env, argv[4]);
-    const flags = try uint32Of(api, env, argv[5]);
-    const options = try uint32Of(api, env, argv[6]);
-    _ = try entries.printTree(gpa, try encodedOf(api, env, &argv), source, flags, options, &output);
-    return output.value.?;
-}
-
-fn analyzeTree(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
-    const argv = try argsOf(5, api, env, info);
-    var output: Output = .{ .api = api, .env = env };
-    const flags = try uint32Of(api, env, argv[4]);
-    _ = try entries.analyzeTree(gpa, try encodedOf(api, env, &argv), flags, &output);
-    return output.value.?;
+fn valuesOf(comptime Param: ?type) usize {
+    if (Param == transfer.Encoded) return 4;
+    return @intFromBool(Param == u32 or Param == []const u8);
 }
 
 const Output = struct {
@@ -259,21 +228,13 @@ const Output = struct {
     }
 };
 
-fn argsOf(comptime count: usize, api: *const Api, env: Env, info: CallbackInfo) Error![count]Value {
-    var argc: usize = count;
-    var argv: [count]Value = undefined;
-    try check(api.napi_get_cb_info(env, info, &argc, &argv, null, null));
-    if (argc < count) return error.NodeApi;
-    return argv;
-}
-
 fn uint32Of(api: *const Api, env: Env, value: Value) Error!u32 {
     var result: u32 = undefined;
     try check(api.napi_get_value_uint32(env, value, &result));
     return result;
 }
 
-fn sourceOf(api: *const Api, gpa: std.mem.Allocator, env: Env, value: Value) Error![]const u8 {
+fn sourceOf(api: *const Api, gpa: Allocator, env: Env, value: Value) Error![]const u8 {
     var units_len: usize = undefined;
     try check(api.napi_get_value_string_utf16(env, value, null, 0, &units_len));
 
@@ -286,12 +247,12 @@ fn sourceOf(api: *const Api, gpa: std.mem.Allocator, env: Env, value: Value) Err
     return transfer.utf16.encodeUtf8(units[0..units_len], target, .replace);
 }
 
-fn encodedOf(api: *const Api, env: Env, argv: []const Value) Error!transfer.Encoded {
+fn encodedOf(api: *const Api, env: Env, arrays: *const [4]Value) Error!transfer.Encoded {
     return .{
-        .nodes = try itemsOf(transfer.PackedNode, api, env, argv[0]),
-        .extras = try itemsOf(u32, api, env, argv[1]),
-        .comments = try itemsOf(transfer.PackedComment, api, env, argv[2]),
-        .pool = try itemsOf(u16, api, env, argv[3]),
+        .nodes = try itemsOf(transfer.PackedNode, api, env, arrays[0]),
+        .extras = try itemsOf(u32, api, env, arrays[1]),
+        .comments = try itemsOf(transfer.PackedComment, api, env, arrays[2]),
+        .pool = try itemsOf(u16, api, env, arrays[3]),
     };
 }
 

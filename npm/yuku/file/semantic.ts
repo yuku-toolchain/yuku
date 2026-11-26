@@ -106,8 +106,6 @@ export interface Capture {
   readonly isWritten: boolean;
 }
 
-type Row<T> = new (model: Model, id: number) => T;
-
 export class Scope {
   readonly id: number;
   private model: Model;
@@ -237,7 +235,7 @@ export class Binding {
   /** Renames it everywhere, keeping export names, or changes nothing and reports why. */
   rename(name: string): Diagnostic[] {
     const diagnostics = rename(this, name);
-    if (diagnostics.length === 0) this.model.setBindingName(this.id, name);
+    if (diagnostics.length === 0) this.model.names.set(this.id, name);
     return diagnostics;
   }
 }
@@ -399,8 +397,8 @@ export class Model {
   private declarationsByNode: Map<number, number> | null = null;
   private referencesByNode: Map<number, number> | null = null;
   private importsByBinding: Map<Binding, Import> | null = null;
-  private exportIndex: { byName: Map<string, Export>; stars: Export[] } | null = null;
-  private names = new Map<number, string>();
+  private exported: { byName: Map<string, Export>; stars: Export[] } | null = null;
+  readonly names: Map<number, string> = new Map();
 
   constructor(file: SourceFile, semantic: Semantic) {
     this.file = file;
@@ -408,19 +406,19 @@ export class Model {
   }
 
   get scopes(): Scope[] {
-    return (this.scopeRows ??= this.rows(Scope, this.semantic.scope.count));
+    return (this.scopeRows ??= this.rows("scope", (id) => new Scope(this, id)));
   }
   get bindings(): Binding[] {
-    return (this.bindingRows ??= this.rows(Binding, this.semantic.symbol.count));
+    return (this.bindingRows ??= this.rows("symbol", (id) => new Binding(this, id)));
   }
   get references(): Reference[] {
-    return (this.referenceRows ??= this.rows(Reference, this.semantic.reference.count));
+    return (this.referenceRows ??= this.rows("reference", (id) => new Reference(this, id)));
   }
   get imports(): Import[] {
-    return (this.importRows ??= this.rows(Import, this.semantic.import.count));
+    return (this.importRows ??= this.rows("import", (id) => new Import(this, id)));
   }
   get exports(): Export[] {
-    return (this.exportRows ??= this.rows(Export, this.semantic.export.count));
+    return (this.exportRows ??= this.rows("export", (id) => new Export(this, id)));
   }
   get rootScope(): Scope {
     const scopes = this.scopes;
@@ -429,10 +427,6 @@ export class Model {
 
   bindingName(id: number): string {
     return this.names.get(id) ?? this.semantic.symbol.name(id);
-  }
-
-  setBindingName(id: number, name: string): void {
-    this.names.set(id, name);
   }
 
   scopeBindings(scope: number): Binding[] {
@@ -494,12 +488,19 @@ export class Model {
     return this.importsByBinding.get(binding) ?? null;
   }
 
-  exportMap(): Map<string, Export> {
-    return this.indexExports().byName;
-  }
-
-  starExports(): Export[] {
-    return this.indexExports().stars;
+  exportIndex(): { byName: Map<string, Export>; stars: Export[] } {
+    if (this.exported === null) {
+      const byName = new Map<string, Export>();
+      const stars: Export[] = [];
+      for (const record of this.exports) {
+        if (record.kind === "star") stars.push(record);
+        else if (record.kind !== "global" && record.name !== null && !byName.has(record.name)) {
+          byName.set(record.name, record);
+        }
+      }
+      this.exported = { byName, stars };
+    }
+    return this.exported;
   }
 
   sharedBinding(scope: Scope, name: string, space: Space): Binding | null {
@@ -512,23 +513,14 @@ export class Model {
     return null;
   }
 
-  private indexExports(): { byName: Map<string, Export>; stars: Export[] } {
-    if (this.exportIndex === null) {
-      const byName = new Map<string, Export>();
-      const stars: Export[] = [];
-      for (const record of this.exports) {
-        if (record.kind === "star") stars.push(record);
-        else if (record.kind !== "global" && record.name !== null && !byName.has(record.name)) {
-          byName.set(record.name, record);
-        }
-      }
-      this.exportIndex = { byName, stars };
-    }
-    return this.exportIndex;
-  }
-
-  private rows<T>(Row: Row<T>, count: number): T[] {
-    return arrayOf(count, (id) => new Row(this, id));
+  private rows<T>(
+    table: "scope" | "symbol" | "reference" | "import" | "export",
+    make: (id: number) => T,
+  ): T[] {
+    const { count } = this.semantic[table];
+    const rows: T[] = [];
+    for (let id = 0; id < count; id++) rows.push(make(id));
+    return rows;
   }
 }
 

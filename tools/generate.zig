@@ -23,3 +23,15 @@ pub fn main(init: std.process.Init) !void {
     }
     try w.flush();
 }
+
+pub fn writeString(w: *std.Io.Writer, name: []const u8, text: []const u8) !void {
+    std.debug.assert(text.len > 0);
+    const line_chars = 92;
+    try w.print("export const {s}: string =", .{name});
+    var offset: usize = 0;
+    while (offset < text.len) : (offset += line_chars) {
+        const end = @min(offset + line_chars, text.len);
+        try w.print("\n  \"{s}\"{s}", .{ text[offset..end], if (end == text.len) ";" else " +" });
+    }
+    try w.writeAll("\n");
+}

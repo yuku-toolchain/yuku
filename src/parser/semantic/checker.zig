@@ -1,25 +1,19 @@
-//! The early-error checker, a semantic-traverser visitor that reports
-//! the scope-dependent early errors the specification requires.
 const std = @import("std");
 const spec = @import("spec");
 const traverser = @import("../traverser/root.zig");
 const ast = @import("../ast.zig");
-const static_semantics = @import("spec").static_semantics;
 const lexical = @import("../lexical.zig");
 const binder = @import("binder.zig");
 const scope = @import("scope.zig");
 
 const Allocator = std.mem.Allocator;
-
-const semantic = traverser.semantic;
+const static_semantics = spec.static_semantics;
 const Symbol = binder.Symbol;
-
-const Action = traverser.Action;
-const SemanticCtx = semantic.Ctx;
-
+const Ctx = traverser.semantic.Ctx;
+const NodeIndex = ast.NodeIndex;
 const eql = std.mem.eql;
 
-pub const AnalysisError = Allocator.Error;
+const Error = Allocator.Error;
 
 pub const Checker = struct {
     tree: *ast.Tree,
@@ -28,11 +22,11 @@ pub const Checker = struct {
     exported_names: std.array_hash_map.String(ExportedName) = .empty,
     local_kinds: std.StringHashMapUnmanaged(Symbol.Flags) = .empty,
     export_specifiers: std.ArrayList(ExportSpecifierInfo) = .empty,
-    plain_functions: std.AutoHashMapUnmanaged(ast.NodeIndex, void) = .empty,
+    plain_functions: std.AutoHashMapUnmanaged(NodeIndex, void) = .empty,
 
     const ExportedName = struct {
-        first: ast.NodeIndex,
-        last: ast.NodeIndex,
+        first: NodeIndex,
+        last: NodeIndex,
         // every export but interfaces and overload signatures, as tsc counts
         counted: u32 = 0,
         flags: Symbol.Flags = .{},
@@ -49,88 +43,73 @@ pub const Checker = struct {
         declaration: struct { flags: Symbol.Flags, counted: bool },
     };
 
-    const ExportSpecifierInfo = struct {
-        local_name: []const u8,
-        node: ast.NodeIndex,
-    };
+    const ExportSpecifierInfo = struct { local_name: []const u8, node: NodeIndex };
 
     const Self = @This();
 
     pub fn enter_binding_identifier(
         self: *Self,
         id: ast.BindingIdentifier,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         const name = ctx.tree.string(id.name);
         const flags = ctx.symbols.pending.flags;
 
         // type-position identifiers are labels unless they are type parameters
-        if (ctx.inTypePosition() and !flags.type_parameter) return .proceed;
+        if (ctx.inTypePosition() and !flags.type_parameter) return;
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (isStrict(ctx) and !flags.ambient) {
-            try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
+            try self.checkStrictReserved(name, node, ctx, "a binding identifier");
             if (lexical.isEvalOrArguments(name)) {
-                try self.report(
-                    ctx.tree.span(node_index),
-                    try self.fmt(
-                        "'{s}' cannot be used as a binding identifier in strict mode",
-                        .{name},
-                    ),
-                    .{},
-                );
+                const message = "'{s}' cannot be used as a binding identifier in strict mode";
+                try self.report(node, try self.fmt(message, .{name}), .{});
             }
         } else if (flags.block_scoped_var and name.len == "let".len and eql(u8, name, "let")) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "'let' is not allowed to be used as a name in 'let' or 'const' declarations",
-                .{},
-            );
+            const message =
+                "'let' is not allowed to be used as a name in 'let' or 'const' declarations";
+            try self.report(node, message, .{});
         }
 
-        const existing = binder.prior(&ctx.symbols, name, ctx.scope.scopes.items);
-        try self.checkRedeclaration(node_index, name, flags, ctx, existing);
+        try self.checkRedeclaration(node, name, flags, ctx);
 
         switch (ctx.symbols.export_state) {
-            .named => try self.recordExportedName(name, node_index, ctx, exportForm(flags, ctx)),
+            .named => try self.recordExportedName(name, node, ctx, exportForm(flags, ctx)),
             .none => try self.recordLocalKinds(name, flags, ctx),
             .default => {},
         }
-
-        return .proceed;
     }
 
     fn checkRedeclaration(
         self: *Self,
-        node_index: ast.NodeIndex,
+        node: NodeIndex,
         name: []const u8,
         flags: Symbol.Flags,
-        ctx: *SemanticCtx,
-        existing_id: ?binder.SymbolId,
-    ) AnalysisError!void {
-        std.debug.assert(node_index != .null);
-        std.debug.assert(name.len > 0);
-        const target = ctx.symbols.pending.scope;
+        ctx: *Ctx,
+    ) Error!void {
+        const symbols = &ctx.symbols;
+        const pending = symbols.pending;
+        const target = pending.scope;
 
-        if (existing_id) |sym| {
-            const existing = ctx.symbols.symbol(sym);
-            const conflicts = binder.conflicts(ctx.symbols.pending, existing.flags);
-            const first = ctx.symbols.firstDeclOf(sym);
-            if (conflicts and !self.isAnnexBDuplicate(node_index, first)) {
-                try self.reportRedeclaration(name, node_index, sym, ctx);
-                return;
+        if (symbols.prior(name, ctx.scope.scopes.items)) |sym| {
+            const existing = symbols.symbol(sym).flags;
+            // annex B lets a sloppy block declare a plain function twice (B.3.2.4)
+            if (pending.conflicts(existing) and !(self.plain_functions.contains(node) and
+                self.plain_functions.contains(symbols.firstDeclOf(sym))))
+            {
+                return self.reportRedeclaration(name, node, sym, ctx);
             }
 
             // duplicate params are legal only in sloppy simple-parameter-list functions (15.1.1)
             // https://tc39.es/ecma262/#sec-parameter-lists-static-semantics-early-errors
-            if (existing.flags.parameter and flags.parameter) {
-                if (findFormalParameters(ctx)) |params| {
+            if (existing.parameter and flags.parameter) {
+                if (enclosingParameters(ctx)) |params| {
                     const must_be_unique = isStrict(ctx) or
                         params.kind == .unique_formal_parameters or
                         params.kind == .arrow_formal_parameters or
                         static_semantics.findNonSimpleParameter(ctx.tree, params) != null;
-                    if (must_be_unique) try self.reportRedeclaration(name, node_index, sym, ctx);
+                    if (must_be_unique) try self.reportRedeclaration(name, node, sym, ctx);
                 }
             }
         }
@@ -141,17 +120,16 @@ pub const Checker = struct {
             const outer = target_scope.parent;
             const outer_holds_signature = outer != .none and switch (target_scope.kind) {
                 .function_body => true,
-                .block => blk: {
-                    const outer_data = ctx.tree.data(ctx.scope.get(outer).node);
-                    break :blk outer_data == .catch_clause and
-                        outer_data.catch_clause.body == target_scope.node;
+                .block => switch (ctx.tree.data(ctx.scope.get(outer).node)) {
+                    .catch_clause => |clause| clause.body == target_scope.node,
+                    else => false,
                 },
                 else => false,
             };
             if (outer_holds_signature) {
-                if (ctx.symbols.ownBinding(outer, name)) |sym| {
-                    if (binder.conflicts(ctx.symbols.pending, ctx.symbols.symbol(sym).flags)) {
-                        try self.reportRedeclaration(name, node_index, sym, ctx);
+                if (symbols.ownBinding(outer, name)) |sym| {
+                    if (pending.conflicts(symbols.symbol(sym).flags)) {
+                        try self.reportRedeclaration(name, node, sym, ctx);
                     }
                 }
             }
@@ -163,25 +141,14 @@ pub const Checker = struct {
             var iter = ctx.scope.ancestors(ctx.scope.current);
             while (iter.next()) |scope_id| {
                 if (scope_id == target) break;
-                if (ctx.symbols.ownBinding(scope_id, name)) |sym| {
-                    const existing = ctx.symbols.symbol(sym);
-                    if (existing.flags.isBlockScopedLike()) {
-                        try self.reportRedeclaration(name, node_index, sym, ctx);
-                        break;
-                    }
-
-                    // a var may collide with a simple catch parameter, the annex B.3.4 carve-out
-                    // https://tc39.es/ecma262/#sec-variablestatements-in-catch-blocks
-                    if (existing.flags.catch_var) {
-                        const catch_node = ctx.scope.get(scope_id).node;
-                        const param = ctx.tree.data(catch_node).catch_clause.param;
-                        const simple_param = param != .null and
-                            ctx.tree.data(param) == .binding_identifier;
-                        if (!simple_param) {
-                            try self.reportRedeclaration(name, node_index, sym, ctx);
-                            break;
-                        }
-                    }
+                const sym = symbols.ownBinding(scope_id, name) orelse continue;
+                const existing = symbols.symbol(sym).flags;
+                // a var may collide with a simple catch parameter, the annex B.3.4 carve-out
+                if (existing.isBlockScopedLike() or (existing.catch_var and
+                    !binder.isSimpleCatch(ctx.tree, ctx.scope.get(scope_id))))
+                {
+                    try self.reportRedeclaration(name, node, sym, ctx);
+                    break;
                 }
             }
         }
@@ -191,34 +158,32 @@ pub const Checker = struct {
     pub inline fn enter_identifier_reference(
         self: *Self,
         id: ast.IdentifierReference,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (ctx.inTypePosition()) return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (ctx.inTypePosition()) return;
 
         const name = ctx.tree.string(id.name);
         if (lexical.mayBeStrictReserved(name) or lexical.isArguments(name)) {
-            try self.checkIdentifierReference(name, node_index, ctx);
+            try self.checkIdentifierReference(name, node, ctx);
         }
-        return .proceed;
     }
 
     fn checkIdentifierReference(
         self: *Self,
         name: []const u8,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!void {
-        try self.checkStrictReserved(name, node_index, ctx, "an identifier");
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        try self.checkStrictReserved(name, node, ctx, "an identifier");
 
         // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
-        if (lexical.isArguments(name) and !isArgumentsAvailable(ctx)) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "'arguments' cannot be referenced in property initializers or class static" ++
-                    " initialization blocks",
-                .{},
-            );
+        if (!lexical.isArguments(name)) return;
+        const holder = enclosing(ctx, &.{ .function, .property_definition, .static_block });
+        if (holder != null and holder.? != .function) {
+            const message = "'arguments' cannot be referenced in property initializers or class" ++
+                " static initialization blocks";
+            try self.report(node, message, .{});
         }
     }
 
@@ -226,35 +191,29 @@ pub const Checker = struct {
     pub fn enter_label_identifier(
         self: *Self,
         id: ast.LabelIdentifier,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        try self.checkStrictReserved(ctx.tree.string(id.name), node_index, ctx, "a label");
-        return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        try self.checkStrictReserved(ctx.tree.string(id.name), node, ctx, "a label");
     }
 
     /// https://tc39.es/ecma262/#sec-string-literals-early-errors
     pub inline fn enter_string_literal(
         self: *Self,
         literal: ast.StringLiteral,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (!isStrict(ctx)) return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (!isStrict(ctx)) return;
         const verbatim = literal.value.start == literal.raw.start + 1 and
             literal.value.end + 1 == literal.raw.end;
-        if (!verbatim) try self.checkStringEscapes(node_index, ctx);
-        return .proceed;
+        if (!verbatim) try self.checkStringEscapes(node);
     }
 
-    fn checkStringEscapes(
-        self: *Self,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!void {
-        const span = ctx.tree.span(node_index);
-        if (spec.escapes.hasOctalEscape(ctx.tree.source[span.start..span.end])) {
-            try self.report(span, "Octal escape sequences are not allowed in strict mode", .{
+    fn checkStringEscapes(self: *Self, node: NodeIndex) Error!void {
+        const span = self.tree.span(node);
+        if (spec.escapes.hasOctalEscape(self.tree.source[span.start..span.end])) {
+            try self.report(node, "Octal escape sequences are not allowed in strict mode", .{
                 .help = "Use a hexadecimal escape instead, such as '\\x07'",
             });
         }
@@ -264,30 +223,27 @@ pub const Checker = struct {
     pub inline fn enter_numeric_literal(
         self: *Self,
         _: ast.NumericLiteral,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (!isStrict(ctx)) return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (!isStrict(ctx)) return;
 
-        const span = ctx.tree.span(node_index);
+        const span = ctx.tree.span(node);
         const raw = ctx.tree.source[span.start..span.end];
-        if (isLegacyNumericLiteral(raw)) try self.reportLegacyNumericLiteral(span, raw);
-        return .proceed;
+        const legacy = raw.len >= 2 and raw[0] == '0' and raw[1] >= '0' and raw[1] <= '9';
+        if (legacy) try self.reportLegacyNumericLiteral(node, raw);
     }
 
-    fn reportLegacyNumericLiteral(self: *Self, span: ast.Span, raw: []const u8) AnalysisError!void {
+    fn reportLegacyNumericLiteral(self: *Self, node: NodeIndex, raw: []const u8) Error!void {
         @branchHint(.cold);
-        std.debug.assert(isLegacyNumericLiteral(raw));
-        const is_octal = std.mem.findAny(u8, raw, "89") == null;
-
-        if (is_octal) {
+        if (std.mem.findAny(u8, raw, "89") == null) {
             const trimmed = std.mem.trimStart(u8, raw, "0");
             const digits = if (trimmed.len == 0) "0" else trimmed;
-            try self.report(span, "Octal literals are not allowed in strict mode", .{
+            try self.report(node, "Octal literals are not allowed in strict mode", .{
                 .help = try self.fmt("Use the syntax '0o{s}'", .{digits}),
             });
         } else {
-            try self.report(span, "Decimals with leading zeros are not allowed in strict mode", .{
+            try self.report(node, "Decimals with leading zeros are not allowed in strict mode", .{
                 .help = "Remove the leading zeros, or use a '0o', '0x', or '0b' prefix",
             });
         }
@@ -297,48 +253,40 @@ pub const Checker = struct {
     pub fn enter_directive(
         self: *Self,
         directive: ast.Directive,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (!eql(u8, ctx.tree.string(directive.value), "use strict")) return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (!eql(u8, ctx.tree.string(directive.value), "use strict")) return;
 
-        var iter = ctx.path.ancestors();
-        const params_index = while (iter.next()) |i| {
-            switch (ctx.tree.data(i)) {
-                .function => |func| break func.params,
-                .arrow_function_expression => |arrow| break arrow.params,
-                .program => return .proceed,
-                else => {},
-            }
-        } else return .proceed;
-        if (params_index == .null) return .proceed;
+        const function = enclosing(ctx, &.{ .function, .arrow_function_expression });
+        const params_index = switch (function orelse return) {
+            inline .function, .arrow_function_expression => |f| f.params,
+            else => unreachable,
+        };
+        if (params_index == .null) return;
 
         const params = ctx.tree.data(params_index).formal_parameters;
         if (static_semantics.findNonSimpleParameter(ctx.tree, params)) |param| {
-            try self.report(
-                ctx.tree.span(node_index),
-                "'use strict' directive cannot be used with non-simple parameter list",
-                .{ .labels = try self.labels(&.{
-                    self.label(ctx.tree.span(param), "non-simple parameter"),
-                }) },
-            );
+            const message = "'use strict' directive cannot be used with non-simple parameter list";
+            try self.report(node, message, .{
+                .labels = try self.labels(&.{self.label(param, "non-simple parameter")}),
+            });
         }
-        return .proceed;
     }
 
     // where a function declaration may stand, labelled (14.13.1, B.3.1) or as an if body (B.3.3)
     pub fn enter_function(
         self: *Self,
         func: ast.Function,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if (func.id != .null and !func.async and !func.generator) {
             if (!ctx.scope.get(ctx.symbols.pending.scope).flags.strict) {
                 try self.plain_functions.put(self.allocator, func.id, {});
             }
         }
-        if (func.type != .function_declaration) return .proceed;
+        if (func.type != .function_declaration) return;
 
         const is_strict = isStrict(ctx);
         var through_labels = false;
@@ -349,7 +297,7 @@ pub const Checker = struct {
             const data = ctx.tree.data(idx);
             if (data != .labeled_statement) break data;
             through_labels = true;
-        } else return .proceed;
+        } else return;
 
         const is_valid = switch (parent) {
             .program,
@@ -365,7 +313,6 @@ pub const Checker = struct {
             .if_statement => !is_strict and !through_labels,
             else => false,
         };
-
         if (!is_valid) {
             const message = if (is_strict)
                 "In strict mode code, functions can only be declared at the top level or" ++
@@ -373,137 +320,112 @@ pub const Checker = struct {
             else
                 "In non-strict mode code, functions can only be declared at the top level," ++
                     " inside a block, or as the body of an 'if' statement";
-            try self.report(ctx.tree.span(node_index), message, .{});
+            try self.report(node, message, .{});
         }
-        return .proceed;
     }
 
     pub fn enter_yield_expression(
         self: *Self,
         _: ast.YieldExpression,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (findFormalParameters(ctx) != null) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "'yield' expressions cannot be used in a parameter list",
-                .{},
-            );
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (enclosingParameters(ctx) != null) {
+            try self.report(node, "'yield' expressions cannot be used in a parameter list", .{});
         }
-        return .proceed;
     }
 
     pub fn enter_await_expression(
         self: *Self,
         _: ast.AwaitExpression,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
-            const message = switch (ctx.tree.data(i)) {
-                .formal_parameters => "'await' expressions cannot be used in a parameter list",
-                // ClassStaticBlockBody uses [~Await]
-                .static_block => "'await' expression cannot be used inside a class static block",
-                .function, .arrow_function_expression, .program => return .proceed,
-                else => continue,
-            };
-            try self.report(ctx.tree.span(node_index), message, .{});
-            return .proceed;
-        }
-        return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        const holder = enclosing(ctx, &.{
+            .formal_parameters,
+            .static_block,
+            .function,
+            .arrow_function_expression,
+        });
+        const message = switch (holder orelse return) {
+            .formal_parameters => "'await' expressions cannot be used in a parameter list",
+            // ClassStaticBlockBody uses [~Await]
+            .static_block => "'await' expression cannot be used inside a class static block",
+            else => return,
+        };
+        try self.report(node, message, .{});
     }
 
     /// https://tc39.es/ecma262/#sec-update-expressions-static-semantics-early-errors
     pub fn enter_update_expression(
         self: *Self,
         expr: ast.UpdateExpression,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (isStrict(ctx) and isEvalOrArgumentsRef(ctx.tree, expr.argument)) {
-            try self.report(
-                ctx.tree.span(node_index),
-                try self.fmt("Cannot assign to '{s}' in strict mode", .{
-                    ctx.tree.string(ctx.tree.data(expr.argument).identifier_reference.name),
-                }),
-                .{},
-            );
-        }
-        return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (isStrict(ctx)) try self.checkEvalArguments(expr.argument, node, ctx);
     }
 
     /// https://tc39.es/ecma262/#sec-assignment-operators-static-semantics-early-errors
     pub fn enter_assignment_expression(
         self: *Self,
         expr: ast.AssignmentExpression,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        _: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if (isStrict(ctx)) try self.checkAssignTargetEvalArguments(expr.left, ctx);
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-static-semantics-allprivateidentifiersvalid
     pub fn enter_binary_expression(
         self: *Self,
         expr: ast.BinaryExpression,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        _: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if (expr.operator == .in and ctx.tree.data(expr.left) == .private_identifier) {
             try self.checkPrivateName(expr.left, ctx);
         }
-        return .proceed;
     }
 
     pub fn enter_unary_expression(
         self: *Self,
         expr: ast.UnaryExpression,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (expr.operator == .delete) {
-            var target = static_semantics.unwrapParens(ctx.tree, expr.argument);
-
-            if (ctx.tree.data(target) == .chain_expression) {
-                const chain = ctx.tree.data(target).chain_expression;
-                target = static_semantics.unwrapParens(ctx.tree, chain.expression);
-            }
-
-            switch (ctx.tree.data(target)) {
-                // https://tc39.es/ecma262/#sec-delete-operator-static-semantics-early-errors
-                .identifier_reference => if (isStrict(ctx)) {
-                    try self.report(
-                        ctx.tree.span(node_index),
-                        "'delete' cannot be called on an identifier in strict mode",
-                        .{},
-                    );
-                },
-                .member_expression => |m| {
-                    if (!m.computed and ctx.tree.data(m.property) == .private_identifier) {
-                        try self.report(
-                            ctx.tree.span(node_index),
-                            "The operand of a 'delete' operator cannot be a private identifier",
-                            .{},
-                        );
-                    }
-                },
-                else => {},
-            }
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (expr.operator != .delete) return;
+        var target = static_semantics.unwrapParens(ctx.tree, expr.argument);
+        if (ctx.tree.data(target) == .chain_expression) {
+            const chain = ctx.tree.data(target).chain_expression;
+            target = static_semantics.unwrapParens(ctx.tree, chain.expression);
         }
-        return .proceed;
+
+        switch (ctx.tree.data(target)) {
+            // https://tc39.es/ecma262/#sec-delete-operator-static-semantics-early-errors
+            .identifier_reference => if (isStrict(ctx)) {
+                const message = "'delete' cannot be called on an identifier in strict mode";
+                try self.report(node, message, .{});
+            },
+            .member_expression => |m| {
+                if (!m.computed and ctx.tree.data(m.property) == .private_identifier) {
+                    const message =
+                        "The operand of a 'delete' operator cannot be a private identifier";
+                    try self.report(node, message, .{});
+                }
+            },
+            else => {},
+        }
     }
 
     /// https://tc39.es/ecma262/#sec-__proto__-property-names-in-object-initializers
     pub fn enter_object_expression(
         self: *Self,
         obj: ast.ObjectExpression,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        var first_proto: ?ast.NodeIndex = null;
+        _: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        var first_proto: ?NodeIndex = null;
         for (ctx.tree.extra(obj.properties)) |child| {
             if (ctx.tree.data(child) != .object_property) continue;
             const prop = ctx.tree.data(child).object_property;
@@ -511,92 +433,86 @@ pub const Checker = struct {
             const pn = static_semantics.propName(ctx.tree, prop.key) orelse continue;
             if (!pn.eql("__proto__")) continue;
 
-            if (first_proto) |first| {
-                try self.report(
-                    ctx.tree.span(child),
-                    "Duplicate '__proto__' property in an object literal",
-                    .{
-                        .help = "Set the prototype only once",
-                        .labels = try self.labels(&.{
-                            self.label(ctx.tree.span(first), "first defined here"),
-                        }),
-                    },
-                );
-            } else {
+            const first = first_proto orelse {
                 first_proto = child;
-            }
+                continue;
+            };
+            try self.report(child, "Duplicate '__proto__' property in an object literal", .{
+                .help = "Set the prototype only once",
+                .labels = try self.labels(&.{self.label(first, "first defined here")}),
+            });
         }
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
     pub inline fn enter_call_expression(
         self: *Self,
         expr: ast.CallExpression,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (ctx.tree.data(expr.callee) == .super) try self.checkSuperCall(node_index, ctx);
-        return .proceed;
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (ctx.tree.data(expr.callee) == .super) try self.checkSuperCall(node, ctx);
     }
 
-    fn checkSuperCall(self: *Self, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
-        const message: []const u8, const help: []const u8 = switch (superCallValidity(ctx)) {
-            .valid => return,
-            .not_in_constructor => .{
-                "Super calls are not permitted outside constructors or in nested functions" ++
-                    " inside constructors",
-                "Use an arrow function to keep the constructor's 'super' binding",
+    fn checkSuperCall(self: *Self, node: NodeIndex, ctx: *Ctx) Error!void {
+        var above = ctx.path.ancestors();
+        const in_constructor = switch (superHome(ctx, &above)) {
+            .function => |parent| parent != null and switch (ctx.tree.data(parent.?)) {
+                .method_definition => |method| method.kind == .constructor,
+                else => false,
             },
-            .no_extends => .{
-                "'super' can only be referenced in a derived class",
-                "Add an 'extends' clause, or remove the 'super()' call",
-            },
+            else => false,
         };
-        try self.report(ctx.tree.span(node_index), message, .{ .help = help });
+        const class: ?ast.Class = if (in_constructor) while (above.next()) |i| {
+            if (ctx.tree.data(i) == .class) break ctx.tree.data(i).class;
+        } else null else null;
+
+        if (class == null) {
+            const message = "Super calls are not permitted outside constructors or in nested" ++
+                " functions inside constructors";
+            try self.report(node, message, .{
+                .help = "Use an arrow function to keep the constructor's 'super' binding",
+            });
+        } else if (class.?.super_class == .null) {
+            try self.report(node, "'super' can only be referenced in a derived class", .{
+                .help = "Add an 'extends' clause, or remove the 'super()' call",
+            });
+        }
     }
 
     pub inline fn enter_member_expression(
         self: *Self,
         expr: ast.MemberExpression,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         const on_super = ctx.tree.data(expr.object) == .super;
         const private = !expr.computed and ctx.tree.data(expr.property) == .private_identifier;
-        if (on_super or private) try self.checkMemberExpression(expr, node_index, ctx);
-        return .proceed;
+        if (on_super or private) try self.checkMemberExpression(expr, node, on_super, private, ctx);
     }
 
     fn checkMemberExpression(
         self: *Self,
         expr: ast.MemberExpression,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!void {
-        if (ctx.tree.data(expr.object) == .super) {
-            if (!isSuperPropertyValid(ctx)) {
-                try self.report(
-                    ctx.tree.span(node_index),
-                    "'super' can only be referenced in members of derived classes or object" ++
-                        " literal expressions",
-                    .{ .help = "Use an arrow function to keep the method's 'super' binding" },
-                );
-            }
+        node: NodeIndex,
+        on_super: bool,
+        private: bool,
+        ctx: *Ctx,
+    ) Error!void {
+        if (on_super and !isSuperPropertyValid(ctx)) {
+            const message = "'super' can only be referenced in members of derived classes or" ++
+                " object literal expressions";
+            try self.report(node, message, .{
+                .help = "Use an arrow function to keep the method's 'super' binding",
+            });
         }
-
         // 13.3.7 SuperProperty admits no PrivateIdentifier, and 15.7.7
         // AllPrivateIdentifiersValid requires a declaring class
-        if (!expr.computed and ctx.tree.data(expr.property) == .private_identifier) {
-            if (ctx.tree.data(expr.object) == .super) {
-                try self.report(
-                    ctx.tree.span(node_index),
-                    "Private identifiers cannot be accessed on 'super'",
-                    .{},
-                );
-            } else {
-                try self.checkPrivateName(expr.property, ctx);
-            }
+        if (!private) return;
+        if (on_super) {
+            try self.report(node, "Private identifiers cannot be accessed on 'super'", .{});
+        } else {
+            try self.checkPrivateName(expr.property, ctx);
         }
     }
 
@@ -604,234 +520,198 @@ pub const Checker = struct {
     pub fn enter_meta_property(
         self: *Self,
         prop: ast.MetaProperty,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         const meta = ctx.tree.data(prop.meta);
-        if (meta != .identifier_name) return .proceed;
+        if (meta != .identifier_name) return;
         const name = ctx.tree.string(meta.identifier_name.name);
 
         if (eql(u8, name, "import") and !ctx.tree.isModule()) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "Cannot use 'import.meta' outside a module",
-                .{},
-            );
+            try self.report(node, "Cannot use 'import.meta' outside a module", .{});
         }
 
         // https://tc39.es/ecma262/#sec-scripts-static-semantics-early-errors
         // https://tc39.es/ecma262/#sec-module-semantics-static-semantics-early-errors
-        if (eql(u8, name, "new") and !isNewTargetAvailable(ctx)) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "'new.target' is only allowed in functions, class field initializers, and" ++
-                    " static blocks",
-                .{},
-            );
+        // commonjs top level is a function body
+        if (eql(u8, name, "new") and ctx.tree.source_type != .commonjs and
+            enclosing(ctx, &.{ .function, .static_block, .property_definition }) == null)
+        {
+            const message = "'new.target' is only allowed in functions, class field" ++
+                " initializers, and static blocks";
+            try self.report(node, message, .{});
         }
-
-        return .proceed;
     }
 
     pub fn enter_import_declaration(
         self: *Self,
         decl: ast.ImportDeclaration,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        try self.checkDuplicateWithAttributes(decl.attributes, ctx);
-        return .proceed;
+        _: NodeIndex,
+        _: *Ctx,
+    ) Error!void {
+        try self.checkDuplicateWithAttributes(decl.attributes);
     }
 
     pub fn enter_export_named_declaration(
         self: *Self,
         decl: ast.ExportNamedDeclaration,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        try self.checkDuplicateWithAttributes(decl.attributes, ctx);
-        return .proceed;
+        _: NodeIndex,
+        _: *Ctx,
+    ) Error!void {
+        try self.checkDuplicateWithAttributes(decl.attributes);
     }
 
     pub fn enter_export_default_declaration(
         self: *Self,
         decl: ast.ExportDefaultDeclaration,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         const form = defaultExportForm(ctx.tree, decl.declaration);
-        try self.recordExportedName("default", node_index, ctx, form);
-        return .proceed;
+        try self.recordExportedName("default", node, ctx, form);
     }
 
     pub fn enter_export_all_declaration(
         self: *Self,
         decl: ast.ExportAllDeclaration,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if (decl.exported != .null) {
-            try self.recordExportedName(
-                getModuleExportName(ctx.tree, decl.exported),
-                node_index,
-                ctx,
-                .{ .alias = null },
-            );
+            const name = moduleExportName(ctx.tree, decl.exported);
+            try self.recordExportedName(name, node, ctx, .{ .alias = null });
         }
-        try self.checkDuplicateWithAttributes(decl.attributes, ctx);
-        return .proceed;
+        try self.checkDuplicateWithAttributes(decl.attributes);
     }
 
     /// https://tc39.es/ecma262/#sec-exports-static-semantics-early-errors
     pub fn enter_export_specifier(
         self: *Self,
         specifier: ast.ExportSpecifier,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         const declaration = ctx.tree.data(ctx.path.parent().?).export_named_declaration;
         const local = if (declaration.source == .null)
-            getModuleExportName(ctx.tree, specifier.local)
+            moduleExportName(ctx.tree, specifier.local)
         else
             null;
-        const exported_name = getModuleExportName(ctx.tree, specifier.exported);
-        try self.recordExportedName(exported_name, node_index, ctx, .{ .alias = local });
+        const exported_name = moduleExportName(ctx.tree, specifier.exported);
+        try self.recordExportedName(exported_name, node, ctx, .{ .alias = local });
 
         // only local value exports are resolved, as the checker tracks the value scope alone
-        if (specifier.export_kind == .type or declaration.export_kind == .type) return .proceed;
-        if (ctx.inTsNamespace()) return .proceed;
+        if (specifier.export_kind == .type or declaration.export_kind == .type) return;
+        if (ctx.inTsNamespace()) return;
         if (local) |local_name| {
-            try self.export_specifiers.append(self.allocator, .{
-                .local_name = local_name,
-                .node = node_index,
-            });
+            const info: ExportSpecifierInfo = .{ .local_name = local_name, .node = node };
+            try self.export_specifiers.append(self.allocator, info);
         }
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-with-statement-static-semantics-early-errors
     pub fn enter_with_statement(
         self: *Self,
         _: ast.WithStatement,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if (isStrict(ctx)) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "'with' statements are not allowed in strict mode",
-                .{},
-            );
+            try self.report(node, "'with' statements are not allowed in strict mode", .{});
         }
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_of_statement(
         self: *Self,
         stmt: ast.ForOfStatement,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        if (stmt.await and !ctx.tree.isTs() and isInsideStaticBlock(ctx)) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "'for await' loops cannot be used inside a class static block",
-                .{},
-            );
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        if (stmt.await and !ctx.tree.isTs()) {
+            const tags = [_]ast.NodeTag{ .static_block, .function, .arrow_function_expression };
+            const holder = enclosing(ctx, &tags);
+            if (holder != null and holder.? == .static_block) {
+                const message = "'for await' loops cannot be used inside a class static block";
+                try self.report(node, message, .{});
+            }
         }
         try self.checkForInOfInitializer(ctx, stmt.left, false);
         if (isStrict(ctx)) try self.checkAssignTargetEvalArguments(stmt.left, ctx);
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_in_statement(
         self: *Self,
         stmt: ast.ForInStatement,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        _: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         try self.checkForInOfInitializer(ctx, stmt.left, true);
         if (isStrict(ctx)) try self.checkAssignTargetEvalArguments(stmt.left, ctx);
-        return .proceed;
     }
 
     pub fn enter_variable_declaration(
         self: *Self,
         decl: ast.VariableDeclaration,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if ((decl.kind == .using or decl.kind == .await_using) and
             ctx.tree.source_type == .script and isAtProgramLevel(ctx))
         {
-            try self.report(ctx.tree.span(node_index), try self.fmt(
-                "'{s}' declarations are not allowed at the top level of a script",
-                .{decl.kind.toString()},
-            ), .{});
+            const message = "'{s}' declarations are not allowed at the top level of a script";
+            try self.report(node, try self.fmt(message, .{decl.kind.toString()}), .{});
         }
-        return .proceed;
     }
 
     pub fn enter_break_statement(
         self: *Self,
         stmt: ast.BreakStatement,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if (stmt.label != .null) {
-            _ = try self.jumpTarget(stmt.label, node_index, ctx, "break");
+            _ = try self.jumpTarget(stmt.label, node, ctx, "break");
         } else if (!isInsideJumpTarget(ctx, true)) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "A 'break' statement can only be used within an enclosing iteration or switch" ++
-                    " statement",
-                .{},
-            );
+            const message = "A 'break' statement can only be used within an enclosing iteration" ++
+                " or switch statement";
+            try self.report(node, message, .{});
         }
-        return .proceed;
     }
 
     pub fn enter_continue_statement(
         self: *Self,
         stmt: ast.ContinueStatement,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        node: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         if (stmt.label != .null) {
-            const body = try self.jumpTarget(stmt.label, node_index, ctx, "continue") orelse
-                return .proceed;
+            const body = try self.jumpTarget(stmt.label, node, ctx, "continue") orelse
+                return;
             const target = ctx.tree.data(body);
             if (!target.isIteration() and target != .labeled_statement) {
-                try self.report(
-                    ctx.tree.span(node_index),
-                    "A 'continue' statement can only jump to a label of an enclosing iteration" ++
-                        " statement",
-                    .{ .help = try self.fmt(
-                        "Label '{s}' does not mark a loop",
-                        .{labelName(ctx.tree, stmt.label)},
-                    ) },
-                );
+                const name = labelName(ctx.tree, stmt.label);
+                try self.report(node, continue_label_message, .{
+                    .help = try self.fmt("Label '{s}' does not mark a loop", .{name}),
+                });
             }
         } else if (!isInsideJumpTarget(ctx, false)) {
-            try self.report(
-                ctx.tree.span(node_index),
-                "A 'continue' statement can only be used within an enclosing iteration" ++
-                    " statement",
-                .{},
-            );
+            const message = "A 'continue' statement can only be used within an enclosing" ++
+                " iteration statement";
+            try self.report(node, message, .{});
         }
-        return .proceed;
     }
+
+    const continue_label_message = "A 'continue' statement can only jump to a label of an" ++
+        " enclosing iteration statement";
 
     /// https://tc39.es/ecma262/#sec-labelled-statements-static-semantics-early-errors
     pub fn enter_labeled_statement(
         self: *Self,
         stmt: ast.LabeledStatement,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        _: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         const name = labelName(ctx.tree, stmt.label);
         var iter = ctx.path.ancestors();
         _ = iter.next(); // skip self
@@ -839,58 +719,45 @@ pub const Checker = struct {
             const data = ctx.tree.data(i);
             if (data == .labeled_statement) {
                 if (eql(u8, labelName(ctx.tree, data.labeled_statement.label), name)) {
-                    try self.report(
-                        ctx.tree.span(stmt.label),
-                        try self.fmt("Duplicate label '{s}'", .{name}),
-                        .{},
-                    );
+                    const message = try self.fmt("Duplicate label '{s}'", .{name});
+                    try self.report(stmt.label, message, .{});
                 }
             }
             if (isFunctionBoundary(data)) break;
         }
-        return .proceed;
     }
 
     /// Per section 14.12, the CaseBlock grammar permits at most one DefaultClause.
     pub fn enter_switch_statement(
         self: *Self,
         stmt: ast.SwitchStatement,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
-        var first_default: ?ast.NodeIndex = null;
+        _: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
+        var first_default: ?NodeIndex = null;
         for (ctx.tree.extra(stmt.cases)) |child| {
-            const case = ctx.tree.data(child).switch_case;
-            if (case.@"test" != .null) continue;
-
-            if (first_default) |first| {
-                try self.report(
-                    ctx.tree.span(child),
-                    "A 'default' clause cannot appear more than once in a 'switch' statement",
-                    .{ .labels = try self.labels(&.{
-                        self.label(ctx.tree.span(first), "first 'default' clause here"),
-                    }) },
-                );
-            } else {
+            if (ctx.tree.data(child).switch_case.@"test" != .null) continue;
+            const first = first_default orelse {
                 first_default = child;
-            }
+                continue;
+            };
+            const message =
+                "A 'default' clause cannot appear more than once in a 'switch' statement";
+            try self.report(child, message, .{
+                .labels = try self.labels(&.{self.label(first, "first 'default' clause here")}),
+            });
         }
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
-    ///
-    /// A class body has at most one constructor, and declares each private name
-    /// once. A getter and setter pair may share a name, and so may a method and
-    /// its TypeScript overload signatures, when all of them are static or none are.
     pub fn enter_class_body(
         self: *Self,
         body: ast.ClassBody,
-        _: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!Action {
+        _: NodeIndex,
+        ctx: *Ctx,
+    ) Error!void {
         const children = ctx.tree.extra(body.body);
-        var first_constructor: ?ast.NodeIndex = null;
+        var first_constructor: ?NodeIndex = null;
 
         for (children, 0..) |child, j| {
             const child_data = ctx.tree.data(child);
@@ -901,13 +768,11 @@ pub const Checker = struct {
                 const has_body = ctx.tree.data(method.value).function.body != .null;
                 if (method.kind == .constructor and has_body) {
                     if (first_constructor) |first| {
-                        try self.report(
-                            ctx.tree.span(method.key),
-                            "Multiple constructor implementations are not allowed",
-                            .{ .labels = try self.labels(&.{
-                                self.label(ctx.tree.span(first), "first constructor here"),
-                            }) },
-                        );
+                        const first_label = self.label(first, "first constructor here");
+                        const message = "Multiple constructor implementations are not allowed";
+                        try self.report(method.key, message, .{
+                            .labels = try self.labels(&.{first_label}),
+                        });
                     } else {
                         first_constructor = method.key;
                     }
@@ -927,18 +792,12 @@ pub const Checker = struct {
                     privateElementIsStatic(prev_data) == privateElementIsStatic(child_data);
                 if (privateElementsPair(kind_i, kind_j) and same_static) continue;
 
-                try self.report(
-                    ctx.tree.span(child),
-                    try self.fmt("Duplicate private name '#{s}'", .{name_j}),
-                    .{ .labels = try self.labels(&.{
-                        self.label(ctx.tree.span(prev), "first declared here"),
-                    }) },
-                );
+                try self.report(child, try self.fmt("Duplicate private name '#{s}'", .{name_j}), .{
+                    .labels = try self.labels(&.{self.label(prev, "first declared here")}),
+                });
                 break;
             }
         }
-
-        return .proceed;
     }
 
     const PrivateElementKind = enum { field, method, signature, getter, setter };
@@ -986,7 +845,7 @@ pub const Checker = struct {
     }
 
     // 15.7.7 AllPrivateIdentifiersValid
-    fn checkPrivateName(self: *Self, node: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
+    fn checkPrivateName(self: *Self, node: NodeIndex, ctx: *Ctx) Error!void {
         const name = ctx.tree.string(ctx.tree.data(node).private_identifier.name);
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -996,181 +855,114 @@ pub const Checker = struct {
                 if (eql(u8, declared, name)) return;
             }
         }
-        try self.report(
-            ctx.tree.span(node),
-            try self.fmt("Private field '#{s}' must be declared in an enclosing class", .{name}),
-            .{},
-        );
+        const message = "Private field '#{s}' must be declared in an enclosing class";
+        try self.report(node, try self.fmt(message, .{name}), .{});
     }
 
     fn checkStrictReserved(
         self: *Self,
         name: []const u8,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
+        node: NodeIndex,
+        ctx: *Ctx,
         comptime as_what: []const u8,
-    ) AnalysisError!void {
+    ) Error!void {
         if (!isStrict(ctx)) return;
         if (!lexical.mayBeStrictReserved(name)) return;
         const tag = lexical.keyword(name) orelse return;
         if (!tag.isStrictModeReserved()) return;
-        try self.report(
-            ctx.tree.span(node_index),
-            try self.fmt(
-                "'{s}' is a reserved word in strict mode and cannot be used as " ++ as_what,
-                .{name},
-            ),
-            .{},
-        );
+        const message = "'{s}' is a reserved word in strict mode and cannot be used as " ++ as_what;
+        try self.report(node, try self.fmt(message, .{name}), .{});
     }
 
     // 14.7.5.1 allows one ForBinding and, outside annex B 3.5, no initializer
     fn checkForInOfInitializer(
         self: *Self,
-        ctx: *SemanticCtx,
-        left: ast.NodeIndex,
+        ctx: *Ctx,
+        left: NodeIndex,
         comptime is_for_in: bool,
-    ) AnalysisError!void {
+    ) Error!void {
         if (ctx.tree.data(left) != .variable_declaration) return;
         const decl = ctx.tree.data(left).variable_declaration;
         const declarators = ctx.tree.extra(decl.declarators);
 
         if (declarators.len > 1) {
-            try self.report(
-                ctx.tree.span(left),
-                if (is_for_in)
-                    "Only a single variable declaration is allowed in a 'for...in' statement"
-                else
-                    "Only a single variable declaration is allowed in a 'for...of' statement",
-                .{},
-            );
-            return;
+            const message = "Only a single variable declaration is allowed in a 'for..." ++
+                (if (is_for_in) "in" else "of") ++ "' statement";
+            return self.report(left, message, .{});
         }
-
         if (!isStrict(ctx)) return;
         for (declarators) |child| {
             const declarator = ctx.tree.data(child).variable_declarator;
             if (declarator.init == .null) continue;
             if (static_semantics.isAnnexBForInHead(ctx.tree, decl.kind, declarator.id, is_for_in)) {
-                try self.report(
-                    ctx.tree.span(child),
-                    "The variable declaration of a 'for...in' statement cannot have an initializer",
-                    .{ .help = "Remove the initializer" },
-                );
-                return;
+                const message =
+                    "The variable declaration of a 'for...in' statement cannot have an initializer";
+                return self.report(child, message, .{ .help = "Remove the initializer" });
             }
         }
     }
 
-    fn isEvalOrArgumentsRef(tree: *const ast.Tree, node: ast.NodeIndex) bool {
-        return tree.data(node) == .identifier_reference and
-            lexical.isEvalOrArguments(tree.string(tree.data(node).identifier_reference.name));
-    }
-
-    fn checkAssignTargetEvalArguments(
-        self: *Self,
-        node: ast.NodeIndex,
-        ctx: *SemanticCtx,
-    ) AnalysisError!void {
+    fn checkAssignTargetEvalArguments(self: *Self, node: NodeIndex, ctx: *Ctx) Error!void {
         if (node == .null) return;
         switch (ctx.tree.data(node)) {
-            .identifier_reference => |id| {
-                const name = ctx.tree.string(id.name);
-                if (lexical.isEvalOrArguments(name)) {
-                    try self.report(
-                        ctx.tree.span(node),
-                        try self.fmt("Cannot assign to '{s}' in strict mode", .{name}),
-                        .{},
-                    );
+            .identifier_reference => try self.checkEvalArguments(node, node, ctx),
+            inline .array_pattern, .object_pattern => |pattern, tag| {
+                const nested = if (tag == .array_pattern) pattern.elements else pattern.properties;
+                for (ctx.tree.extra(nested)) |child| {
+                    try self.checkAssignTargetEvalArguments(child, ctx);
                 }
+                try self.checkAssignTargetEvalArguments(pattern.rest, ctx);
             },
-            .array_pattern => |arr| {
-                for (ctx.tree.extra(arr.elements)) |elem| {
-                    try self.checkAssignTargetEvalArguments(elem, ctx);
-                }
-                try self.checkAssignTargetEvalArguments(arr.rest, ctx);
-            },
-            .object_pattern => |obj| {
-                for (ctx.tree.extra(obj.properties)) |prop| {
-                    if (ctx.tree.data(prop) == .binding_property) {
-                        const value = ctx.tree.data(prop).binding_property.value;
-                        try self.checkAssignTargetEvalArguments(value, ctx);
-                    }
-                }
-                try self.checkAssignTargetEvalArguments(obj.rest, ctx);
-            },
+            .binding_property => |p| try self.checkAssignTargetEvalArguments(p.value, ctx),
             .assignment_pattern => |ap| try self.checkAssignTargetEvalArguments(ap.left, ctx),
             .binding_rest_element => |r| try self.checkAssignTargetEvalArguments(r.argument, ctx),
             else => {},
         }
     }
 
-    fn isLegacyNumericLiteral(raw: []const u8) bool {
-        return raw.len >= 2 and raw[0] == '0' and raw[1] >= '0' and raw[1] <= '9';
+    fn checkEvalArguments(self: *Self, target: NodeIndex, node: NodeIndex, ctx: *Ctx) Error!void {
+        const name = switch (ctx.tree.data(target)) {
+            .identifier_reference => |id| ctx.tree.string(id.name),
+            else => return,
+        };
+        if (!lexical.isEvalOrArguments(name)) return;
+        try self.report(node, try self.fmt("Cannot assign to '{s}' in strict mode", .{name}), .{});
     }
 
-    const SuperCallValidity = enum { valid, not_in_constructor, no_extends };
+    const SuperHome = union(enum) {
+        function: ?NodeIndex,
+        class_element,
+        none,
+    };
 
-    // arrow functions are transparent (8.5.1), regular functions are opaque
-    fn superCallValidity(ctx: *SemanticCtx) SuperCallValidity {
-        var iter = ctx.path.ancestors();
-        var child: ast.NodeIndex = .null;
-        while (iter.next()) |i| : (child = i) {
+    fn superHome(ctx: *Ctx, above: *traverser.NodePath.AncestorIterator) SuperHome {
+        var child: NodeIndex = .null;
+        while (above.next()) |i| : (child = i) {
             switch (ctx.tree.data(i)) {
-                .function => {
-                    if (iter.next()) |parent| {
-                        if (ctx.tree.data(parent) == .method_definition and
-                            ctx.tree.data(parent).method_definition.kind == .constructor)
-                        {
-                            while (iter.next()) |ancestor| {
-                                if (ctx.tree.data(ancestor) != .class) continue;
-                                if (ctx.tree.data(ancestor).class.super_class == .null) {
-                                    return .no_extends;
-                                }
-                                return .valid;
-                            }
-                        }
-                    }
-                    return .not_in_constructor;
-                },
-                .property_definition => |field| {
-                    if (field.value == child) return .not_in_constructor;
-                },
-                .static_block, .program => return .not_in_constructor,
+                .function => return .{ .function = above.next() },
+                .property_definition => |field| if (field.value == child) return .class_element,
+                .static_block => return .class_element,
                 else => {},
             }
         }
-        return .not_in_constructor;
+        return .none;
     }
 
-    fn isSuperPropertyValid(ctx: *SemanticCtx) bool {
-        var iter = ctx.path.ancestors();
-        var child: ast.NodeIndex = .null;
-        while (iter.next()) |i| : (child = i) {
-            switch (ctx.tree.data(i)) {
-                .function => {
-                    if (iter.next()) |parent| {
-                        const data = ctx.tree.data(parent);
-                        if (data == .method_definition) return true;
-                        if (data == .object_property) {
-                            const prop = data.object_property;
-                            if (prop.method or prop.kind != .init) return true;
-                        }
-                    }
-                    return false;
-                },
-                .property_definition => |field| {
-                    if (field.value == child) return true;
-                },
-                .static_block => return true,
-                .program => return false,
-                else => {},
-            }
-        }
-        return false;
+    fn isSuperPropertyValid(ctx: *Ctx) bool {
+        var above = ctx.path.ancestors();
+        const parent = switch (superHome(ctx, &above)) {
+            .function => |parent| parent orelse return false,
+            .class_element => return true,
+            .none => return false,
+        };
+        return switch (ctx.tree.data(parent)) {
+            .method_definition => true,
+            .object_property => |prop| prop.method or prop.kind != .init,
+            else => false,
+        };
     }
 
-    fn isAtProgramLevel(ctx: *SemanticCtx) bool {
+    fn isAtProgramLevel(ctx: *Ctx) bool {
         const parent = ctx.path.parent() orelse return true;
         return switch (ctx.tree.data(parent)) {
             .program, .ts_module_block => true,
@@ -1185,7 +977,7 @@ pub const Checker = struct {
         };
     }
 
-    fn isInsideJumpTarget(ctx: *SemanticCtx, comptime or_switch: bool) bool {
+    fn isInsideJumpTarget(ctx: *Ctx, comptime or_switch: bool) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             const data = ctx.tree.data(i);
@@ -1196,28 +988,15 @@ pub const Checker = struct {
         return false;
     }
 
-    fn isNewTargetAvailable(ctx: *SemanticCtx) bool {
-        var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
-            switch (ctx.tree.data(i)) {
-                .function, .static_block, .property_definition => return true,
-                else => {},
-            }
-        }
-        // commonjs top level is a function body
-        return ctx.tree.source_type == .commonjs;
-    }
-
     // the body a labelled jump lands in, or `null` once a missing target is reported
     fn jumpTarget(
         self: *Self,
-        label_node: ast.NodeIndex,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
+        label_node: NodeIndex,
+        node: NodeIndex,
+        ctx: *Ctx,
         comptime keyword: []const u8,
-    ) AnalysisError!?ast.NodeIndex {
+    ) Error!?NodeIndex {
         const name = labelName(ctx.tree, label_node);
-        std.debug.assert(name.len > 0);
         var crossed_boundary = false;
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1226,74 +1005,36 @@ pub const Checker = struct {
                 const statement = data.labeled_statement;
                 if (eql(u8, labelName(ctx.tree, statement.label), name)) {
                     if (!crossed_boundary) return statement.body;
-                    try self.report(ctx.tree.span(node_index), try self.fmt(
-                        "A '" ++ keyword ++ "' statement cannot jump to label '{s}' across a" ++
-                            " function boundary",
-                        .{name},
-                    ), .{});
+                    const message = "A '" ++ keyword ++ "' statement cannot jump to label '{s}'" ++
+                        " across a function boundary";
+                    try self.report(node, try self.fmt(message, .{name}), .{});
                     return null;
                 }
             }
             if (isFunctionBoundary(data)) crossed_boundary = true;
         }
-        try self.report(
-            ctx.tree.span(node_index),
-            try self.fmt("Cannot find label '{s}'", .{name}),
-            .{ .help = if (comptime eql(u8, keyword, "break"))
+        try self.report(node, try self.fmt("Cannot find label '{s}'", .{name}), .{
+            .help = if (comptime eql(u8, keyword, "break"))
                 "A 'break' statement can only jump to a label of an enclosing statement"
             else
-                "A 'continue' statement can only jump to a label of an enclosing iteration" ++
-                    " statement" },
-        );
+                continue_label_message,
+        });
         return null;
     }
 
-    fn labelName(tree: *const ast.Tree, label_node: ast.NodeIndex) []const u8 {
+    fn labelName(tree: *const ast.Tree, label_node: NodeIndex) []const u8 {
         return tree.string(tree.data(label_node).label_identifier.name);
     }
 
-    fn isInsideStaticBlock(ctx: *SemanticCtx) bool {
-        var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
-            switch (ctx.tree.data(i)) {
-                .static_block => return true,
-                .function, .arrow_function_expression => return false,
-                else => {},
-            }
-        }
-        return false;
+    fn enclosingParameters(ctx: *Ctx) ?ast.FormalParameters {
+        const tags = [_]ast.NodeTag{ .formal_parameters, .function, .arrow_function_expression };
+        return switch (enclosing(ctx, &tags) orelse return null) {
+            .formal_parameters => |params| params,
+            else => null,
+        };
     }
 
-    fn isArgumentsAvailable(ctx: *SemanticCtx) bool {
-        var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
-            switch (ctx.tree.data(i)) {
-                .function => return true,
-                .property_definition, .static_block => return false,
-                else => {},
-            }
-        }
-        return true;
-    }
-
-    fn findFormalParameters(ctx: *SemanticCtx) ?ast.FormalParameters {
-        var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
-            switch (ctx.tree.data(i)) {
-                .formal_parameters => |params| return params,
-                .program, .function, .arrow_function_expression => return null,
-                else => {},
-            }
-        }
-        return null;
-    }
-
-    // annex B lets a sloppy block declare a plain function twice (B.3.2.4)
-    fn isAnnexBDuplicate(self: *const Self, node: ast.NodeIndex, first: ast.NodeIndex) bool {
-        return self.plain_functions.contains(node) and self.plain_functions.contains(first);
-    }
-
-    fn getModuleExportName(tree: *const ast.Tree, node: ast.NodeIndex) []const u8 {
+    fn moduleExportName(tree: *const ast.Tree, node: NodeIndex) []const u8 {
         return switch (tree.data(node)) {
             inline .identifier_name, .identifier_reference => |id| tree.string(id.name),
             .string_literal => |lit| tree.string(lit.value),
@@ -1302,14 +1043,14 @@ pub const Checker = struct {
     }
 
     // `export import x = y.z` is an alias
-    fn exportForm(flags: Symbol.Flags, ctx: *SemanticCtx) ExportForm {
+    fn exportForm(flags: Symbol.Flags, ctx: *Ctx) ExportForm {
         if (flags.intersects(Symbol.any_import)) return .{ .alias = null };
         const declaration = ctx.tree.data(ctx.path.parent().?);
         const signature = declaration == .function and declaration.function.body == .null;
         return .{ .declaration = .{ .flags = flags, .counted = !flags.interface and !signature } };
     }
 
-    fn defaultExportForm(tree: *const ast.Tree, declaration: ast.NodeIndex) ExportForm {
+    fn defaultExportForm(tree: *const ast.Tree, declaration: NodeIndex) ExportForm {
         return .{ .declaration = switch (tree.data(declaration)) {
             .ts_interface_declaration => .{ .flags = .{ .interface = true }, .counted = false },
             .function => |func| .{ .flags = .{ .function = true }, .counted = func.body != .null },
@@ -1318,36 +1059,22 @@ pub const Checker = struct {
         } };
     }
 
-    fn sharesKind(a: Symbol.Flags, b: Symbol.Flags) bool {
-        inline for (.{ Symbol.value_space, Symbol.type_space, Symbol.namespace_space }) |space| {
-            if (a.intersects(space) and b.intersects(space)) return true;
-        }
-        return false;
-    }
-
-    fn checkDuplicateWithAttributes(
-        self: *Self,
-        attributes: ast.IndexRange,
-        ctx: *SemanticCtx,
-    ) AnalysisError!void {
-        const items = ctx.tree.extra(attributes);
-        for (items, 0..) |attr_idx, i| {
-            const attr_key = ctx.tree.data(attr_idx).import_attribute.key;
-            const key = static_semantics.propName(ctx.tree, attr_key) orelse continue;
-            for (items[0..i]) |prev_idx| {
-                const prev_attr_key = ctx.tree.data(prev_idx).import_attribute.key;
-                const prev_key = static_semantics.propName(ctx.tree, prev_attr_key) orelse continue;
-                if (key.eql(prev_key.name) or prev_key.eql(key.name)) {
-                    const name = if (!prev_key.is_string_literal) prev_key.name else key.name;
-                    try self.report(
-                        key.span,
-                        try self.fmt("Duplicate import attribute '{s}'", .{name}),
-                        .{ .labels = try self.labels(&.{
-                            self.label(prev_key.span, "first used here"),
-                        }) },
-                    );
-                    break;
-                }
+    fn checkDuplicateWithAttributes(self: *Self, attributes: ast.IndexRange) Error!void {
+        const tree = self.tree;
+        const items = tree.extra(attributes);
+        for (items, 0..) |attribute, i| {
+            const key_node = tree.data(attribute).import_attribute.key;
+            const key = static_semantics.propName(tree, key_node) orelse continue;
+            for (items[0..i]) |prev_attribute| {
+                const prev_node = tree.data(prev_attribute).import_attribute.key;
+                const prev_key = static_semantics.propName(tree, prev_node) orelse continue;
+                if (!key.eql(prev_key.name)) continue;
+                const name = if (!prev_key.is_string_literal) prev_key.name else key.name;
+                const message = try self.fmt("Duplicate import attribute '{s}'", .{name});
+                try self.report(key_node, message, .{
+                    .labels = try self.labels(&.{self.label(prev_node, "first used here")}),
+                });
+                break;
             }
         }
     }
@@ -1355,25 +1082,24 @@ pub const Checker = struct {
     fn recordExportedName(
         self: *Self,
         name: []const u8,
-        node_index: ast.NodeIndex,
-        ctx: *SemanticCtx,
+        node: NodeIndex,
+        ctx: *Ctx,
         form: ExportForm,
-    ) AnalysisError!void {
-        std.debug.assert(node_index != .null);
+    ) Error!void {
         if (!ctx.tree.isModule()) return;
         // exports inside a ts namespace are namespace-scoped
         if (ctx.inTsNamespace()) return;
         const gop = try self.exported_names.getOrPut(self.allocator, name);
-        if (!gop.found_existing) gop.value_ptr.* = .{ .first = node_index, .last = node_index };
+        if (!gop.found_existing) gop.value_ptr.* = .{ .first = node, .last = node };
         const exported = gop.value_ptr;
 
         // https://tc39.es/ecma262/#sec-module-semantics-static-semantics-early-errors
         if (!ctx.tree.isTs()) {
-            if (!gop.found_existing) return;
-            return self.reportDuplicateExport(name, exported.first, node_index);
+            if (gop.found_existing) try self.reportDuplicateExport(name, exported.first, node);
+            return;
         }
 
-        exported.last = node_index;
+        exported.last = node;
         switch (form) {
             .alias => |local| {
                 exported.conflict = exported.conflict or exported.alias;
@@ -1396,8 +1122,8 @@ pub const Checker = struct {
         self: *Self,
         name: []const u8,
         flags: Symbol.Flags,
-        ctx: *SemanticCtx,
-    ) AnalysisError!void {
+        ctx: *Ctx,
+    ) Error!void {
         if (!ctx.tree.isTs()) return;
         if (ctx.scope.get(ctx.symbols.pending.scope).kind != .module) return;
         // an import aliases kinds one file cannot know
@@ -1406,22 +1132,12 @@ pub const Checker = struct {
         gop.value_ptr.* = if (gop.found_existing) gop.value_ptr.merge(flags) else flags;
     }
 
-    /// Reports local export specifiers that name no declared binding, and the
-    /// TypeScript duplicate exports, which depend on every export of a name.
-    /// Runs after the traversal.
-    pub fn checkExports(self: *Self, symbols: *const binder.SymbolTracker) AnalysisError!void {
+    pub fn checkExports(self: *Self, symbols: *const binder.SymbolTracker) Error!void {
         if (!self.tree.isModule()) return;
         for (self.export_specifiers.items) |specifier| {
-            if (symbols.binding(scope.module_scope, specifier.local_name) == null) {
-                try self.report(
-                    self.tree.span(specifier.node),
-                    try self.fmt(
-                        "Cannot export '{s}' because it is not declared in this module",
-                        .{specifier.local_name},
-                    ),
-                    .{},
-                );
-            }
+            if (symbols.binding(scope.module_scope, specifier.local_name) != null) continue;
+            const message = "Cannot export '{s}' because it is not declared in this module";
+            try self.report(specifier.node, try self.fmt(message, .{specifier.local_name}), .{});
         }
         if (!self.tree.isTs()) return;
         for (self.exported_names.keys(), self.exported_names.values()) |name, *exported| {
@@ -1439,99 +1155,94 @@ pub const Checker = struct {
         if (!merges and exported.counted > allowed) return true;
         // a local `export { x }` cannot share a kind with an exported declaration
         const local = self.local_kinds.get(exported.local orelse return false) orelse return false;
-        return sharesKind(exported.flags, local);
+        inline for (.{ Symbol.value_space, Symbol.type_space, Symbol.namespace_space }) |space| {
+            if (exported.flags.intersects(space) and local.intersects(space)) return true;
+        }
+        return false;
     }
 
     fn reportDuplicateExport(
         self: *Self,
         name: []const u8,
-        first: ast.NodeIndex,
-        again: ast.NodeIndex,
-    ) AnalysisError!void {
+        first: NodeIndex,
+        again: NodeIndex,
+    ) Error!void {
         std.debug.assert(self.tree.span(first).start < self.tree.span(again).start);
-        try self.report(
-            self.tree.span(again),
-            try self.fmt("Duplicate export '{s}'", .{name}),
-            .{ .labels = try self.labels(&.{
-                self.label(self.tree.span(first), "first exported here"),
-                self.label(self.tree.span(again), "exported again here"),
-            }) },
-        );
+        try self.report(again, try self.fmt("Duplicate export '{s}'", .{name}), .{
+            .labels = try self.labels(&.{
+                self.label(first, "first exported here"),
+                self.label(again, "exported again here"),
+            }),
+        });
     }
 
     fn reportRedeclaration(
         self: *Self,
         name: []const u8,
-        node_index: ast.NodeIndex,
+        node: NodeIndex,
         existing_id: binder.SymbolId,
-        ctx: *SemanticCtx,
-    ) Allocator.Error!void {
-        std.debug.assert(existing_id != .none);
-        std.debug.assert(node_index != .null);
-        const current_span = ctx.tree.span(node_index);
-        const existing_span = ctx.tree.span(ctx.symbols.firstDeclOf(existing_id));
+        ctx: *Ctx,
+    ) Error!void {
         const flags = ctx.symbols.symbol(existing_id).flags;
         const kind = flags.toString();
-        std.debug.assert(kind.len > 0);
         const article: []const u8 = switch (kind[0]) {
             'a', 'e', 'i', 'o', 'u' => "an",
             else => "a",
         };
-
-        try self.report(
-            current_span,
-            if (flags.block_scoped_var)
-                try self.fmt("Cannot redeclare block-scoped variable '{s}'", .{name})
-            else
-                try self.fmt("Duplicate identifier '{s}'", .{name}),
-            .{
-                .labels = try self.labels(&.{
-                    self.label(existing_span, try self.fmt(
-                        "'{s}' was first declared as {s} {s} here",
-                        .{ name, article, kind },
-                    )),
-                    self.label(current_span, "cannot be redeclared here"),
-                }),
-                .help = try self.fmt("Rename or remove this declaration of '{s}'", .{name}),
-            },
+        const message = if (flags.block_scoped_var)
+            try self.fmt("Cannot redeclare block-scoped variable '{s}'", .{name})
+        else
+            try self.fmt("Duplicate identifier '{s}'", .{name});
+        const first = try self.fmt(
+            "'{s}' was first declared as {s} {s} here",
+            .{ name, article, kind },
         );
+        try self.report(node, message, .{
+            .labels = try self.labels(&.{
+                self.label(ctx.symbols.firstDeclOf(existing_id), first),
+                self.label(node, "cannot be redeclared here"),
+            }),
+            .help = try self.fmt("Rename or remove this declaration of '{s}'", .{name}),
+        });
     }
 
-    const ReportOptions = struct {
+    const Details = struct {
         help: ?[]const u8 = null,
         labels: []const ast.Label = &.{},
     };
 
-    fn report(
-        self: *Self,
-        span: ast.Span,
-        message: []const u8,
-        opts: ReportOptions,
-    ) Allocator.Error!void {
-        std.debug.assert(span.start <= span.end);
-        std.debug.assert(message.len > 0);
+    fn report(self: *Self, node: NodeIndex, message: []const u8, details: Details) Error!void {
         try self.tree.addDiagnostic(.{
-            .severity = .@"error",
             .message = message,
-            .span = span,
-            .help = opts.help,
-            .labels = opts.labels,
+            .span = self.tree.span(node),
+            .help = details.help,
+            .labels = details.labels,
         });
     }
 
-    fn label(_: *Self, span: ast.Span, message: []const u8) ast.Label {
-        return .{ .span = span, .message = message };
+    fn label(self: *const Self, node: NodeIndex, message: []const u8) ast.Label {
+        return .{ .span = self.tree.span(node), .message = message };
     }
 
-    fn labels(self: *Self, items: []const ast.Label) Allocator.Error![]const ast.Label {
+    fn labels(self: *Self, items: []const ast.Label) Error![]const ast.Label {
         return self.allocator.dupe(ast.Label, items);
     }
 
-    fn fmt(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
+    fn fmt(self: *Self, comptime format: []const u8, args: anytype) Error![]u8 {
         return self.allocator.print(format, args);
     }
 };
 
-inline fn isStrict(ctx: *const SemanticCtx) bool {
+inline fn isStrict(ctx: *const Ctx) bool {
     return ctx.scope.get(ctx.scope.current).flags.strict;
+}
+
+fn enclosing(ctx: *const Ctx, comptime tags: []const ast.NodeTag) ?ast.NodeData {
+    const set = comptime std.EnumSet(ast.NodeTag).initMany(tags);
+    var iter = ctx.path.ancestors();
+    while (iter.next()) |i| {
+        const data = ctx.tree.data(i);
+        if (set.contains(data)) return data;
+    }
+    return null;
 }

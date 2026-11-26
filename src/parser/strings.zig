@@ -13,7 +13,7 @@ pub const ASTStringPool = struct {
     extra: std.ArrayList(u8) = .empty,
     dedup: DedupMap = .empty,
 
-    const DedupMap = std.HashMapUnmanaged(String, void, MapCtx, 80);
+    const DedupMap = std.HashMapUnmanaged(String, void, TextContext, 80);
 
     /// Returns the string content for a `String`.
     pub inline fn get(self: *const ASTStringPool, id: String) []const u8 {
@@ -24,7 +24,7 @@ pub const ASTStringPool = struct {
             std.debug.assert(id.end <= src_len);
             return self.source[id.start..id.end];
         }
-        return resolve(self.extra.items, src_len, id);
+        return self.extra.items[id.start - src_len .. id.end - src_len];
     }
 
     /// A `String` for a range of the source text.
@@ -43,55 +43,32 @@ pub const ASTStringPool = struct {
         if (str.len == 0) return .empty;
         std.debug.assert(self.source.len + self.extra.items.len + str.len <= std.math.maxInt(u32));
 
-        const extra = self.extra.items;
         const src_len: u32 = @intCast(self.source.len);
-        const gop = try self.dedup.getOrPutContextAdapted(
-            alloc,
-            str,
-            AdaptedCtx{ .extra = extra, .src_len = src_len },
-            MapCtx{ .extra = extra, .src_len = src_len },
-        );
+        const context: TextContext = .{ .extra = self.extra.items, .src_len = src_len };
+        const gop = try self.dedup.getOrPutContextAdapted(alloc, str, context, context);
         if (gop.found_existing) return gop.key_ptr.*;
 
-        const start: u32 = src_len + @as(u32, @intCast(extra.len));
+        const start = src_len + @as(u32, @intCast(self.extra.items.len));
         try self.extra.appendSlice(alloc, str);
-        const id = String{
-            .start = start,
-            .end = src_len + @as(u32, @intCast(self.extra.items.len)),
-        };
-        gop.key_ptr.* = id;
-        return id;
+        gop.key_ptr.* = .{ .start = start, .end = start + @as(u32, @intCast(str.len)) };
+        return gop.key_ptr.*;
     }
 
-    inline fn resolve(extra: []const u8, src_len: u32, id: String) []const u8 {
-        return extra[id.start - src_len .. id.end - src_len];
-    }
-
-    const MapCtx = struct {
+    const TextContext = struct {
         extra: []const u8,
         src_len: u32,
 
-        pub fn hash(ctx: @This(), id: String) u64 {
-            return std.hash.Wyhash.hash(0, resolve(ctx.extra, ctx.src_len, id));
+        pub fn hash(ctx: TextContext, key: anytype) u64 {
+            return std.hash.Wyhash.hash(0, ctx.text(key));
         }
-        pub fn eql(ctx: @This(), a: String, b: String) bool {
-            return std.mem.eql(
-                u8,
-                resolve(ctx.extra, ctx.src_len, a),
-                resolve(ctx.extra, ctx.src_len, b),
-            );
-        }
-    };
 
-    const AdaptedCtx = struct {
-        extra: []const u8,
-        src_len: u32,
-
-        pub fn hash(_: @This(), text: []const u8) u64 {
-            return std.hash.Wyhash.hash(0, text);
+        pub fn eql(ctx: TextContext, a: anytype, b: String) bool {
+            return std.mem.eql(u8, ctx.text(a), ctx.text(b));
         }
-        pub fn eql(ctx: @This(), text: []const u8, id: String) bool {
-            return std.mem.eql(u8, text, resolve(ctx.extra, ctx.src_len, id));
+
+        fn text(ctx: TextContext, key: anytype) []const u8 {
+            if (@TypeOf(key) != String) return key;
+            return ctx.extra[key.start - ctx.src_len .. key.end - ctx.src_len];
         }
     };
 };

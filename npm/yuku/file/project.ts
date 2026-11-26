@@ -9,7 +9,7 @@ import type {
   TSImportEqualsDeclaration,
   TSModuleDeclaration,
 } from "../types";
-import type { Binding, Definition, Export, Import, Reference } from "./semantic";
+import { Import, type Binding, type Definition, type Export, type Reference } from "./semantic";
 import { diagnosticAt, SourceFile, type FileOptions } from "./source-file";
 
 export interface ProjectOptions {
@@ -205,15 +205,8 @@ export class Project {
       }
     }
     for (const file of this.fileByPath.values()) {
-      for (const record of file.imports) {
-        if (record._resolved !== null && record.name !== null) {
-          this.validate(file, record, record.name, "Import", diagnostics);
-        }
-      }
-      for (const record of file.exports) {
-        if (record._resolved !== null && record.fromName !== null) {
-          this.validate(file, record, record.fromName, "Re-export", diagnostics);
-        }
+      for (const record of [...file.imports, ...file.exports]) {
+        this.validate(file, record, diagnostics);
       }
     }
     this.importers = new Map();
@@ -266,15 +259,13 @@ export class Project {
     return null;
   }
 
-  private validate(
-    file: SourceFile,
-    record: Import | Export,
-    name: string,
-    what: string,
-    diagnostics: Diagnostic[],
-  ): void {
-    const resolution = this.exportResolution(record._resolved!, name);
+  private validate(file: SourceFile, record: Import | Export, diagnostics: Diagnostic[]): void {
+    const imported = record instanceof Import;
+    const name = imported ? record.name : record.fromName;
+    if (record._resolved === null || name === null) return;
+    const resolution = this.exportResolution(record._resolved, name);
     if (resolution !== null && resolution !== AMBIGUOUS) return;
+    const what = imported ? "Import" : "Re-export";
     const message =
       resolution === null
         ? `Module '${record.specifier}' has no exported member '${name}'`
@@ -305,7 +296,7 @@ export class Project {
     for (const entry of seen) if (entry.file === file && entry.name === name) return null;
     seen.push({ file, name });
 
-    const direct = file._model.exportMap().get(name);
+    const direct = file._model.exportIndex().byName.get(name);
     if (direct !== undefined) {
       if (direct.specifier === null) {
         const local = direct.local;
@@ -330,7 +321,7 @@ export class Project {
     if (name === "default") return null;
 
     let found: Resolution | null = null;
-    for (const star of file._model.starExports()) {
+    for (const star of file._model.exportIndex().stars) {
       if (star._resolved === null) continue;
       const resolution = this.resolveExportRecursive(star._resolved, name, seen);
       if (resolution === AMBIGUOUS) return AMBIGUOUS;
@@ -351,9 +342,9 @@ export class Project {
   private collectExportedNames(file: SourceFile, seen: Set<SourceFile>): string[] {
     if (seen.has(file)) return [];
     seen.add(file);
-    const names = new Set(file._model.exportMap().keys());
+    const names = new Set(file._model.exportIndex().byName.keys());
     for (const name of this.addedExports.get(file)?.keys() ?? []) names.add(name);
-    for (const star of file._model.starExports()) {
+    for (const star of file._model.exportIndex().stars) {
       if (star._resolved === null) continue;
       for (const name of this.collectExportedNames(star._resolved, seen)) {
         if (name !== "default") names.add(name);

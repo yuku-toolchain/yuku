@@ -1,0 +1,22 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": []
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Expected an identifier, but found '1'",
+      "path": null,
+      "start": 20,
+      "end": 21,
+      "labels": [],
+      "help": "Identifiers start with a letter, '_', or '$'"
+    }
+  ]
+}
