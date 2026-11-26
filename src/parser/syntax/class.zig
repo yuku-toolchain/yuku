@@ -3,24 +3,46 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const TokenTag = @import("../token.zig").TokenTag;
-const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
 const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
 const object = @import("object.zig");
-const decorator = @import("decorators.zig");
 const ts = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
 const static_semantics = @import("spec").static_semantics;
 
 pub const ParseClassOptions = struct {
     is_expression: bool = false,
-    /// Set for `export default class`, which may omit the name yet stays a declaration.
     is_default_export: bool = false,
     is_declare: bool = false,
     is_abstract: bool = false,
+    decorators: ast.IndexRange = .empty,
 };
+
+pub fn parseDecorators(parser: *Parser, leading: ast.IndexRange) Error!?ast.IndexRange {
+    const decorators = parser.list();
+    defer decorators.deinit();
+    for (parser.tree.extra(leading)) |decorator| try decorators.append(decorator);
+
+    while (parser.at(.at)) {
+        const start = try parser.take(.at) orelse return null;
+        const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse
+            return null;
+        try decorators.append(try parser.finishAt(start, expression, .{
+            .decorator = .{ .expression = expression },
+        }));
+    }
+    return try decorators.finish();
+}
+
+pub fn parseDecoratedClass(parser: *Parser, options: ParseClassOptions) Error!?ast.NodeIndex {
+    std.debug.assert(parser.at(.at));
+    const start = parser.current_token.span.start;
+    var decorated = options;
+    decorated.decorators = try parseDecorators(parser, .empty) orelse return null;
+    return parseClass(parser, decorated, start);
+}
 
 /// https://tc39.es/ecma262/#sec-class-definitions
 pub fn parseClass(
@@ -28,29 +50,17 @@ pub fn parseClass(
     options: ParseClassOptions,
     start_from_param: ?u32,
 ) Error!?ast.NodeIndex {
-    return parseClassDecorated(parser, options, start_from_param, .empty);
-}
-
-pub fn parseClassDecorated(
-    parser: *Parser,
-    options: ParseClassOptions,
-    start_from_param: ?u32,
-    decorators: ast.IndexRange,
-) Error!?ast.NodeIndex {
     std.debug.assert(start_from_param != null or
-        parser.current_token.tag == .class or
-        parser.current_token.tag == .abstract or
-        parser.current_token.tag == .declare);
+        parser.at(.class) or parser.at(.abstract) or parser.at(.declare));
     const start = start_from_param orelse parser.current_token.span.start;
     const is_ts = parser.tree.isTs();
 
     var is_abstract = options.is_abstract;
     var is_declare = options.is_declare;
     if (is_ts and !options.is_expression and isClassModifiersNext(parser)) {
-        while (parser.current_token.tag != .class) {
-            std.debug.assert(parser.current_token.tag == .abstract or
-                parser.current_token.tag == .declare);
-            if (parser.current_token.tag == .abstract) is_abstract = true else is_declare = true;
+        while (!parser.at(.class)) {
+            std.debug.assert(parser.at(.abstract) or parser.at(.declare));
+            if (parser.at(.abstract)) is_abstract = true else is_declare = true;
             try parser.advance() orelse return null;
         }
     }
@@ -80,12 +90,11 @@ pub fn parseClassDecorated(
         .null;
 
     if (id == .null and !options.is_expression and !options.is_default_export) {
-        try parser.report(
+        return parser.fail(
             parser.current_token.span,
             "A class declaration without the 'default' modifier must have a name",
             .{ .help = "Add a name after 'class'" },
         );
-        return null;
     }
 
     const type_parameters: ast.NodeIndex = if (is_ts) try ts.parseTypeParameters(parser) else .null;
@@ -94,8 +103,7 @@ pub fn parseClassDecorated(
     var super_class: ast.NodeIndex = .null;
     var super_type_arguments: ast.NodeIndex = .null;
 
-    if (parser.current_token.tag == .extends) {
-        try parser.advance() orelse return null;
+    if (try parser.eat(.extends) orelse return null) {
         super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse
             return null;
 
@@ -118,9 +126,9 @@ pub fn parseClassDecorated(
 
     const body = try parseClassBody(parser) orelse return null;
 
-    return try parser.tree.addNode(.{ .class = .{
+    return try parser.finish(start, .{ .class = .{
         .type = class_type,
-        .decorators = decorators,
+        .decorators = options.decorators,
         .id = id,
         .super_class = super_class,
         .body = body,
@@ -129,11 +137,9 @@ pub fn parseClassDecorated(
         .implements = implements,
         .declare = is_declare,
         .abstract = is_abstract,
-    } }, .{ .start = start, .end = parser.tree.span(body).end });
+    } });
 }
 
-/// Returns whether `declare` and `abstract`, each at most once and in either order, then
-/// `class` follow on one line.
 pub fn isClassModifiersNext(parser: *Parser) bool {
     var peek = parser.beginPeek();
     defer peek.end();
@@ -143,26 +149,21 @@ pub fn isClassModifiersNext(parser: *Parser) bool {
     var token = parser.current_token;
     // each modifier at most once bounds the loop
     while (true) {
-        switch (token.tag) {
-            .declare => {
-                if (seen_declare) return false;
-                seen_declare = true;
-            },
-            .abstract => {
-                if (seen_abstract) return false;
-                seen_abstract = true;
-            },
+        const seen = switch (token.tag) {
+            .declare => &seen_declare,
+            .abstract => &seen_abstract,
             .class => return seen_declare or seen_abstract,
             else => return false,
-        }
+        };
+        if (seen.*) return false;
+        seen.* = true;
         token = peek.next();
         if (token.hasLineTerminatorBefore()) return false;
     }
 }
 
-/// Returns whether the current `abstract` modifies a `class` on the same line.
 pub inline fn isAbstractClassNext(parser: *Parser) bool {
-    std.debug.assert(parser.current_token.tag == .abstract);
+    std.debug.assert(parser.at(.abstract));
     const next = parser.peekAhead();
     return next.tag == .class and !next.hasLineTerminatorBefore();
 }
@@ -178,41 +179,28 @@ inline fn canStartClassName(parser: *Parser) bool {
 
 fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    if (!try parser.expect(
-        .left_brace,
-        "Expected '{' to start the class body",
-        null,
-    )) return null;
+    if (!try parser.expect(.left_brace, "Expected '{' to start the class body", null)) return null;
 
-    const checkpoint = parser.scratch_a.begin();
-    defer parser.scratch_a.reset(checkpoint);
-
-    while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
-        if (parser.current_token.tag == .semicolon) {
-            try parser.advance() orelse return null;
-            continue;
-        }
-        const element = try parseClassElement(parser) orelse return null;
-        try parser.scratch_a.append(parser.allocator(), element);
+    const elements = parser.list();
+    defer elements.deinit();
+    while (!parser.at(.right_brace) and !parser.at(.eof)) {
+        if (try parser.eat(.semicolon) orelse return null) continue;
+        try elements.append(try parseClassElement(parser) orelse return null);
     }
 
-    const end = parser.current_token.span.end;
     if (!try parser.expect(
         .right_brace,
         "Expected '}' to close the class body",
         "Check that every '{' in the class has a matching '}'",
     )) return null;
-
-    return try parser.tree.addNode(.{
-        .class_body = .{ .body = try parser.flushToExtras(&parser.scratch_a, checkpoint) },
-    }, .{ .start = start, .end = end });
+    return try parser.finish(start, .{ .class_body = .{ .body = try elements.finish() } });
 }
 
 fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
-    const element_start = parser.current_token.span.start;
-    const decorators: ast.IndexRange = if (parser.current_token.tag == .at)
-        try decorator.parseDecorators(parser) orelse return null
+    const start = parser.current_token.span.start;
+    const decorators: ast.IndexRange = if (parser.at(.at))
+        try parseDecorators(parser, .empty) orelse return null
     else
         .empty;
 
@@ -221,17 +209,10 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     var modifiers: Modifiers = .{};
     var key = try parseModifiers(parser, &modifiers);
 
-    if (key == .null and parser.current_token.tag == .star) {
-        modifiers.is_generator = true;
-        try parser.advance() orelse return null;
-    }
+    if (key == .null) modifiers.generator = try parser.eat(.star) orelse return null;
 
-    if (key == .null and
-        is_ts and
-        parser.current_token.tag == .left_bracket and
-        ts.isIndexSignatureStart(parser))
-    {
-        return parseIndexSignatureElement(parser, element_start, decorators, modifiers);
+    if (key == .null and is_ts and parser.at(.left_bracket) and ts.isIndexSignatureStart(parser)) {
+        return parseIndexSignatureElement(parser, start, decorators, modifiers);
     }
 
     var computed = false;
@@ -253,102 +234,74 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!computed) try detectConstructor(parser, key, &modifiers);
 
-    const is_method_start = parser.current_token.tag == .left_paren or
-        (is_ts and parser.current_token.tag == .less_than);
-
-    if (is_method_start) {
-        if (modifiers.is_accessor) {
-            try parser.report(
-                parser.current_token.span,
-                "'accessor' modifier can only appear on a property declaration",
-                .{ .help = "Remove 'accessor', or remove the parameter list" },
-            );
-            return null;
-        }
-        if (modifiers.definite) {
-            try parser.report(
-                parser.tree.span(key),
-                "A method cannot have a definite assignment assertion",
-                .{ .help = "Remove the '!'" },
-            );
-        }
-        return parseMethodDefinition(parser, element_start, decorators, key, computed, modifiers);
-    }
-
-    if (modifiers.is_async or modifiers.is_generator) {
-        try parser.reportExpected(
+    if (parser.at(.left_paren) or (is_ts and parser.at(.less_than))) {
+        if (modifiers.accessor) return parser.fail(
             parser.current_token.span,
-            "Expected '(' to start the method parameters",
-            .{},
+            "'accessor' modifier can only appear on a property declaration",
+            .{ .help = "Remove 'accessor', or remove the parameter list" },
         );
-        return null;
-    }
-
-    if (modifiers.kind == .constructor) {
-        try parser.report(
+        if (modifiers.definite) try parser.report(
             parser.tree.span(key),
-            "Classes may not have a field named 'constructor'",
-            .{ .help = "Rename the field" },
+            "A method cannot have a definite assignment assertion",
+            .{ .help = "Remove the '!'" },
         );
-        return null;
+        return parseMethodDefinition(parser, start, decorators, key, computed, modifiers);
     }
 
+    if (modifiers.async or modifiers.generator) {
+        return parser.failExpected("Expected '(' to start the method parameters", .{});
+    }
+    if (modifiers.kind == .constructor) return parser.fail(
+        parser.tree.span(key),
+        "Classes may not have a field named 'constructor'",
+        .{ .help = "Rename the field" },
+    );
     if (modifiers.kind != .method) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected '(' to start the accessor parameters",
-            .{},
-        );
-        return null;
+        return parser.failExpected("Expected '(' to start the accessor parameters", .{});
     }
-
-    return parsePropertyDefinition(parser, element_start, decorators, key, computed, modifiers);
+    return parsePropertyDefinition(parser, start, decorators, key, computed, modifiers);
 }
 
 fn parseIndexSignatureElement(
     parser: *Parser,
-    element_start: u32,
+    start: u32,
     decorators: ast.IndexRange,
     modifiers: Modifiers,
 ) Error!?ast.NodeIndex {
-    if (decorators.len != 0) {
-        const first = parser.tree.extra(decorators)[0];
-        try parser.report(
-            parser.tree.span(first),
-            "Decorators cannot be applied to index signatures",
-            .{ .help = "Remove the decorator" },
-        );
-    }
+    if (decorators.len != 0) try parser.report(
+        parser.tree.span(parser.tree.extra(decorators)[0]),
+        "Decorators cannot be applied to index signatures",
+        .{ .help = "Remove the decorator" },
+    );
 
-    if (modifiers.is_async or modifiers.is_generator or modifiers.is_accessor or
+    if (modifiers.async or modifiers.generator or modifiers.accessor or
         modifiers.kind != .method or modifiers.declare or modifiers.abstract or modifiers.override)
     {
         try parser.report(
-            .{ .start = element_start, .end = parser.current_token.span.end },
+            .{ .start = start, .end = parser.current_token.span.end },
             "Index signatures only accept 'readonly', 'static', and accessibility modifiers",
             .{},
         );
     }
 
-    const node = try ts.parseIndexSignature(parser, element_start, .{
+    const node = try ts.parseIndexSignature(parser, start, .{
         .readonly = modifiers.readonly,
-        .static = modifiers.is_static,
+        .static = modifiers.static,
     }) orelse return null;
 
-    if (parser.current_token.tag == .semicolon) {
+    if (parser.at(.semicolon)) {
         const span = parser.tree.span(node);
         parser.tree.setSpan(node, .{ .start = span.start, .end = parser.current_token.span.end });
         try parser.advance() orelse return null;
     }
-
     return node;
 }
 
 const Modifiers = struct {
-    is_static: bool = false,
-    is_async: bool = false,
-    is_generator: bool = false,
-    is_accessor: bool = false,
+    static: bool = false,
+    async: bool = false,
+    generator: bool = false,
+    accessor: bool = false,
     kind: ast.MethodDefinitionKind = .method,
     declare: bool = false,
     abstract: bool = false,
@@ -360,15 +313,12 @@ const Modifiers = struct {
 
     fn conflicts(self: Modifiers, tag: TokenTag) bool {
         // `accessor` sits directly before the key, so a following modifier word is the key
-        if (self.is_accessor) return true;
+        if (self.accessor) return true;
         return switch (tag) {
-            .async, .get, .set => self.is_async or self.kind != .method,
-            .static => self.is_static,
-            .accessor => self.is_accessor,
-            .declare => self.declare,
-            .abstract => self.abstract,
-            .override => self.override,
-            .readonly => self.readonly,
+            .async, .get, .set => self.async or self.kind != .method,
+            inline .static, .accessor, .declare, .abstract, .override, .readonly => |flag| {
+                return @field(self, @tagName(flag));
+            },
             .public, .private, .protected => self.accessibility != .none,
             else => unreachable,
         };
@@ -376,18 +326,14 @@ const Modifiers = struct {
 
     fn set(self: *Modifiers, tag: TokenTag) void {
         switch (tag) {
-            .static => self.is_static = true,
-            .async => self.is_async = true,
-            .accessor => self.is_accessor = true,
+            inline .static, .async, .accessor, .declare, .abstract, .override, .readonly => |flag| {
+                @field(self, @tagName(flag)) = true;
+            },
             .get => self.kind = .get,
             .set => self.kind = .set,
-            .declare => self.declare = true,
-            .abstract => self.abstract = true,
-            .override => self.override = true,
-            .readonly => self.readonly = true,
-            .public => self.accessibility = .public,
-            .private => self.accessibility = .private,
-            .protected => self.accessibility = .protected,
+            inline .public, .private, .protected => |access| {
+                self.accessibility = @field(ast.Accessibility, @tagName(access));
+            },
             else => unreachable,
         }
     }
@@ -401,12 +347,13 @@ fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
         // an accessor can never be a generator, so `get *` keeps `get` as a field key
         const accessor_before_star = next.tag == .star and
             (token.tag == .get or token.tag == .set);
+        const may_break_line = token.tag == .static or token.tag == .get or token.tag == .set;
 
         const is_modifier =
             !token.isEscaped() and
             canStartElementKey(next.tag) and
             !accessor_before_star and
-            !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
+            (may_break_line or !next.hasLineTerminatorBefore()) and
             !modifiers.conflicts(token.tag);
         if (!is_modifier) return try literals.parseIdentifierName(parser) orelse .null;
 
@@ -418,45 +365,28 @@ fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
 
 // runs before modifiers so a decorated static block still parses
 fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
-    if (parser.current_token.tag != .static) return null;
-    if (parser.peekAhead().tag != .left_brace) return null;
+    if (!parser.at(.static) or parser.peekAhead().tag != .left_brace) return null;
 
-    const static_token = parser.current_token;
-    if (decorators.len != 0) {
-        const first = parser.tree.extra(decorators)[0];
-        try parser.report(
-            parser.tree.span(first),
-            "Decorators cannot be applied to static blocks",
-            .{ .help = "Remove the decorator, or apply it to a method or field instead" },
-        );
-    }
-    try parser.reportIfEscapedKeyword(static_token);
-    try parser.advanceWithoutEscapeCheck() orelse return null;
+    if (decorators.len != 0) try parser.report(
+        parser.tree.span(parser.tree.extra(decorators)[0]),
+        "Decorators cannot be applied to static blocks",
+        .{ .help = "Remove the decorator, or apply it to a method or field instead" },
+    );
+    const start = try parser.take(.static) orelse return null;
     if (!try parser.expect(.left_brace, "Expected '{' to start the static block", null)) {
         return null;
     }
 
     // ClassStaticBlockStatementList is [~Yield, +Await, ~Return]
-    const saved_await = parser.context.await;
-    const saved_yield = parser.context.yield;
-    const saved_return = parser.context.@"return";
-    parser.context.await = true;
-    parser.context.yield = false;
+    const outer = parser.enterFunction(true, false);
+    defer parser.leaveFunction(outer);
     parser.context.@"return" = false;
-    defer parser.context.await = saved_await;
-    defer parser.context.yield = saved_yield;
-    defer parser.context.@"return" = saved_return;
 
     const body = try parser.parseBody(.right_brace, .other);
-    const end = parser.current_token.span.end;
     if (!try parser.expect(.right_brace, "Expected '}' to close the static block", null)) {
         return null;
     }
-
-    return try parser.tree.addNode(
-        .{ .static_block = .{ .body = body } },
-        .{ .start = static_token.span.start, .end = end },
-    );
+    return try parser.finish(start, .{ .static_block = .{ .body = body } });
 }
 
 inline fn isModifier(tag: TokenTag, is_ts: bool) bool {
@@ -476,66 +406,52 @@ inline fn canStartElementKey(tag: TokenTag) bool {
         tag == .star;
 }
 
-inline fn requiresSameLine(tag: TokenTag) bool {
-    return switch (tag) {
-        .static, .get, .set => false,
-        else => true,
-    };
-}
-
 fn parseMethodDefinition(
     parser: *Parser,
-    element_start: u32,
+    start: u32,
     decorators: ast.IndexRange,
     key: ast.NodeIndex,
     computed: bool,
     modifiers: Modifiers,
 ) Error!?ast.NodeIndex {
-    if (modifiers.is_static and !computed) try validateElementName(parser, key, true, .method);
+    const kind = modifiers.kind;
+    if (modifiers.static and !computed) try validateElementName(parser, key, true, .method);
     try validateMethodModifiers(parser, key, modifiers);
 
-    const saved_await = parser.context.await;
-    const saved_yield = parser.context.yield;
-    parser.context.await = modifiers.is_async;
-    parser.context.yield = modifiers.is_generator;
-    defer parser.context.await = saved_await;
-    defer parser.context.yield = saved_yield;
+    const outer = parser.enterFunction(modifiers.async, modifiers.generator);
+    defer parser.leaveFunction(outer);
 
     const is_ts = parser.tree.isTs();
-    const func_start = parser.current_token.span.start;
+    const function_start = parser.current_token.span.start;
 
     const type_parameters: ast.NodeIndex = if (is_ts) try ts.parseTypeParameters(parser) else .null;
-
-    if (modifiers.kind == .constructor and type_parameters != .null) {
-        try parser.report(
-            parser.tree.span(type_parameters),
-            "Type parameters cannot appear on a constructor declaration",
-            .{ .help = "Declare the type parameters on the class instead" },
-        );
-    }
+    if (kind == .constructor and type_parameters != .null) try parser.report(
+        parser.tree.span(type_parameters),
+        "Type parameters cannot appear on a constructor declaration",
+        .{ .help = "Declare the type parameters on the class instead" },
+    );
 
     const params = try functions.parseFormalParameters(
         parser,
         .unique_formal_parameters,
-        modifiers.kind == .constructor,
+        kind == .constructor,
     ) orelse return null;
-    _ = try functions.checkAccessorArity(parser, modifiers.kind, params);
+    _ = try functions.checkAccessorArity(parser, kind, params);
 
+    var end = parser.tree.span(params).end;
     var return_type: ast.NodeIndex = .null;
-    var return_type_end: u32 = parser.tree.span(params).end;
-    if (is_ts and parser.current_token.tag == .colon) {
+    if (is_ts and parser.at(.colon)) {
         return_type = try ts.parseReturnTypeAnnotation(parser) orelse return null;
-        return_type_end = parser.tree.span(return_type).end;
+        end = parser.tree.span(return_type).end;
     }
 
     const body = try functions.parseFunctionBody(parser, .optional) orelse return null;
-    var end = return_type_end;
     if (body != .null) {
         end = parser.tree.span(body).end;
         // an abstract constructor is already reported as a misplaced modifier
-        if (modifiers.abstract and modifiers.kind != .constructor) try parser.report(
+        if (modifiers.abstract and kind != .constructor) try parser.report(
             parser.tree.span(body),
-            if (modifiers.kind == .method)
+            if (kind == .method)
                 try parser.fmt(
                     "Method '{s}' cannot have an implementation because it is marked abstract",
                     .{parser.spanText(parser.tree.span(key))},
@@ -545,112 +461,86 @@ fn parseMethodDefinition(
             .{ .help = "Remove the body, or remove the 'abstract' modifier" },
         );
     } else if (is_ts) {
-        end = try parser.eatSemicolon(return_type_end) orelse return null;
+        end = try parser.eatSemicolon(end) orelse return null;
     } else {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected '{' to start the method body",
-            .{},
-        );
-        return null;
+        return parser.failExpected("Expected '{' to start the method body", .{});
     }
 
-    const func = try parser.tree.addNode(.{ .function = .{
+    const function = try parser.tree.addNode(.{ .function = .{
         .type = if (body == .null) .ts_empty_body_function_expression else .function_expression,
         .id = .null,
-        .generator = modifiers.is_generator,
-        .async = modifiers.is_async,
+        .generator = modifiers.generator,
+        .async = modifiers.async,
         .params = params,
         .body = body,
         .type_parameters = type_parameters,
         .return_type = return_type,
-    } }, .{ .start = func_start, .end = end });
+    } }, .{ .start = function_start, .end = end });
 
     return try parser.tree.addNode(.{ .method_definition = .{
         .decorators = decorators,
         .key = key,
-        .value = func,
-        .kind = modifiers.kind,
+        .value = function,
+        .kind = kind,
         .computed = computed,
-        .static = modifiers.is_static,
+        .static = modifiers.static,
         .override = modifiers.override,
         .optional = modifiers.optional,
         .abstract = modifiers.abstract,
         .accessibility = modifiers.accessibility,
-    } }, .{ .start = element_start, .end = end });
+    } }, .{ .start = start, .end = end });
 }
 
 fn parsePropertyDefinition(
     parser: *Parser,
-    element_start: u32,
+    start: u32,
     decorators: ast.IndexRange,
     key: ast.NodeIndex,
     computed: bool,
     modifiers: Modifiers,
 ) Error!?ast.NodeIndex {
-    if (!computed) try validateElementName(parser, key, modifiers.is_static, .field);
+    if (!computed) try validateElementName(parser, key, modifiers.static, .field);
 
     var end = parser.prev_token_end;
 
     var type_annotation: ast.NodeIndex = .null;
-    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+    if (parser.tree.isTs() and parser.at(.colon)) {
         type_annotation = try ts.parseTypeAnnotation(parser) orelse return null;
         end = parser.tree.span(type_annotation).end;
     }
 
     var value: ast.NodeIndex = .null;
-    if (parser.current_token.tag == .assign) {
-        try parser.advance() orelse return null;
-
+    if (try parser.eat(.assign) orelse return null) {
         // field initializers reset [Await] and [Yield]
         // https://github.com/tc39/ecma262/issues/3333
         // https://github.com/tc39/ecma262/issues/2437
-        const saved_await = parser.context.await;
-        const saved_yield = parser.context.yield;
-        parser.context.await = false;
-        parser.context.yield = false;
-        defer parser.context.await = saved_await;
-        defer parser.context.yield = saved_yield;
+        const outer = parser.enterFunction(false, false);
+        defer parser.leaveFunction(outer);
 
-        value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-            return null;
+        value = try expressions.parseAssignment(parser) orelse return null;
         end = parser.tree.span(value).end;
 
-        if (modifiers.abstract) {
-            try parser.report(
-                parser.tree.span(value),
-                try parser.fmt(
-                    "Property '{s}' cannot have an initializer because it is marked abstract",
-                    .{parser.spanText(parser.tree.span(key))},
-                ),
-                .{ .help = "Remove the initializer, or remove the 'abstract' modifier" },
-            );
-        }
-    }
-
-    if (modifiers.definite) {
-        try ts.checkDefiniteAssignment(
-            parser,
-            parser.tree.span(key),
-            type_annotation != .null,
-            value != .null,
+        if (modifiers.abstract) try parser.report(
+            parser.tree.span(value),
+            try parser.fmt(
+                "Property '{s}' cannot have an initializer because it is marked abstract",
+                .{parser.spanText(parser.tree.span(key))},
+            ),
+            .{ .help = "Remove the initializer, or remove the 'abstract' modifier" },
         );
     }
 
-    switch (parser.current_token.tag) {
-        .semicolon => {
-            end = parser.current_token.span.end;
-            try parser.advance() orelse return null;
-        },
-        .right_brace => {},
-        else => if (!parser.canInsertImplicitSemicolon(parser.current_token)) {
-            try parser.reportExpected(
-                parser.current_token.span,
-                "Expected ';' after the class field",
-                .{},
-            );
-            return null;
-        },
+    if (modifiers.definite) try ts.checkDefiniteAssignment(
+        parser,
+        parser.tree.span(key),
+        type_annotation != .null,
+        value != .null,
+    );
+
+    if (try parser.eat(.semicolon) orelse return null) {
+        end = parser.prev_token_end;
+    } else if (!parser.canInsertSemicolon()) {
+        return parser.failExpected("Expected ';' after the class field", .{});
     }
 
     return try parser.tree.addNode(.{ .property_definition = .{
@@ -658,8 +548,8 @@ fn parsePropertyDefinition(
         .key = key,
         .value = value,
         .computed = computed,
-        .static = modifiers.is_static,
-        .accessor = modifiers.is_accessor,
+        .static = modifiers.static,
+        .accessor = modifiers.accessor,
         .type_annotation = type_annotation,
         .declare = modifiers.declare,
         .override = modifiers.override,
@@ -668,7 +558,7 @@ fn parsePropertyDefinition(
         .readonly = modifiers.readonly,
         .abstract = modifiers.abstract,
         .accessibility = modifiers.accessibility,
-    } }, .{ .start = element_start, .end = end });
+    } }, .{ .start = start, .end = end });
 }
 
 fn detectConstructor(parser: *Parser, key: ast.NodeIndex, modifiers: *Modifiers) Error!void {
@@ -683,7 +573,7 @@ fn detectConstructor(parser: *Parser, key: ast.NodeIndex, modifiers: *Modifiers)
         }
         return;
     }
-    if (modifiers.is_static) return;
+    if (modifiers.static) return;
     const prop = static_semantics.propName(&parser.tree, key) orelse return;
     if (!prop.eql("constructor")) return;
 
@@ -699,50 +589,47 @@ fn detectConstructor(parser: *Parser, key: ast.NodeIndex, modifiers: *Modifiers)
 }
 
 fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, modifiers: Modifiers) Error!void {
-    const span = parser.tree.span(key);
-
-    if (modifiers.declare) {
-        try parser.report(
-            span,
+    const is_constructor = modifiers.kind == .constructor;
+    const is_generator = modifiers.generator;
+    const checks = [_]struct { bool, []const u8, []const u8 }{
+        .{
+            modifiers.declare,
             "'declare' modifier can only appear on a property declaration",
-            .{ .help = "Remove 'declare'" },
-        );
-    }
-    if (modifiers.readonly) {
-        try parser.report(
-            span,
+            "Remove 'declare'",
+        },
+        .{
+            modifiers.readonly,
             "'readonly' modifier can only appear on a property declaration or index signature",
-            .{ .help = "Remove 'readonly'" },
-        );
-    }
-
-    if (modifiers.kind == .constructor) {
-        if (modifiers.abstract) try parser.report(
-            span,
+            "Remove 'readonly'",
+        },
+        .{
+            is_constructor and modifiers.abstract,
             "'abstract' modifier cannot appear on a constructor declaration",
-            .{ .help = "Remove 'abstract'" },
-        );
-        if (modifiers.is_async) try parser.report(
-            span,
+            "Remove 'abstract'",
+        },
+        .{
+            is_constructor and modifiers.async,
             "'async' modifier cannot appear on a constructor declaration",
-            .{ .help = "Remove 'async'" },
-        );
-        if (modifiers.is_generator) try parser.report(
-            span,
+            "Remove 'async'",
+        },
+        .{
+            is_constructor and is_generator,
             "Class constructor may not be a generator",
-            .{ .help = "Remove the '*'" },
-        );
-        return;
-    }
-    if (!modifiers.is_generator) return;
-    switch (modifiers.kind) {
-        .get => try parser.report(span, "A 'get' accessor cannot be a generator", .{
-            .help = "Remove the '*'",
-        }),
-        .set => try parser.report(span, "A 'set' accessor cannot be a generator", .{
-            .help = "Remove the '*'",
-        }),
-        else => {},
+            "Remove the '*'",
+        },
+        .{
+            is_generator and modifiers.kind == .get,
+            "A 'get' accessor cannot be a generator",
+            "Remove the '*'",
+        },
+        .{
+            is_generator and modifiers.kind == .set,
+            "A 'set' accessor cannot be a generator",
+            "Remove the '*'",
+        },
+    };
+    for (checks) |check| {
+        if (check[0]) try parser.report(parser.tree.span(key), check[1], .{ .help = check[2] });
     }
 }
 
@@ -760,18 +647,13 @@ fn validateElementName(
             .{ .help = "Rename the property, or remove 'static'" },
         );
     } else if (kind == .field and prop.eql("constructor")) {
-        if (is_static) {
-            try parser.report(
-                prop.span,
-                "Classes may not have a static field named 'constructor'",
-                .{ .help = "Rename the field" },
-            );
-        } else {
-            try parser.report(
-                prop.span,
+        try parser.report(
+            prop.span,
+            if (is_static)
+                "Classes may not have a static field named 'constructor'"
+            else
                 "Classes may not have a field named 'constructor'",
-                .{ .help = "Rename the field" },
-            );
-        }
+            .{ .help = "Rename the field" },
+        );
     }
 }

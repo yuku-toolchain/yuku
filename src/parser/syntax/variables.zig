@@ -14,13 +14,9 @@ pub const ParseVariableDeclarationOptions = struct {
     is_declare: bool = false,
 };
 
-/// Syntactic context of a `VariableDeclarator`, which selects the initializer rules that apply.
 pub const DeclaratorContext = enum {
-    /// A regular declaration statement.
     normal,
-    /// An ambient `declare` declaration, where initializers may be omitted.
     declare,
-    /// A for-loop head, where the loop parser reports initializer errors itself.
     for_loop,
 };
 
@@ -29,23 +25,16 @@ pub fn parseVariableDeclaration(
     options: ParseVariableDeclarationOptions,
     start_from_param: ?u32,
 ) Error!?ast.NodeIndex {
-    std.debug.assert(start_from_param != null or switch (parser.current_token.tag) {
-        .@"var", .let, .@"const", .using => true,
-        else => false,
-    });
     const start = start_from_param orelse parser.current_token.span.start;
-    const tag = parser.current_token.tag;
-    try parser.advance() orelse return null;
-    const kind: ast.VariableKind = switch (tag) {
-        .let => .let,
-        .@"const" => .@"const",
-        .@"var" => .@"var",
+    const kind: ast.VariableKind = switch (parser.current_token.tag) {
+        inline .let, .@"const", .@"var" => |tag| @field(ast.VariableKind, @tagName(tag)),
         .using => if (options.await_using) .await_using else .using,
-        else => return null,
+        else => unreachable,
     };
+    try parser.advance() orelse return null;
 
-    const checkpoint = parser.scratch_a.begin();
-    defer parser.scratch_a.reset(checkpoint);
+    const declarators = parser.list();
+    defer declarators.deinit();
 
     const context: DeclaratorContext = if (parser.ts_context.ambient) .declare else .normal;
 
@@ -56,15 +45,16 @@ pub fn parseVariableDeclaration(
             parseVariableDeclarator,
             .{ parser, kind, context },
         ) orelse return null;
-        try parser.scratch_a.append(parser.allocator(), declarator);
+        try declarators.append(declarator);
         end = parser.tree.span(declarator).end;
 
-        if (parser.current_token.tag != .comma) break;
-        try parser.advance() orelse return null;
+        if (!(try parser.eat(.comma) orelse return null)) break;
     }
 
-    const semi_end = try parser.eatSemicolon(end) orelse return null;
-    const span: ast.Span = .{ .start = start, .end = semi_end };
+    const span: ast.Span = .{
+        .start = start,
+        .end = try parser.eatSemicolon(end) orelse return null,
+    };
 
     if (parser.context.single_statement and kind != .@"var") {
         @branchHint(.unlikely);
@@ -80,7 +70,7 @@ pub fn parseVariableDeclaration(
     }
 
     return try parser.tree.addNode(.{ .variable_declaration = .{
-        .declarators = try parser.flushToExtras(&parser.scratch_a, checkpoint),
+        .declarators = try declarators.finish(),
         .kind = kind,
         .declare = options.is_declare,
     } }, span);
@@ -100,15 +90,13 @@ pub fn parseVariableDeclarator(
     var end = id_span.end;
 
     if (parser.tree.isTs()) {
-        if (parser.current_token.tag == .logical_not and
-            !parser.current_token.hasLineTerminatorBefore())
-        {
+        if (parser.at(.logical_not) and !parser.current_token.hasLineTerminatorBefore()) {
             definite = true;
             end = parser.current_token.span.end;
             try parser.advance() orelse return null;
         }
 
-        if (parser.current_token.tag == .colon) {
+        if (parser.at(.colon)) {
             id = try ts.parsePatternTypeAnnotation(parser, id) orelse return null;
             annotated = true;
             end = parser.tree.span(id).end;
@@ -120,47 +108,39 @@ pub fn parseVariableDeclarator(
     const is_using = kind == .using or kind == .await_using;
     const is_destructuring = patterns.isDestructuringPattern(parser, id);
 
-    if (is_using and is_destructuring) {
-        try parser.report(
-            id_span,
-            try parser.fmt("'{s}' declarations may not have binding patterns", .{kind.toString()}),
-            .{},
-        );
-    }
+    if (is_using and is_destructuring) try parser.report(
+        id_span,
+        try parser.fmt("'{s}' declarations may not have binding patterns", .{kind.toString()}),
+        .{},
+    );
 
-    if (parser.current_token.tag == .assign) {
-        try parser.advance() orelse return null;
-
+    if (try parser.eat(.assign) orelse return null) {
         init = try expressions.parseExpression(
             parser,
             Precedence.Assignment,
             .{ .allow_in = context != .for_loop },
         ) orelse return null;
-
         end = parser.tree.span(init).end;
-    } else switch (context) {
-        .for_loop, .declare => {},
-        .normal => {
-            if (is_destructuring) {
-                try parser.report(
-                    id_span,
-                    "A destructuring declaration must have an initializer",
-                    .{ .help = "Add an initializer with the value to destructure" },
-                );
-            } else if (kind == .@"const") {
-                try parser.report(
-                    id_span,
-                    "'const' declarations must be initialized",
-                    .{ .help = "Add an initializer, or use 'let' to assign the value later" },
-                );
-            } else if (is_using) {
-                try parser.report(
-                    id_span,
-                    try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
-                    .{ .help = "Add an initializer with the resource to dispose" },
-                );
-            }
-        },
+    } else if (context == .normal) {
+        if (is_destructuring) {
+            try parser.report(
+                id_span,
+                "A destructuring declaration must have an initializer",
+                .{ .help = "Add an initializer with the value to destructure" },
+            );
+        } else if (kind == .@"const") {
+            try parser.report(
+                id_span,
+                "'const' declarations must be initialized",
+                .{ .help = "Add an initializer, or use 'let' to assign the value later" },
+            );
+        } else if (is_using) {
+            try parser.report(
+                id_span,
+                try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
+                .{ .help = "Add an initializer with the resource to dispose" },
+            );
+        }
     }
 
     if (definite) try ts.checkDefiniteAssignment(parser, id_span, annotated, init != .null);
@@ -171,32 +151,27 @@ pub fn parseVariableDeclarator(
     );
 }
 
-/// Returns whether `tag` can begin a `BindingIdentifier`.
 pub fn canStartBindingIdentifier(tag: TokenTag) bool {
     return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
 }
 
-/// Returns whether `let` begins an expression statement rather than a declaration. Only `let [`
-/// is a lookahead restriction, so sloppy-mode `let = 1` and `let in obj` are expressions.
 pub fn isLetIdentifier(parser: *Parser) bool {
-    std.debug.assert(parser.current_token.tag == .let);
+    std.debug.assert(parser.at(.let));
     const next = parser.peekAhead();
     if (next.tag == .left_bracket or next.tag == .left_brace) return false;
     return !canStartBindingIdentifier(next.tag);
 }
 
-/// Returns whether the current `using` is an `IdentifierReference`, not a declaration keyword.
 pub fn isUsingIdentifier(parser: *Parser) bool {
-    std.debug.assert(parser.current_token.tag == .using);
+    std.debug.assert(parser.at(.using));
     const next = parser.peekAhead();
     // [+Using] using [no LineTerminator here] BindingList
     return next.hasLineTerminatorBefore() or !canStartBindingIdentifier(next.tag);
 }
 
 /// Returns whether `await using x` on one line heads an `AwaitUsingDeclaration` under [+Await].
-/// `await [no LineTerminator here] using [no LineTerminator here] Binding`
 pub fn isAwaitUsingDeclarationAhead(parser: *Parser) bool {
-    std.debug.assert(parser.current_token.tag == .await);
+    std.debug.assert(parser.at(.await));
     if (!parser.context.await) return false;
 
     var peek = parser.beginPeek();

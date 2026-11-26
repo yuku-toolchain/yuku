@@ -1,64 +1,83 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
-const Parser = @import("../../parser.zig").Parser;
-const Error = @import("../../parser.zig").Error;
+const parser_module = @import("../../parser.zig");
+const Parser = parser_module.Parser;
+const Error = parser_module.Error;
 const Token = @import("../../token.zig").Token;
 const TokenTag = @import("../../token.zig").TokenTag;
 const Precedence = @import("../../token.zig").Precedence;
 
 const expressions = @import("../expressions.zig");
+const functions = @import("../functions.zig");
+const parenthesized = @import("../parenthesized.zig");
+const types = @import("types.zig");
 
-const core = @import("types/core.zig");
-const generics = @import("types/generics.zig");
-const Speculation = @import("speculation.zig").Speculation;
+const ParseExpressionOptions = expressions.ParseExpressionOptions;
+
+pub const Speculation = packed struct {
+    rule: Rule,
+    position: u32,
+    context: parser_module.Context,
+    ts_context: parser_module.TsContext,
+    options: ParseExpressionOptions,
+
+    pub const Rule = enum(u2) { arrow, type_arguments, call_type_arguments, infer_constraint };
+
+    pub fn at(parser: *const Parser, rule: Rule, options: ParseExpressionOptions) Speculation {
+        return .{
+            .rule = rule,
+            .position = parser.current_token.span.start,
+            .context = parser.context,
+            .ts_context = parser.ts_context,
+            .options = options,
+        };
+    }
+
+    pub fn isRejected(self: Speculation, parser: *const Parser) bool {
+        return parser.ts_rejected_speculations.contains(self);
+    }
+
+    pub fn reject(self: Speculation, parser: *Parser) Error!void {
+        try parser.ts_rejected_speculations.put(parser.allocator(), self, {});
+    }
+};
 
 pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .less_than);
-    const start = parser.current_token.span.start;
-    try parser.advance() orelse return null;
-
-    const type_node = try core.parseType(parser) orelse return null;
+    const start = try parser.take(.less_than) orelse return null;
+    const type_annotation = try types.parseType(parser) orelse return null;
     if (!try parser.expect(
         .greater_than,
         "Expected '>' to close the type assertion",
         "Write a type assertion as '<Type>value'",
     )) return null;
 
-    const expr = try expressions.parseExpression(parser, Precedence.Unary, .{}) orelse return null;
-
-    return try parser.tree.addNode(
-        .{ .ts_type_assertion = .{ .type_annotation = type_node, .expression = expr } },
-        .{ .start = start, .end = parser.tree.span(expr).end },
-    );
+    const expression = try expressions.parseExpression(parser, Precedence.Unary, .{}) orelse
+        return null;
+    return try parser.finishAt(start, expression, .{
+        .ts_type_assertion = .{ .type_annotation = type_annotation, .expression = expression },
+    });
 }
 
 pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const keyword_tag = parser.current_token.tag;
-    std.debug.assert(keyword_tag == .as or keyword_tag == .satisfies);
+    const keyword = parser.current_token.tag;
+    std.debug.assert(keyword == .as or keyword == .satisfies);
     try parser.advance() orelse return null;
 
-    const type_node = try core.parseType(parser) orelse return null;
-
-    const data: ast.NodeData = if (keyword_tag == .as)
-        .{ .ts_as_expression = .{ .expression = left, .type_annotation = type_node } }
-    else
-        .{ .ts_satisfies_expression = .{ .expression = left, .type_annotation = type_node } };
-
-    return try parser.tree.addNode(data, .{
-        .start = parser.tree.span(left).start,
-        .end = parser.tree.span(type_node).end,
+    const annotation = try types.parseType(parser) orelse return null;
+    const start = parser.tree.span(left).start;
+    if (keyword == .as) return try parser.finishAt(start, annotation, .{
+        .ts_as_expression = .{ .expression = left, .type_annotation = annotation },
+    });
+    return try parser.finishAt(start, annotation, .{
+        .ts_satisfies_expression = .{ .expression = left, .type_annotation = annotation },
     });
 }
 
 pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .logical_not);
-    const bang_end = parser.current_token.span.end;
-    try parser.advance() orelse return null;
-
-    return try parser.tree.addNode(
-        .{ .ts_non_null_expression = .{ .expression = left } },
-        .{ .start = parser.tree.span(left).start, .end = bang_end },
-    );
+    _ = try parser.take(.logical_not) orelse return null;
+    return try parser.finish(parser.tree.span(left).start, .{
+        .ts_non_null_expression = .{ .expression = left },
+    });
 }
 
 pub fn parseTypeArgumentedCallOrInstantiation(
@@ -78,64 +97,55 @@ pub fn parseTypeArgumentedCallOrInstantiation(
         else => {},
     }
 
-    const node = try parser.tree.addNode(
-        .{ .ts_instantiation_expression = .{
+    const node = try parser.finishAt(parser.tree.span(callee).start, type_arguments, .{
+        .ts_instantiation_expression = .{
             .expression = callee,
             .type_arguments = type_arguments,
-        } },
-        .{ .start = parser.tree.span(callee).start, .end = parser.tree.span(type_arguments).end },
+        },
+    });
+    if (parser.at(.dot)) try parser.report(
+        parser.tree.span(node),
+        "An instantiation expression cannot be followed by a property access",
+        .{ .help = "Wrap the instantiation expression in parentheses" },
     );
-    if (parser.current_token.tag == .dot) {
-        try parser.report(
-            parser.tree.span(node),
-            "An instantiation expression cannot be followed by a property access",
-            .{ .help = "Wrap the instantiation expression in parentheses" },
-        );
-    }
     return node;
 }
 
 // rewind so `<` can stay a relational compare
 pub fn tryParseTypeArgumentsInExpression(parser: *Parser, call_only: bool) Error!ast.NodeIndex {
-    if (!generics.isAngleOpen(parser.current_token.tag)) return .null;
+    if (!types.isAngleOpen(parser.current_token.tag)) return .null;
 
     const after = parser.peekAhead();
-    if (!core.isStartOfType(after.tag) and after.tag != .greater_than) return .null;
+    if (!types.isStartOfType(after.tag) and after.tag != .greater_than) return .null;
 
     const rule: Speculation.Rule = if (call_only) .call_type_arguments else .type_arguments;
     const speculation: Speculation = .at(parser, rule, .{});
     if (speculation.isRejected(parser)) return .null;
 
     const cp = parser.checkpoint();
-    const args = try generics.parseTypeArgumentsInExpression(parser);
+    const arguments = try types.parseTypeArgumentsInExpression(parser);
     const follows = if (call_only)
-        parser.current_token.tag == .left_paren
+        parser.at(.left_paren)
     else
         canFollowTypeArgumentsInExpression(parser.current_token);
-    if (args == .null or !follows) {
-        parser.rewind(cp);
-        try speculation.reject(parser);
-        return .null;
-    }
+    if (arguments != .null and follows) return arguments;
 
-    return args;
+    parser.rewind(cp);
+    try speculation.reject(parser);
+    return .null;
 }
 
 fn canFollowTypeArgumentsInExpression(token: Token) bool {
-    return switch (token.tag) {
+    const tag = token.tag;
+    return switch (tag) {
         .left_paren, .no_substitution_template, .template_head => true,
         // favor relational parse for `a < b > -c`
         .less_than, .greater_than, .plus, .minus => false,
+        .comma, .question, .as, .satisfies => true,
         else => token.hasLineTerminatorBefore() or
-            isBinaryOperatorLike(token.tag) or
-            !isStartOfExpression(token.tag),
+            tag.isBinaryOperator() or tag.isLogicalOperator() or tag.isAssignmentOperator() or
+            !isStartOfExpression(tag),
     };
-}
-
-fn isBinaryOperatorLike(tag: TokenTag) bool {
-    return tag.isBinaryOperator() or tag.isLogicalOperator() or
-        tag.isAssignmentOperator() or tag == .comma or tag == .question or
-        tag == .as or tag == .satisfies;
 }
 
 fn isStartOfExpression(tag: TokenTag) bool {
@@ -148,10 +158,6 @@ fn isStartOfExpression(tag: TokenTag) bool {
         .left_paren,
         .left_bracket,
         .left_brace,
-        .plus,
-        .minus,
-        .logical_not,
-        .bitwise_not,
         .increment,
         .decrement,
         .spread,
@@ -167,11 +173,124 @@ fn isStartOfExpression(tag: TokenTag) bool {
         .class,
         .new,
         .import,
-        .typeof,
-        .void,
-        .delete,
         => true,
-        else => tag.isNumericLiteral() or
+        else => tag.isUnaryOperator() or tag.isNumericLiteral() or
             (tag.isIdentifierLike() and !tag.isUnconditionallyReserved()),
     };
+}
+
+pub const ArrowHead = enum { no, yes, maybe };
+
+pub fn classifyArrowHead(parser: *Parser) ArrowHead {
+    if (!parser.at(.left_paren)) return .no;
+
+    var peek = parser.beginPeek();
+    defer peek.end();
+
+    const first = peek.next().tag;
+    return switch (first) {
+        .spread => .yes,
+        .left_bracket, .left_brace => .maybe,
+        .right_paren => switch (peek.next().tag) {
+            .arrow, .colon => .yes,
+            else => .no,
+        },
+        .this => if (peek.next().tag == .colon) .yes else .no,
+        else => if (!first.isIdentifierLike()) .no else switch (peek.next().tag) {
+            .colon => .yes,
+            .question => switch (peek.next().tag) {
+                .colon, .comma, .assign, .right_paren => .yes,
+                else => .no,
+            },
+            .comma, .assign, .right_paren => .maybe,
+            else => .no,
+        },
+    };
+}
+
+pub fn parseArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+    speculative: bool,
+) Error!?ast.NodeIndex {
+    const diagnostics_len = parser.diagnostics.items.len;
+    const saved_await = parser.context.await;
+    if (is_async) parser.context.await = true;
+    defer parser.context.await = saved_await;
+
+    const has_angle = types.isAngleOpen(parser.current_token.tag);
+    const type_parameters = try types.parseTypeParameters(parser);
+    if (has_angle and type_parameters == .null) return null;
+    if (!parser.at(.left_paren)) return null;
+
+    const params = try functions.parseFormalParameters(
+        parser,
+        .arrow_formal_parameters,
+        false,
+    ) orelse return null;
+    const return_type: ast.NodeIndex = if (parser.tree.isTs() and parser.at(.colon))
+        try types.parseReturnTypeAnnotation(parser) orelse return null
+    else
+        .null;
+    if (speculative and return_type != .null and
+        parser.diagnostics.items.len != diagnostics_len) return null;
+
+    if (!parser.at(.arrow)) {
+        return parser.failExpected("Expected '=>' after the arrow function parameters", .{});
+    }
+    if (parser.current_token.hasLineTerminatorBefore()) return parser.fail(
+        parser.current_token.span,
+        "Line terminator not permitted before arrow",
+        .{ .help = "Move '=>' to the line of the parameters" },
+    );
+    return parenthesized.buildArrowFunction(
+        parser,
+        params,
+        is_async,
+        arrow_start,
+        type_parameters,
+        return_type,
+        options,
+    );
+}
+
+// rewind on failure so a parenthesized expression, call, jsx, or `<T>` assertion can win
+pub fn tryParseArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
+    const speculation: Speculation = .at(parser, .arrow, options);
+    if (speculation.isRejected(parser)) return null;
+
+    const cp = parser.checkpoint();
+    if (try parseArrow(parser, is_async, arrow_start, options, true)) |arrow| {
+        // the `:` after an annotated arrow may belong to an enclosing conditional
+        const return_type = parser.tree.data(arrow).arrow_function_expression.return_type;
+        if (options.allow_arrow_return_type or
+            return_type == .null or
+            (parser.at(.colon) and parser.diagnostics.items.len == cp.diagnostics_len))
+        {
+            return arrow;
+        }
+    }
+
+    parser.rewind(cp);
+    try speculation.reject(parser);
+    return null;
+}
+
+// skip the checkpoint when jsx or a type assertion is likelier
+pub fn tryParseGenericArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.at(.less_than));
+    if (!parser.peekAhead().tag.isIdentifierLike()) return null;
+    return tryParseArrow(parser, is_async, arrow_start, options);
 }
