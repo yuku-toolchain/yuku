@@ -48,6 +48,7 @@ pub fn parseExpression(
                 left = node;
                 continue;
             }
+            if (parser.current_token.span.start != current_token.span.start) return null;
         }
 
         const infix_precedence = current_token.tag.precedence();

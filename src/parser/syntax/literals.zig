@@ -289,8 +289,13 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag.isIdentifierLike());
     const token = parser.current_token;
+    if (!token.tag.isIdentifierLike()) {
+        try parser.reportExpected(token.span, "Expected an identifier", .{
+            .help = "Identifiers start with a letter, '_', or '$'",
+        });
+        return null;
+    }
     try parser.advanceWithoutEscapeCheck() orelse return null;
     return try addIdentifierName(parser, token);
 }

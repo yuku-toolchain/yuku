@@ -94,6 +94,10 @@ pub const regressions = [_][]const u8{
     "'\\u{1F600}\xed\\uD83D\\uDE00'", // a stray 0xED read as a surrogate ate the next emoji
     "'\\uD83D\\\xed\xb0\x80'", // an escaped and a raw surrogate stayed apart, unlike reprinted
     "#!x ", // compact dropped a hashbang's trailing space
+    "f<T>(a: b);",
+    "h <>(",
+    "export as namespace 1;",
+    "interface I extends A. {}",
 };
 
 // a runaway allocation panics attributably instead of a silent oom kill
